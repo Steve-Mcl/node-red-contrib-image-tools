@@ -1,0 +1,99 @@
+<style>
+.node-label-white{
+    color: white;
+}
+</style>
+<script type="text/javascript">
+    
+    RED.nodes.registerType('2d Barcode Decoder', {
+        category: 'image tools',
+        paletteLabel: "2D Barcode Decoder",
+        //labelStyle: "node-label-white",
+        icon: "qrcode.png",
+        color: '#FFAAAA',//'#f24b69',
+        defaults: {
+            name: { value: "" },
+            data: { value: "payload", validate: RED.validators.typedInput("dataType") },
+            dataType: { value: "msg" },
+            specification: { value: "", validate: RED.validators.typedInput("specificationType") },
+            specificationType: { value: "json" },
+        },
+        inputs: 1,
+        outputs: 1,
+
+        label: function () {
+            return this.name || "2D Barcode Decoder";
+        },
+        oneditprepare: function () {
+            let node = this;
+            debugger
+            function setupTypedInput(varName, types, def) {
+                let varSel = '#node-input-' + varName;
+                let typeSel = varSel + 'Type';
+                let varVal = node[varName];
+                let typeVal = node[varName + 'Type'];
+
+                if (typeVal == null || typeVal === 'none') {
+                    typeVal = def;
+                } else if (typeVal === 'string') {
+                    typeVal = "str";
+                } else if (typeVal === 'number') {
+                    typeVal = "num";
+                }
+                $(typeSel).val(typeVal);
+                $(varSel).typedInput({
+                    default: def,
+                    typeField: $(typeSel),
+                    types: types
+                });
+                $(varSel).typedInput('type', typeVal);
+            }
+
+            setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
+            setupTypedInput('specification', ['msg', 'flow', 'global', 'json'], 'json');
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="2d Barcode Decoder">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="xzing2dDecode.label.data"> image</span></label>
+        <input type="hidden" id="node-input-dataType">
+        <input style="width: 70%" type="text" id="node-input-data" placeholder="image.jpg">
+    </div>
+    <div class="form-row">
+        <label for="node-input-specification"><i class="fa fa-code"></i><span data-i18n="xzing2dDecode.label.specification"> specification</span></label>
+        <input type="hidden" id="node-input-specificationType">
+        <input style="width: 70%" type="text" id="node-input-specification" placeholder="{QR: true, dataMatrix: false, tryHarder: true}">
+    </div>
+ 
+</script>
+
+<script type="text/x-red" data-help-name="2d Barcode Decoder">
+<p>A 2D barcode decoder node built with zxing and Jimp</p>
+
+<h3>Inputs</h3>
+<dl class="message-properties">
+    <dt>image <span class="property-type">string | base64 | buffer</span></dt>
+    <dd> the file (buffer / base64 string) or file name to be processed. </dd>
+    <dt>specification <span class="property-type">string | JSON</span></dt>
+    <dd> the specification to use when decoding the barcode in the image</dd>
+    Example...
+    <code>
+            {"QR": true, "dataMatrix": false, "tryHarder": true}
+    </code>
+</dl>
+<h3>Output</h3>
+<dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>The results.</dd>
+    <dt>performance <span class="property-type">object</span></dt>
+    <dd>Performance measurements of the image loading and processing</dd>
+    <h4>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h4>
+</dl>
+
+</script>

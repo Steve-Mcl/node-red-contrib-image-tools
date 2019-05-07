@@ -1,0 +1,803 @@
+
+<style>
+    .jimp-parameter-group{
+        /* background-color:#E9E8E8;
+        border: 1px solid #ccc;
+        border-radius: 2px;  */
+    }
+    .input-tip-group{
+        display:inline-block; 
+        width: 70%;         
+        padding: 2px;  
+    }
+    .input-tip-group label{
+        color: white;
+
+    }
+</style>
+
+<script type="text/javascript">
+    RED.jimpNode = {};
+    RED.jimpNode.resizeModes = [
+        "RESIZE_NEAREST_NEIGHBOR",
+        "RESIZE_BILINEAR",
+        "RESIZE_BICUBIC",
+        "RESIZE_HERMITE",
+        "RESIZE_BEZIER"
+    ];
+
+    RED.jimpNode.blendModes = [
+        "BLEND_SOURCE_OVER",
+        "BLEND_DESTINATION_OVER",
+        "BLEND_MULTIPLY",
+        "BLEND_SCREEN",
+        "BLEND_OVERLAY",
+        "BLEND_DARKEN",
+        "BLEND_LIGHTEN",
+        "BLEND_HARDLIGHT",
+        "BLEND_DIFFERENCE",
+        "BLEND_EXCLUSION",
+    ];
+    
+
+    RED.jimpNode.alignMode = {
+                        "Left" : 1,
+                        "Centre": 2,
+                        "Right" : 4,
+                        "Top" : 8,
+                        "Middle": 16,
+                        "Bottom": 32,
+                        "Top Left" : 1 + 8,
+                        "Top Centre" : 2 + 8,
+                        "Top Right" : 4 + 8,
+                        "Middle Left" : 1 + 16,
+                        "Middle Centre" : 2 + 16,                        
+                        "Middle Right" : 4 + 16,                        
+                        "Bottom Left" : 1 + 32,
+                        "Bottom Centre" : 2 + 32,                        
+                        "Bottom Right" : 4 + 32,                        
+    };
+
+    RED.jimpNode.alignModes =  [];
+    Object.keys(RED.jimpNode.alignMode).forEach(function(key,index) {
+        RED.jimpNode.alignModes.push(key);
+    });
+    
+    //TODO: add sections to the options by giving each item a category
+    //TODO: consider moving the 'functions' to the server side and use Http Admin endpoint to get a list of functions (for the dropdown)
+
+    RED.jimpNode.functions = {
+
+        "none" : {"name" : "none","fn" : "none", "description" : "Just loads the image.","parameters" : [] },
+
+        "write" : {"name" : "write","fn" : "write", "description" : "Write to file. NOTE: You can specify an alternative file extension type to change the type. Currently support types are jpg, png, bmp.","parameters" : [
+        {"name" : "filename", "type" : "str", "required" : true, "hint" : "Name of the file", "defaultType" : "str" }] },
+
+
+        "contain" : {"name" : "contain","fn" : "contain", "description" : "scale the image to the given width and height, some parts of the image may be letter boxed","parameters" : [
+        {"name" : "w", "type" : "num", "required" : true, "hint" : "the width to resize the image to" },
+        {"name" : "h", "type" : "num", "required" : true, "hint" : "the height to resize the image to" },
+        {"name" : "alignBits", "type" : "alignMode", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;", "defaultType" : "Align" },
+        {"name" : "mode", "type" : "resizeMode", "required" : false, "hint" : "A scaling method (e.g. Jimp.RESIZE_BEZIER)", "defaultType" : "Jimp" }] },
+
+
+        "cover" : {"name" : "cover","fn" : "cover", "description" : "scale the image to the given width and height, some parts of the image may be clipped","parameters" : [
+        {"name" : "w", "type" : "num", "required" : true, "hint" : "the width to resize the image to" },
+        {"name" : "h", "type" : "num", "required" : true, "hint" : "the height to resize the image to" },
+        {"name" : "alignBits", "type" : "alignMode|str", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;", "defaultType" : "Align" },
+        {"name" : "mode", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)", "defaultType" : "Jimp" }] },
+
+
+        "resize" : {"name" : "resize","fn" : "resize", "description" : "resize the image. One of the w or h parameters can be set to automatic (\"Jimp.AUTO\" or -1).","parameters" : [
+        {"name" : "w", "type" : "num|auto", "required" : true, "hint" : "the width to resize the image to (or \"Jimp.AUTO\" or -1)" },
+        {"name" : "h", "type" : "num|auto", "required" : true, "hint" : "the height to resize the image to (or \"Jimp.AUTO\" or -1)" },
+        {"name" : "mode", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)", "defaultType" : "Jimp" }] },
+
+
+        "scale" : {"name" : "scale","fn" : "scale", "description" : "scale the image by the factor f","parameters" : [
+        {"name" : "f", "type" : "num", "required" : true, "hint" : "f the factor to scale the image by" },
+        {"name" : "mode", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)", "defaultType" : "Jimp" }] },
+
+
+        "scaleToFit" : {"name" : "scaleToFit","fn" : "scaleToFit", "description" : "scale the image to the largest size that fits inside the given width and height. One of the w or h parameters can be set to automatic (\"Jimp.AUTO\" or -1).","parameters" : [
+        {"name" : "w", "type" : "num|auto", "required" : true, "hint" : "the width to resize the image to (or \"Jimp.AUTO\" or -1)" },
+        {"name" : "h", "type" : "num|auto", "required" : true, "hint" : "the height to resize the image to (or \"Jimp.AUTO\" or -1)" },
+        {"name" : "mode", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)", "defaultType" : "Jimp" }] },
+
+
+        "autocrop1" : {"name" : "autocrop","fn" : "autocrop", "description" : "automatically crop same-color borders from image (if any), frames must be a Boolean","parameters" : [
+        {"name" : "tolerance", "type" : "num", "required" : false, "hint" : "a percent value of tolerance for pixels color difference (default: 0.0002%)" },
+        {"name" : "frames", "type" : "bool", "required" : false, "hint" : "flag to crop only real frames: all 4 sides of the image must have some border (default: true)" }] },
+
+
+        "autocrop2" : {"name" : "autocrop","fn" : "autocrop", "description" : "automatically crop same-color borders from image (if any), options may contain tolerance, cropOnlyFrames, cropSymmetric, leaveBorder","parameters" : [
+        {"name" : "options", "type" : "json", "required" : false, "hint" : "options may contain tolerance, cropOnlyFrames, cropSymmetric, leaveBorder" }] },
+
+
+
+        "crop" : {"name" : "crop","fn" : "crop", "description" : "crop to the given region","parameters" : [
+        {"name" : "x", "type" : "num", "required" : true, "hint" : "the x coordinate to crop form" },
+        {"name" : "y", "type" : "num", "required" : true, "hint" : "the y coordinate to crop form" },
+        {"name" : "w", "type" : "num", "required" : true, "hint" : "the width of the crop region" },
+        {"name" : "h", "type" : "num", "required" : true, "hint" : "the height of the crop region" }] },
+
+
+        "blit" : {"name" : "blit","fn" : "blit", "description" : "blit the image with another Jimp image at x, y, optionally cropped","parameters" : [
+        {"name" : "src", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultType" : "msg", "defaultValue" : "payload" },
+        {"name" : "x", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
+        {"name" : "y", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
+        {"name" : "srcx", "type" : "num", "required" : false, "hint" : "the x position from which to crop the source image" },
+        {"name" : "srcy", "type" : "num", "required" : false, "hint" : "the y position from which to crop the source image" },
+        {"name" : "srcw", "type" : "num", "required" : false, "hint" : "the width to which to crop the source image" },
+        {"name" : "srch", "type" : "num", "required" : false, "hint" : "the height to which to crop the source image" }] },
+
+
+        "composite" : {"name" : "composite","fn" : "composite", "description" : "composites another Jimp image over this image at x, y","parameters" : [
+        {"name" : "src", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultType" : "msg", "defaultValue" : "payload" },
+        {"name" : "x", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
+        {"name" : "y", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
+        {"name" : "mode", "group" : "options", "type" : "blend", "required" : true, "hint" : "what blend mode to use" },
+        {"name" : "opacitySource", "group" : "options", "type" : "num", "required" : true, "hint" : "opacity of src image 0.0 to 1.0" },
+        {"name" : "opacityDest", "group" : "options", "type" : "num", "required" : true, "hint" : "opacity of src image 0.0 to 1.0" }] },
+
+
+
+        "mask" : {"name" : "mask","fn" : "mask", "description" : "masks the image with another Jimp image at x, y using average pixel value","parameters" : [
+        {"name" : "src", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultType" : "msg", "defaultValue" : "payload" },
+        {"name" : "x", "type" : "num", "required" : true, "hint" : "the horizontal position to blit the image" },
+        {"name" : "y", "type" : "num", "required" : true, "hint" : "the vertical position to blit the image" }] },
+
+
+
+        "flip" : {"name" : "flip","fn" : "flip", "description" : "flip the image horizontally or vertically","parameters" : [
+        {"name" : "horz", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
+        {"name" : "vert", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
+
+
+        "mirror" : {"name" : "mirror","fn" : "mirror", "description" : "an alias for flip","parameters" : [
+        {"name" : "horz", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
+        {"name" : "vert", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
+
+
+        "rotate" : {"name" : "rotate","fn" : "rotate", "description" : "rotate the image clockwise by a number of degrees. Optionally, a resize mode can be passed. If `false` is passed as the second parameter, the image width and height will not be resized.","parameters" : [
+        {"name" : "deg", "type" : "num", "required" : true, "hint" : "the number of degrees to rotate the image by" },
+        {"name" : "mode", "type" : "resizeMode|bool", "required" : false, "hint" : "resize mode or a boolean, if false then the width and height of the image will not be changed", "defaultType" : "Jimp", }] },
+
+
+
+        "brightness" : {"name" : "brightness","fn" : "brightness", "description" : "adjust the brightness", "parameters" : [
+        {"name" : "val", "type" : "num", "required" : true, "hint" : "adjust the brighness by a value -1.0 to 1.0" }] },
+
+
+        "contrast" : {"name" : "contrast","fn" : "contrast", "description" : "adjust the contrast", "parameters" : [
+        {"name" : "val", "type" : "num", "required" : true, "hint" : "adjust the contrast by a value -1.0 to 1.0" }] },
+
+
+        "dither565" : {"name" : "dither565","fn" : "dither565", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
+        //"dither16" : {"name" : "dither16","fn" : "dither16", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
+
+
+        "greyscale" : {"name" : "greyscale","fn" : "greyscale", "description" : "remove colour from the image","parameters" : [] },
+
+
+        "invert" : {"name" : "invert","fn" : "invert", "description" : "invert the image colours","parameters" : [] },
+
+
+        "normalize" : {"name" : "normalize","fn" : "normalize", "description" : "normalize the channels in an image","parameters" : [] },
+
+
+        //"hasAlpha" : //{"name" : "hasAlpha()","fn" : "hasAlpha","description" : "determines if an image contains opaque pixels","parameters" : [] },
+
+
+        "fade" : {"name" : "fade","fn" : "fade", "description" : "an alternative to opacity, fades the image by a factor 0 - 1. 0 will haven no effect.","parameters" : [
+        {"name" : "f", "type" : "num", "required" : true, "hint" : "A number from 0 to 1. 0 will haven no effect. 1 will turn the image completely transparent." }] },
+
+
+        "opacity" : {"name" : "opacity","fn" : "opacity", "description" : "multiply the alpha channel by each pixel by the factor f, 0 - 1","parameters" : [
+        {"name" : "f", "type" : "num", "required" : true, "hint" : "A number, the factor by which to multiply the opacity of each pixel" }] },
+
+
+        "opaque" : {"name" : "opaque","fn" : "opaque", "description" : "set the alpha channel on every pixel to fully opaque","parameters" : [] },
+
+
+
+        "gaussian" : {"name" : "gaussian","fn" : "gaussian", "description" : "Gaussian blur the image by r pixels (VERY slow)","parameters" : [
+        {"name" : "r", "type" : "num", "required" : true, "hint" : "the pixel radius of the blur" }] },
+
+
+        "blur" : {"name" : "blur","fn" : "blur", "description" : "fast blur the image by r pixels","parameters" : [
+        {"name" : "r", "type" : "num", "required" : true, "hint" : "the pixel radius of the blur" }] },
+
+
+
+        "convolute" : {"name" : "convolute","fn" : "convolute", "description" : "applies a convolution kernel matrix to the image or a region","parameters" : [
+        {"name" : "kernel", "type" : "json", "required" : true, "hint" : "a kernel matrix.  e.g. emboss [[-2, -1, 0], [-1, 1, 1], [0, 1, 2]]", "defaultValue" : "[[-2, -1, 0], [-1, 1, 1], [0, 1, 2]]" }] },
+
+        "convolute_antialise" : {"name" : "antialise*","fn" : "convolute_antialise", "description" : "antialise image (*uses convolute([[1, 2, 1], [2, 4, 2], [1, 2, 1]])","parameters" : [] },
+        "convolute_edgedetect" : {"name" : "edgedetect*","fn" : "convolute_edgedetect", "description" : "edge detect image (*uses convolute([[0, 1, 0], [1, -4, 1], [0, 1, 0]])","parameters" : [] },
+        "convolute_edgeenhance" : {"name" : "edgeenhance*","fn" : "convolute_edgeenhance", "description" : "edge enhance image (*uses convolute([[0, 0, 0], [-1, 1, 0], [0, 0, 0]])","parameters" : [] },
+        "convolute_emboss" : {"name" : "emboss*","fn" : "convolute_emboss", "description" : "emboss image (*uses convolute([[-2, -1, 0], [-1, 1, 1], [0, 1, 2]])","parameters" : [] },
+        "convolute_sharpen" : {"name" : "sharpen*","fn" : "convolute_sharpen", "description" : "sharpen image (*uses convolute([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])","parameters" : [] },
+        "convolute_strongsharpen" : {"name" : "strong sharpen*","fn" : " convolute_strongsharpen","description" : "sharpen image (*uses convolute([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])","parameters" : [] },
+
+        
+        "posterize" : {"name" : "posterize","fn" : "posterize", "description" : "apply a posterization effect with n level","parameters" : [
+        {"name" : "n", "type" : "num", "required" : true, "hint" : "the amount to adjust the contrast, minimum threshold is two" }] },
+
+
+        "sepia" : {"name" : "sepia","fn" : "sepia", "description" : "apply a sepia wash to the image","parameters" : [] },
+
+
+        "pixelate" : {"name" : "pixelate)","fn" : "pixelate", "description" : "apply a pixelation effect to the image or a region","parameters" : [
+        {"name" : "size", "type" : "num", "required" : true, "hint" : "the size of the pixels" },
+        {"name" : "x", "type" : "num", "required" : false, "hint" : "the x position of the region to pixelate" },
+        {"name" : "y", "type" : "num", "required" : false, "hint" : "the y position of the region to pixelate" },
+        {"name" : "w", "type" : "num", "required" : false, "hint" : "the width of the region to pixelate" },
+        {"name" : "h", "type" : "num", "required" : false, "hint" : "the height of the region to pixelate" }] },
+
+
+        "displace" : {"name" : "displace","fn" : "displace", "description" : "displaces the image pixels based on the provided displacement map. Useful for making stereoscopic 3D images.","parameters" : [
+        {"name" : "map", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultValue" : "payload" },
+        {"name" : "offset", "type" : "num", "required" : false, "hint" : "the maximum displacement value" }] },
+
+
+        "background" : {"name" : "background","fn" : "background", "description" : "set the default new pixel colour (e.g. 0xFFFFFFFF or 0x00000000) useful for by some operations e.g. contain or rotate","parameters" : [
+        {"name" : "hex", "type" : "num", "required" : true, "hint" : "hexadecimal rgba value (must be entered as a decimal e.g. 0xFFFFFFFF = 4294967295)", "defaultValue" : "4294967295" }] },
+
+        "threshold" : {"name" : "threshold","fn" : "threshold", "description" : "apply one or more functions","parameters" : [
+        {"name" : "max", "group" : "options", "type" : "num", "required" : true, "hint" : "max value of byte 0 ~ 255" },
+        {"name" : "replace", "group" : "options", "type" : "num", "required" : false, "hint" : "replace with byte 0 ~ 255. Default is 255" },
+        {"name" : "autoGreyscale", "group" : "options", "type" : "bool", "required" : false, "hint" : "default is true" }] },
+
+        "batch" : {"name" : "batch","fn" : "batch", "description" : "apply one or more functions","parameters" : [
+        {"name" : "options", "type" : "json", "required" : true, "hint" : "an object or an array of objects containing {\"name\" : \"function_name\", \"parameters\" : [x,y,z]}.  Refer to info on side panel}" }] },
+
+        "clone" : {"name" : "clone","fn" : "clone", "description" : "returns a clone of the image","parameters" : [] },
+        
+        "histogram" : {"name" : "histogram","fn" : "histogram", "description" : "Generate a histogram of the image. The histogram data will be returned in msg.jobs[x].result, msg.jobs[x].g[], msg.jobs[x].b[].","parameters" : [] },
+
+        "distance" : {"name" : "distance","fn" : "distance", "description" : "calculate the hamming distance between two Jimp images based on their perceptual hash. msg.jobs[x].result will contain a number 0-1, where 0 means the two images are perceived to be identical","parameters" : [
+        {"name" : "image2", "type" : "", "required" : true, "hint" : "image to compare to" }] },
+
+        "diff" : {"name" : "diff","fn" : "diff", "description" : "Using a mix of hamming distance and pixel diffing to compare images. Returns an image showing differences and msg.jobs[x].result will contain the proportion of different pixels (0-1), where 0 means the images are pixel identical","parameters" : [
+        {"name" : "image2", "type" : "", "required" : true, "hint" : "image to compare to" },
+        {"name" : "threshold", "type" : "num", "required" : false, "hint" : "threshold ranges 0-1 (default: 0.1)" }] }
+
+    }
+    
+    
+
+    RED.nodes.registerType('jimp-image', {
+        category: 'image tools',
+        paletteLabel: "image",
+        //labelStyle: "node-label-white",
+        icon: "image.png",
+        color: '#FFAAAA',//'#f24b69',
+        defaults: {
+            name: { value: "" },
+            data: { value: "payload", validate: RED.validators.typedInput("dataType") },
+            dataType: { value: "msg" },
+            // specification: { value: "", validate: RED.validators.typedInput("specificationType") },
+            // specificationType: { value: "json" },
+            ret: { value: "img"},
+            parameter1: { value: ""},
+            parameter1Type: { value: "msg" },
+            parameter2: { value: ""},
+            parameter2Type: { value: "msg" },
+            parameter3: { value: ""},
+            parameter3Type: { value: "msg" },
+            parameter4: { value: ""},
+            parameter4Type: { value: "msg" },
+            parameter5: { value: ""},
+            parameter5Type: { value: "msg" },
+            parameter6: { value: ""},
+            parameter6Type: { value: "msg" },
+            parameter7: { value: ""},
+            parameter7Type: { value: "msg" },
+            parameter8: { value: ""},
+            parameter8Type: { value: "msg" },
+            parameterCount: {value: 0},
+            jimpFunction: {value: "none"},
+            selectedJimpFunction: {value: {}}                     
+        },
+        inputs: 1,
+        outputs: 1,
+        label: function () {
+            let fname = this.selectedJimpFunction && this.selectedJimpFunction.name ? this.selectedJimpFunction.name : ""; 
+            if(fname == "none") fname = "";
+            return this.name || fname || "image";
+        },
+        oneditsave: function() {
+            let node = this;
+            let $dropdown = $("#node-input-jimpFunction");
+            let choice = $dropdown.val() 
+            let fn = RED.jimpNode.functions[choice];
+
+            node.jimpFunction = choice;
+            node.selectedJimpFunction = fn;
+            node.parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
+
+            //turn on/off validation as required
+            var isRequired = function(paramIndex){
+                if((paramIndex+1) <= node.parameterCount){
+                    const p = fn.parameters[paramIndex];
+                    return !(!(p.required));
+                }
+                return false
+            }
+            
+            for (let index = 0; index < 8; index++) {
+                const pname = "parameter" + (index + 1)
+                node._def.defaults[pname].required = isRequired(index);
+            }
+            
+            
+        },
+        oneditprepare: function () {
+            var node = this;
+            var isObject = function (val) {
+                        if (val === null) { return false;}
+                        return (typeof val === 'object');
+            }
+
+            function setupTypedInput(varName, types, def, defVal, validate) {
+                let varSel = '#node-input-' + varName;
+                let typeSel = varSel + 'Type';
+                let varVal = node[varName];
+                let typeVal = node[varName + 'Type'];
+
+                $(typeSel).val(def);
+                let opts = {
+                    default: def,
+                    typeField: $(typeSel),
+                    types: types
+                };
+                if(validate){
+                    opts.validate = function(v) { return !v;}                    
+                }
+                $(varSel).typedInput(opts);
+                $(varSel).typedInput('type', typeVal);
+                if(!varVal)
+                    $(varSel).typedInput('type', def);
+                if(defVal  && !varVal)
+                    $ti.typedInput('value', defVal);
+            }
+            
+            setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str', 'json'], 'msg');
+            //debugger
+            
+            let $dropdown = $("#node-input-jimpFunction");
+            $dropdown.off();
+            $dropdown.empty().append('<option value=""></option>')
+            let index = 0;
+            
+            Object.keys(RED.jimpNode.functions).forEach(function(key,index) {
+                // key: the name of the object key
+                // index: the ordinal position of the key within the object 
+                let element = RED.jimpNode.functions[key];
+                if(node.jimpFunction == key){
+                    $dropdown.append($("<option selected />").val(key).text(element.name));
+                } else if(index == node.jimpFunction)
+                    $dropdown.append($("<option selected />").val(key).text(element.name));
+                else    
+                    $dropdown.append($("<option />").val(key).text(element.name));
+            });
+
+            let $convertToBatchButton = $("#convertToBatchButton");
+
+            $convertToBatchButton.click(function() {
+                //debugger
+                try {
+                    let choice = $dropdown.val(); 
+                    let fn = RED.jimpNode.functions[choice];  
+                    let paramCount = fn && fn.parameters ? fn.parameters.length : 0;
+                    let batchSpec = {
+                        name: fn.fn,
+                        parameters:[]
+                    }
+                    let inputParameters = [];
+                    for (let i = 0; i < paramCount; i++) {
+                        const param = fn.parameters[i];
+                        let $ti = $('#node-input-parameter' + (i + 1));
+                        let pv = $ti.typedInput('value');
+                        let pt = $ti.typedInput('type');
+                         
+                        if(pt === 'msg' || pt === 'global' || pt === 'flow'){
+                            //batchSpec.push("{{" + pt + "." + pv + "}}"); //future - permit template/mustache in batch mode
+                            //inputParameters.push('enter a value for ' + param.name );
+                            inputParameters.push(null);
+                        } else if(pt === 'num'){
+                            inputParameters.push( parseFloat(pv) );
+                        } else if(pt === 'Jimp'){
+                            inputParameters.push( "Jimp." + pv );
+                        } else if(pt === 'Align'){
+                            let value = RED.jimpNode.alignMode[pv] || 0;
+                            inputParameters.push( value );
+                        } else if(pt === 'Blend'){
+                            inputParameters.push( "Jimp." + pv );
+                        } else if(pt === 'bool'){
+                            inputParameters.push( (pv === true || pv === "true") );
+                        } else if(pt === 'Jimp.AUTO'){
+                            inputParameters.push( -1 );
+                        } else {
+                            inputParameters.push(pv);
+                        }
+                    }
+
+                    const isNotUndefined = v => typeof v !== 'undefined';// && v !== null;
+                    let finalParams = [];
+                    let fplookup = {};
+                    let fParam = 0;
+                    for (let index = 0; index < fn.parameters.length; index++) {                       
+                        let funcParam = fn.parameters[index];
+                        if(funcParam.group){
+                            let i = fplookup[funcParam.group];
+                            if(!(typeof i == "number")){
+                                i = fParam;
+                                finalParams[i] = {};
+                                fplookup[funcParam.group] = i;
+                                fParam++;
+                            }
+                            let value = inputParameters[index];
+                            if(isNotUndefined(value)){
+                                finalParams[i][funcParam.name] = inputParameters[index];
+                            }
+                        } else {
+                            let value = inputParameters[index];
+                            if(isNotUndefined(value)){
+                                finalParams[fParam++] = inputParameters[index];
+                            }
+                        }
+                    }  
+                    batchSpec.parameters = finalParams;
+                    $dropdown.val("batch").change();
+                    let p1NewValue = JSON.stringify(batchSpec);
+                    $('#node-input-parameter1').typedInput('type', 'json');
+                    $('#node-input-parameter1').typedInput('value', p1NewValue);
+                    
+                } catch (error) {
+                    RED.notify("An error occurred while trying yo convert this function to a batch function","error");
+                }
+            });
+
+            $dropdown.change(function() {
+                // debugger
+                let choice = $dropdown.val(); 
+                let fn = RED.jimpNode.functions[choice];              
+                $convertToBatchButton.prop( "disabled", true );
+                $('.jimp-parameter-group').hide();//hide parameters
+                $("#tip-jimpFunction").hide();//hide the tip
+                $(".paramtip").hide();//hide parameter tips
+                if(!fn){
+                    return;
+                }
+                if(fn.fn && fn.fn !== "batch" && fn.fn !== "none"){
+                    $convertToBatchButton.prop( "disabled", false );
+                }
+
+                //set function tip
+                if(fn.description){
+                    $("#tip-jimpFunction").text(fn.description);
+                    $("#tip-jimpFunction").show();
+                }         
+
+                //loop through parameters and setup the typed inputs
+                let paramNo = 1;
+
+                //debugger
+                $.each(fn.parameters, function() {
+                    let pname = "parameter" + paramNo;
+                    let lname = "parameter-label" + paramNo;
+                    let paramTipName = "tip-parameter" + paramNo;
+                    //by default, set none to required
+                    for (let p = 1; p < 8; p++) {
+                        const element = 8;
+                        node._def.defaults["parameter" + p].required = false;
+                    }
+                    
+                    $("#" + lname).text(" " + this.name);
+                    $("#" + pname).show();
+
+                    let hint = (this.required ? "(Required)" : "(Optional)");
+                    if(this.hint){
+                        hint += " " + this.hint;
+                    }
+                    $("#" + paramTipName).text(hint);
+                    $("#" + paramTipName).show();
+
+                    
+                    
+                    //hack to cause typedInput widget to be destroyed so it can be re-created later
+                    //gotta be a more elegant way but i've seen issues with the widget being recrated with old one still present, input box still hidden etc etc
+                    try {
+                        let $theInput = $('#node-input-' + pname);
+                        $theInput.attr("type","text");
+                        let $typedInput = $('#' + pname + ' > div > div.typed-parameter > div');
+                        $('#' + pname + ' > div.input-tip-group > div.typed-parameter > div > div > input[type="hidden"]').attr("type","text");
+                        try {
+                            $theInput.typedInput("destroy");
+                        } catch (error) {
+                            //console.error(error) 
+                        }
+                        $theInput.removeClass("red-ui-typedInput");
+                        if($typedInput.hasClass("red-ui-typedInput-container") /*&& $typedInput.hasClass("paramtip") == false*/){    
+                            $typedInput.remove();     
+                        }
+                    } catch (error) {
+                        console.error(error)
+                    }
+                   
+                    let validator;
+                    if(this.types){
+                        setupTypedInput(pname, this.types, this.defaultType, this.defaultValue, this.required)
+                    } else {
+                        if(!this.type){
+                            //no type specified - default to 'msg', 'flow', 'global'
+                            setupTypedInput(pname, ['msg', 'flow', 'global'], 'msg', this.defaultValue, this.required);
+                        } else {
+                            let sTypes = this.type + "|msg|flow|global";
+                            let typeStrings = sTypes.split("|");
+                            let defaultType = this.defaultType || typeStrings[0];
+                            
+                            let types = typeStrings.map(function(t){
+                                if(t){
+                                    if(t === "resizeMode" ){
+                                        return {
+                                            value:"Jimp",
+                                            label:"Jimp.",
+                                            options: RED.jimpNode.resizeModes 
+                                        }
+                                    } else if(t === "alignMode" ){
+                                        return {
+                                            value:"Align",
+                                            label:"Align.",
+                                            options: RED.jimpNode.alignModes 
+                                        }
+                                    } else if(t === "auto" ){
+                                        return {
+                                            value:"Jimp.AUTO",
+                                            label:"Jimp.AUTO",
+                                            hasValue: false 
+                                        }
+                                    } else if(t === "blend" ){
+                                        return {
+                                            value:"Blend",
+                                            label:"Blend.",
+                                            options: RED.jimpNode.blendModes
+                                        }
+                                    } else {
+                                        return t;
+                                    }
+                                }
+                            });
+                            setupTypedInput(pname, types, defaultType, this.defaultValue, this.required);
+                        }
+                    }
+                    try {
+                        $('#node-input-parameter' + paramNo).typedInput('width', '98%');//hack to size it to div
+                    } catch (error) {
+                        
+                    }
+                    paramNo++;
+                });
+            });
+            //sfp();
+            $('.jimp-parameter-group').hide();//hide parameters
+            $("#tip-jimpFunction").hide();//hide the tip
+
+            
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="jimp-image">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="jimp.label.data">
+                image</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-dataType">
+                <input style="width: 70%" type="text" id="node-input-data" placeholder="">
+            </div>
+            <div class="form-tips">Passing an image object into this node much faster as there is no conversion required before processing.</div>
+        </div>
+    </div>
+    
+    <div class="form-row" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-jimpFunction"><i class="fa fa-wrench"></i> <span data-i18n="jimp.label.jimpFunction">
+                    Function</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div>
+                <span><select type="text" id="node-input-jimpFunction" style="width:92%;"></select></span>
+                <span><button id="convertToBatchButton" class="ui-button button" title="convert to batch function"><i
+                            class="fa fa-exchange"></i></button></span>
+            </div>
+            <div class="form-tips" id="tip-jimpFunction" hidden></div>
+        </div>
+    </div>
+    
+
+    <div class="form-row">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-ret"><i class="fa fa-arrow-left"></i> <span data-i18n="jimp.label.return"></span>
+                return</label>
+        </div>
+        <div class="input-tip-group">
+            <select type="text" id="node-input-ret" style="width:70%;">
+                <option value="img" data-i18n="jimp.jimp">image</option>
+                <option value="buf" data-i18n="jimp.buffer">buffer</option>
+                <option value="b64" data-i18n="jimp.base64">base64</option>
+            </select>
+            <div class="form-tips">Returning an image is much faster as there is no additional conversion required.</div>
+        </div>    
+    </div>
+    
+    
+    <div class="form-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter1"><i class="fa fa-code"></i><span id="parameter-label1"
+                    data-i18n="jimp.label.parameter1"> parameter1</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter1Type">
+                <input type="text" id="node-input-parameter1" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter1" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter2" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter2"><i class="fa fa-code"></i><span id="parameter-label2"
+                    data-i18n="jimp.label.parameter2"> parameter2</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter2Type">
+                <input type="text" id="node-input-parameter2" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter2" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter3" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter3"><i class="fa fa-code"></i><span id="parameter-label3"
+                    data-i18n="jimp.label.parameter3"> parameter3</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter3Type">
+                <input type="text" id="node-input-parameter3" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter3" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter4" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter4"><i class="fa fa-code"></i><span id="parameter-label4"
+                    data-i18n="jimp.label.parameter4"> parameter4</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter4Type">
+                <input type="text" id="node-input-parameter4" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter4" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter5" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter5"><i class="fa fa-code"></i><span id="parameter-label5"
+                    data-i18n="jimp.label.parameter5"> parameter5</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter5Type">
+                <input type="text" id="node-input-parameter5" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter5" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter6" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter6"><i class="fa fa-code"></i><span id="parameter-label6"
+                    data-i18n="jimp.label.parameter6"> parameter6</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter6Type">
+                <input type="text" id="node-input-parameter6" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter6" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter7" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter7"><i class="fa fa-code"></i><span id="parameter-label7"
+                    data-i18n="jimp.label.parameter7"> parameter7</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter7Type">
+                <input type="text" id="node-input-parameter7" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter7" hidden></div>
+        </div>
+    </div>
+    <div class="form-row jimp-parameter-group" id="parameter8" style="vertical-align: top;">
+        <div style="float:left;">
+            <label style="padding-top: 8px" for="node-input-parameter8"><i class="fa fa-code"></i><span id="parameter-label8"
+                    data-i18n="jimp.label.parameter8"> parameter8</span></label>
+        </div>
+        <div class="input-tip-group">
+            <div class="typed-parameter">
+                <input type="hidden" id="node-input-parameter8Type">
+                <input type="text" id="node-input-parameter8" placeholder="">
+            </div>
+            <div class="form-tips paramtip" id="tip-parameter8" hidden></div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="jimp-image">
+<p>An image manipulation node built using <a href="https://github.com/oliver-moran/jimp/tree/master/packages/jimp">Jimp</a></p>
+<h3>Inputs</h3>
+<dl class="message-properties">
+    <dt>image <span class="property-type">string | base64 | buffer | jimp</span></dt>
+    <dd> the image (jimp object, buffer, base64 string), object or file name to be processed. </dd>
+    <h4>NOTE: A blank image can be created by passing an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</h4>
+    <dt>parameters <span class="property-type">any</span></dt>
+    <dd> depends on the function selected</dd>
+</dl>
+<h3>Output</h3>
+<dl class="message-properties">
+    <dt>payload <span class="property-type">object | []</span></dt>
+    <dd> the processed image as a jimp object, buffer or base64 string.</dd>
+    <dt>imageInfo <span class="property-type">object</span></dt>
+    <dd> properties of the image e.g <code>.hasAlpha</code>, <code>.MIME</code>, <code>.quality</code>, <code>.width</code>, <code>.height</code>
+    </dd>
+    <dt>jobs <span class="property-type">[object]</span></dt>
+    <dd>An array of jobs carried out on the image. Each element is an object containing a information about the performance and any result returned</dd>
+    <dt>performance <span class="property-type">object</span></dt>
+    <dd>Performance measurements of the image loading and processing</dd>
+    <dd>
+    <h5>NOTE: If several functions are to be applied to an image, outputting a jimp object to the next jimp node will be faster than passing a buffer or base6 4string </h5>
+    <h5>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h5>
+    </dd>
+</dl>
+
+<h3>Details</h3>
+    <h4>batch mode</h4>
+    <p>To perform batch operations, the options must include name and parameters.  E.g...
+        <p><code>
+        [
+            {
+                "name": "crop",
+                "parameters": [100,100,250,250]
+            },
+            {
+                "name": "rotate",
+                "parameters": [270]
+            },
+            {
+                "name": "posterize",
+                "parameters": [22]
+            },
+            {
+                "name": "brightness",
+                "parameters": [0.3]
+            }
+        ]
+        </code></p>
+        
+    </p>
+</script>
