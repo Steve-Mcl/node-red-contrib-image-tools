@@ -70,6 +70,20 @@
 
         "none" : {"name" : "none","fn" : "none", "description" : "Just loads the image.","parameters" : [] },
 
+        //FUTURE: possible way of simplifying calling any function via msg.payload
+        //but how to handle varying amount of variables is problematic 
+        //For now, user will have to use batch option and send function+parameters via parameter1
+        // "custom" : {"name" : "custom","fn" : "", "description" : "Send function name from msg/flow/global. NOTE: Consider using batch mode and sending a batch object via payload (see side panel info for info)","parameters" : [
+        // {"name" : "Function", "type" : "str", "required" : true, "hint" : "Name of the Jimp function to execute", "defaultType" : "str" },
+        // {"name" : "Parameter1", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 1", "defaultType" : "none" },
+        // {"name" : "Parameter2", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 2", "defaultType" : "none" },
+        // {"name" : "Parameter3", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 3", "defaultType" : "none" },
+        // {"name" : "Parameter4", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 4", "defaultType" : "none" },
+        // {"name" : "Parameter5", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 5", "defaultType" : "none" },
+        // {"name" : "Parameter6", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 6", "defaultType" : "none" },
+        // {"name" : "Parameter7", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 7", "defaultType" : "none" }] },
+
+
         "write" : {"name" : "write","fn" : "write", "description" : "Write to file. NOTE: You can specify an alternative file extension type to change the type. Currently support types are jpg, png, bmp.","parameters" : [
         {"name" : "filename", "type" : "str", "required" : true, "hint" : "Name of the file", "defaultType" : "str" }] },
 
@@ -341,11 +355,66 @@
                         return (typeof val === 'object');
             }
 
-            function setupTypedInput(varName, types, def, defVal, isOptional) {
+            function setupTypedInput(varName, allowableTypes, def, defVal, isOptional) {
                 let varSel = "#node-input-" + varName;
                 let typeSel = varSel + "Type";
-                let varVal = node[varName];
-                let typeVal = node[varName + "Type"] || def;
+                let curValue = node[varName];
+                let currentType = node[varName + "Type"];
+
+                let parameterTypes = allowableTypes.split("|");
+                if(typeof isOptional == "boolean" && isOptional == false){
+                    if( !("none" in parameterTypes) ){
+                        parameterTypes.unshift("none");
+                    }
+                } 
+                //ensure def is one of the types available (breaks widget if not present)
+                if(!parameterTypes.find(element => element === def)){
+                    def = parameterTypes[0];
+                }
+                //ensure current type is one of the types available (breaks widget if not present)
+                if(!parameterTypes.find(element => element === currentType)){
+                    currentType = def;
+                }
+                //convert any custom types to a typedInput object
+                let types = parameterTypes.map(function(t){
+                    if(t){
+                        switch (t) {
+                            case "resizeMode":
+                                return {
+                                    value:"Jimp",
+                                    label:"Resize.",
+                                    options: RED.jimpNode.resizeModes 
+                                }
+                            case "alignMode": 
+                                return {
+                                    value:"Align",
+                                    label:"Align.",
+                                    options: RED.jimpNode.alignModes 
+                                }
+                            case "blend": 
+                                return {
+                                    value:"Blend",
+                                    label:"Blend.",
+                                    options: RED.jimpNode.blendModes
+                                }
+                            case "auto": 
+                                return {
+                                    value:"Jimp.AUTO",
+                                    label:"Jimp.AUTO",
+                                    hasValue: false 
+                                }
+                            case "none": 
+                                return {
+                                    value:"none",
+                                    label:"None",
+                                    hasValue: false 
+                                }
+                            default:
+                                return t;
+                        }
+                    }
+                });
+
 
                 $(typeSel).val(def);
                 let opts = {
@@ -361,22 +430,22 @@
                 }
                 let $ti = $(varSel);
                 $ti.typedInput(opts);
-                $ti.typedInput("type", typeVal);
-                if(!varVal && typeVal != "Jimp.AUTO" && typeVal != "none")
+                $ti.typedInput("type", currentType);
+                if(!curValue && currentType != "Jimp.AUTO" && currentType != "none")
                     $ti.typedInput("type", def);
-                if(defVal  && !varVal)
+                if(defVal  && !curValue)
                     $ti.typedInput("value", defVal);
-                else if(typeVal == "bool" && (varVal == "true" || varVal == "false"))
-                    $ti.typedInput("value", varVal);
+                else if(currentType == "bool" && (curValue == "true" || curValue == "false"))
+                    $ti.typedInput("value", curValue);
             }
             
-            setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str', 'json'], 'msg');
+            setupTypedInput('data', 'msg|flow|global|bin|str|json', 'msg', 'payload', false);
             
             let $dropdown = $("#node-input-jimpFunction");
             $dropdown.off();
             $dropdown.empty().append('<option value=""></option>')
             let index = 0;
-            
+            debugger
             Object.keys(RED.jimpNode.functions).forEach(function(key,index) {
                 // key: the name of the object key
                 // index: the ordinal position of the key within the object 
@@ -459,11 +528,12 @@
                     $('#node-input-parameter1').typedInput('value', p1NewValue);
                     
                 } catch (error) {
-                    RED.notify("An error occurred while trying yo convert this function to a batch function","error");
+                    RED.notify("An error occurred while trying to convert this function to a batch function","error");
                 }
             });
 
             $dropdown.change(function() {
+                debugger
                 let choice = $dropdown.val(); 
                 let fn = RED.jimpNode.functions[choice];              
                 $convertToBatchButton.prop( "disabled", true );
@@ -525,54 +595,8 @@
                    
                     const alwaysPresentParameterTypedInputs = "msg|flow|global";
                     const parameterTypesStr = this.type ? this.type + "|" + alwaysPresentParameterTypedInputs : alwaysPresentParameterTypedInputs;
-                    let parameterTypes = parameterTypesStr.split("|");
-                    if(typeof this.required == "boolean" && this.required == false){
-                        if( !("none" in parameterTypes) ){
-                            parameterTypes.unshift("none");
-                        }
-                    } 
-                    let defaultType = this.defaultType || parameterTypes[0];
-                    
-                    let types = parameterTypes.map(function(t){
-                        if(t){
-                            if(t === "resizeMode" ){
-                                return {
-                                    value:"Jimp",
-                                    label:"Jimp.",
-                                    options: RED.jimpNode.resizeModes 
-                                }
-                            } else if(t === "alignMode" ){
-                                return {
-                                    value:"Align",
-                                    label:"Align.",
-                                    options: RED.jimpNode.alignModes 
-                                }
-                            } else if(t === "auto" ){
-                                return {
-                                    value:"Jimp.AUTO",
-                                    label:"Jimp.AUTO",
-                                    hasValue: false 
-                                }
-                            } else if(t === "none" ){
-                                return {
-                                    value:"none",
-                                    label:"None",
-                                    hasValue: false 
-                                }
-                            } else if(t === "blend" ){
-                                return {
-                                    value:"Blend",
-                                    label:"Blend.",
-                                    options: RED.jimpNode.blendModes
-                                }
-                            } else {
-                                return t;
-                            }
-                        }
-                    });
-                    setupTypedInput(pname, types, defaultType, this.defaultValue, this.required);
+                    setupTypedInput(pname, parameterTypesStr, this.defaultType, this.defaultValue, this.required);
 
-  
                     try {
                         $('#node-input-parameter' + paramNo).typedInput('width', '98%');//hack to size it to div
                     } catch (error) {
@@ -604,7 +628,7 @@
         <div class="input-tip-group">
             <div class="typed-parameter">
                 <input type="hidden" id="node-input-dataType">
-                <input style="width: 70%" type="text" id="node-input-data" placeholder="">
+                <input type="text" id="node-input-data" placeholder="">
             </div>
             <div class="form-tips">Passing an image object into this node much faster as there is no conversion required before processing.</div>
         </div>
