@@ -255,7 +255,23 @@
 
     }
     
-    
+    RED.jimpNode.requiredParameterValidator = function(node,paramNo,v){
+        debugger
+        var fn = RED.jimpNode.functions[node.jimpFunction];
+        var parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
+        if(paramNo <= parameterCount){
+            var p = fn.parameters[paramNo-1];
+            var varName = "parameter" + paramNo;
+            let typeVal = node[varName + 'Type'];
+            if(typeVal == "Jimp.AUTO" || typeVal == "none"){
+                return true;
+            }
+            if(p && p.required){
+                return !!v;//not empty
+            }
+        }
+        return true;
+    }
 
     RED.nodes.registerType('jimp-image', {
         category: 'image tools',
@@ -267,21 +283,37 @@
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
             ret: { value: "img"},
-            parameter1: { value: "", required: false},
+            parameter1: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,1,v) ;
+            }},
             parameter1Type: { value: "msg" },
-            parameter2: { value: "", required: false},
+            parameter2: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,2,v) ;
+            }},
             parameter2Type: { value: "msg" },
-            parameter3: { value: "", required: false},
+            parameter3: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,3,v) ;
+            }},
             parameter3Type: { value: "msg" },
-            parameter4: { value: "", required: false},
+            parameter4: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,4,v) ;
+            }},
             parameter4Type: { value: "msg" },
-            parameter5: { value: "", required: false},
+            parameter5: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,5,v) ;
+            }},
             parameter5Type: { value: "msg" },
-            parameter6: { value: "", required: false},
+            parameter6: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,6,v) ;
+            }},
             parameter6Type: { value: "msg" },
-            parameter7: { value: "", required: false},
+            parameter7: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,7,v) ;
+            }},
             parameter7Type: { value: "msg" },
-            parameter8: { value: "", required: false},
+            parameter8: { value: "", validate: function(v){
+                return RED.jimpNode.requiredParameterValidator(this,8,v) ;
+            }},
             parameter8Type: { value: "msg" },
             parameterCount: {value: 0},
             jimpFunction: {value: "none"},
@@ -299,24 +331,9 @@
             let $dropdown = $("#node-input-jimpFunction");
             let choice = $dropdown.val() 
             let fn = RED.jimpNode.functions[choice];
-
             node.jimpFunction = choice;
             node.selectedJimpFunction = fn;
             node.parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
-
-            //turn on/off validation as required
-            var isRequired = function(paramIndex){
-                if((paramIndex+1) <= node.parameterCount){
-                    const p = fn.parameters[paramIndex];
-                    return !(!(p.required));
-                }
-                return false
-            }
-            
-            for (let index = 0; index < 8; index++) {
-                const pname = "parameter" + (index + 1)
-                node._def.defaults[pname].required = isRequired(index);
-            }
         },
         oneditprepare: function () {
             var node = this;
@@ -325,11 +342,11 @@
                         return (typeof val === 'object');
             }
 
-            function setupTypedInput(varName, types, def, defVal, validate) {
+            function setupTypedInput(varName, types, def, defVal, isOptional) {
                 let varSel = '#node-input-' + varName;
                 let typeSel = varSel + 'Type';
                 let varVal = node[varName];
-                let typeVal = node[varName + 'Type'];
+                let typeVal = node[varName + 'Type'] || def;
 
                 $(typeSel).val(def);
                 let opts = {
@@ -337,12 +354,16 @@
                     typeField: $(typeSel),
                     types: types
                 };
-                if(validate){
-                    opts.validate = function(v) { return !v;}                    
+                if(isOptional){
+                    opts.default = def || "none";
+                    opts.validate = function(v) { 
+                        debugger
+                        return !!v;
+                    }                    
                 }
                 $(varSel).typedInput(opts);
                 $(varSel).typedInput('type', typeVal);
-                if(!varVal)
+                if(!varVal && typeVal != "Jimp.AUTO" && typeVal != "none")
                     $(varSel).typedInput('type', def);
                 if(defVal  && !varVal)
                     $ti.typedInput('value', defVal);
@@ -386,10 +407,8 @@
                         let $ti = $('#node-input-parameter' + (i + 1));
                         let pv = $ti.typedInput('value');
                         let pt = $ti.typedInput('type');
-                         
-                        if(pt === 'msg' || pt === 'global' || pt === 'flow'){
+                        if(pt === 'msg' || pt === 'global' || pt === 'flow' || pt == "none"){
                             //batchSpec.push("{{" + pt + "." + pv + "}}"); //future - permit template/mustache in batch mode
-                            //inputParameters.push('enter a value for ' + param.name );
                             inputParameters.push(null);
                         } else if(pt === 'num'){
                             inputParameters.push( parseFloat(pv) );
@@ -474,11 +493,6 @@
                     let pname = "parameter" + paramNo;
                     let lname = "parameter-label" + paramNo;
                     let paramTipName = "tip-parameter" + paramNo;
-                    //by default, set none to required
-                    for (let p = 1; p < 8; p++) {
-                        const element = 8;
-                        node._def.defaults["parameter" + p].required = false;
-                    }
                     
                     $("#" + lname).text(" " + this.name);
                     $("#" + pname).show();
@@ -509,55 +523,59 @@
                             $typedInput.remove();     
                         }
                     } catch (error) {
-                        console.error(error)
+                        //console.error(error)
                     }
                    
-                    let validator;
-                    if(this.types){
-                        setupTypedInput(pname, this.types, this.defaultType, this.defaultValue, this.required)
-                    } else {
-                        if(!this.type){
-                            //no type specified - default to 'msg', 'flow', 'global'
-                            setupTypedInput(pname, ['msg', 'flow', 'global'], 'msg', this.defaultValue, this.required);
-                        } else {
-                            let sTypes = this.type + "|msg|flow|global";
-                            let typeStrings = sTypes.split("|");
-                            let defaultType = this.defaultType || typeStrings[0];
-                            
-                            let types = typeStrings.map(function(t){
-                                if(t){
-                                    if(t === "resizeMode" ){
-                                        return {
-                                            value:"Jimp",
-                                            label:"Jimp.",
-                                            options: RED.jimpNode.resizeModes 
-                                        }
-                                    } else if(t === "alignMode" ){
-                                        return {
-                                            value:"Align",
-                                            label:"Align.",
-                                            options: RED.jimpNode.alignModes 
-                                        }
-                                    } else if(t === "auto" ){
-                                        return {
-                                            value:"Jimp.AUTO",
-                                            label:"Jimp.AUTO",
-                                            hasValue: false 
-                                        }
-                                    } else if(t === "blend" ){
-                                        return {
-                                            value:"Blend",
-                                            label:"Blend.",
-                                            options: RED.jimpNode.blendModes
-                                        }
-                                    } else {
-                                        return t;
-                                    }
-                                }
-                            });
-                            setupTypedInput(pname, types, defaultType, this.defaultValue, this.required);
+                    const alwaysPresentParameterTypedInputs = "msg|flow|global";
+                    const parameterTypesStr = this.type ? this.type + "|" + alwaysPresentParameterTypedInputs : alwaysPresentParameterTypedInputs;
+                    let parameterTypes = parameterTypesStr.split("|");
+                    if(typeof this.required == "boolean" && this.required == false){
+                        if( !("none" in parameterTypes) ){
+                            parameterTypes.unshift("none");
                         }
-                    }
+                    } 
+                    let defaultType = this.defaultType || parameterTypes[0];
+                    
+                    let types = parameterTypes.map(function(t){
+                        if(t){
+                            if(t === "resizeMode" ){
+                                return {
+                                    value:"Jimp",
+                                    label:"Jimp.",
+                                    options: RED.jimpNode.resizeModes 
+                                }
+                            } else if(t === "alignMode" ){
+                                return {
+                                    value:"Align",
+                                    label:"Align.",
+                                    options: RED.jimpNode.alignModes 
+                                }
+                            } else if(t === "auto" ){
+                                return {
+                                    value:"Jimp.AUTO",
+                                    label:"Jimp.AUTO",
+                                    hasValue: false 
+                                }
+                            } else if(t === "none" ){
+                                return {
+                                    value:"none",
+                                    label:"None",
+                                    hasValue: false 
+                                }
+                            } else if(t === "blend" ){
+                                return {
+                                    value:"Blend",
+                                    label:"Blend.",
+                                    options: RED.jimpNode.blendModes
+                                }
+                            } else {
+                                return t;
+                            }
+                        }
+                    });
+                    setupTypedInput(pname, types, defaultType, this.defaultValue, this.required);
+
+  
                     try {
                         $('#node-input-parameter' + paramNo).typedInput('width', '98%');//hack to size it to div
                     } catch (error) {
