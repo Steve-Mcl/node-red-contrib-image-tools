@@ -343,10 +343,10 @@
             }
 
             function setupTypedInput(varName, types, def, defVal, isOptional) {
-                let varSel = '#node-input-' + varName;
-                let typeSel = varSel + 'Type';
+                let varSel = "#node-input-" + varName;
+                let typeSel = varSel + "Type";
                 let varVal = node[varName];
-                let typeVal = node[varName + 'Type'] || def;
+                let typeVal = node[varName + "Type"] || def;
 
                 $(typeSel).val(def);
                 let opts = {
@@ -363,13 +363,13 @@
                 }
                 let $ti = $(varSel);
                 $ti.typedInput(opts);
-                $ti.typedInput('type', typeVal);
+                $ti.typedInput("type", typeVal);
                 if(!varVal && typeVal != "Jimp.AUTO" && typeVal != "none")
-                    $ti.typedInput('type', def);
+                    $ti.typedInput("type", def);
                 if(defVal  && !varVal)
-                    $ti.typedInput('value', defVal);
-                else if(typeVal == "bool" && (varVal == 'true' || varVal == 'false'))
-                    $ti.typedInput('value', (varVal == 'true'));
+                    $ti.typedInput("value", defVal);
+                else if(typeVal == "bool" && (varVal == "true" || varVal == "false"))
+                    $ti.typedInput("value", varVal);
             }
             
             setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str', 'json'], 'msg');
