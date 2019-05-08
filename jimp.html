@@ -174,7 +174,6 @@
 
 
         "dither565" : {"name" : "dither565","fn" : "dither565", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
-        //"dither16" : {"name" : "dither16","fn" : "dither16", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
 
 
         "greyscale" : {"name" : "greyscale","fn" : "greyscale", "description" : "remove colour from the image","parameters" : [] },
@@ -185,10 +184,6 @@
 
         "normalize" : {"name" : "normalize","fn" : "normalize", "description" : "normalize the channels in an image","parameters" : [] },
 
-
-        //"hasAlpha" : //{"name" : "hasAlpha()","fn" : "hasAlpha","description" : "determines if an image contains opaque pixels","parameters" : [] },
-
-
         "fade" : {"name" : "fade","fn" : "fade", "description" : "an alternative to opacity, fades the image by a factor 0 - 1. 0 will haven no effect.","parameters" : [
         {"name" : "f", "type" : "num", "required" : true, "hint" : "A number from 0 to 1. 0 will haven no effect. 1 will turn the image completely transparent." }] },
 
@@ -196,10 +191,7 @@
         "opacity" : {"name" : "opacity","fn" : "opacity", "description" : "multiply the alpha channel by each pixel by the factor f, 0 - 1","parameters" : [
         {"name" : "f", "type" : "num", "required" : true, "hint" : "A number, the factor by which to multiply the opacity of each pixel" }] },
 
-
         "opaque" : {"name" : "opaque","fn" : "opaque", "description" : "set the alpha channel on every pixel to fully opaque","parameters" : [] },
-
-
 
         "gaussian" : {"name" : "gaussian","fn" : "gaussian", "description" : "Gaussian blur the image by r pixels (VERY slow)","parameters" : [
         {"name" : "r", "type" : "num", "required" : true, "hint" : "the pixel radius of the blur" }] },
@@ -207,8 +199,6 @@
 
         "blur" : {"name" : "blur","fn" : "blur", "description" : "fast blur the image by r pixels","parameters" : [
         {"name" : "r", "type" : "num", "required" : true, "hint" : "the pixel radius of the blur" }] },
-
-
 
         "convolute" : {"name" : "convolute","fn" : "convolute", "description" : "applies a convolution kernel matrix to the image or a region","parameters" : [
         {"name" : "kernel", "type" : "json", "required" : true, "hint" : "a kernel matrix.  e.g. emboss [[-2, -1, 0], [-1, 1, 1], [0, 1, 2]]", "defaultValue" : "[[-2, -1, 0], [-1, 1, 1], [0, 1, 2]]" }] },
@@ -270,15 +260,12 @@
     RED.nodes.registerType('jimp-image', {
         category: 'image tools',
         paletteLabel: "image",
-        //labelStyle: "node-label-white",
         icon: "image.png",
         color: '#FFAAAA',//'#f24b69',
         defaults: {
             name: { value: "" },
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
-            // specification: { value: "", validate: RED.validators.typedInput("specificationType") },
-            // specificationType: { value: "json" },
             ret: { value: "img"},
             parameter1: { value: ""},
             parameter1Type: { value: "msg" },
@@ -753,8 +740,9 @@
 <h3>Inputs</h3>
 <dl class="message-properties">
     <dt>image <span class="property-type">string | base64 | buffer | jimp</span></dt>
-    <dd> the image (jimp object, buffer, base64 string), object or file name to be processed. </dd>
-    <h4>NOTE: A blank image can be created by passing an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</h4>
+    <dd> the image (jimp object, buffer, base64 string), object or file name to be processed. 
+    <h5>NOTE: A blank image can be created by passing an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</h5>
+    </dd>
     <dt>parameters <span class="property-type">any</span></dt>
     <dd> depends on the function selected</dd>
 </dl>
