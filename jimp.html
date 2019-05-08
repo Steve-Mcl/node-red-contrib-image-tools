@@ -256,7 +256,6 @@
     }
     
     RED.jimpNode.requiredParameterValidator = function(node,paramNo,v){
-        debugger
         var fn = RED.jimpNode.functions[node.jimpFunction];
         var parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
         if(paramNo <= parameterCount){
@@ -357,7 +356,6 @@
                 if(isOptional){
                     opts.default = def || "none";
                     opts.validate = function(v) { 
-                        debugger
                         return !!v;
                     }                    
                 }
@@ -373,7 +371,6 @@
             }
             
             setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str', 'json'], 'msg');
-            //debugger
             
             let $dropdown = $("#node-input-jimpFunction");
             $dropdown.off();
@@ -395,7 +392,6 @@
             let $convertToBatchButton = $("#convertToBatchButton");
 
             $convertToBatchButton.click(function() {
-                //debugger
                 try {
                     let choice = $dropdown.val(); 
                     let fn = RED.jimpNode.functions[choice];  
@@ -468,7 +464,6 @@
             });
 
             $dropdown.change(function() {
-                // debugger
                 let choice = $dropdown.val(); 
                 let fn = RED.jimpNode.functions[choice];              
                 $convertToBatchButton.prop( "disabled", true );
@@ -491,7 +486,6 @@
                 //loop through parameters and setup the typed inputs
                 let paramNo = 1;
 
-                //debugger
                 $.each(fn.parameters, function() {
                     let pname = "parameter" + paramNo;
                     let lname = "parameter-label" + paramNo;
@@ -758,9 +752,9 @@
 <p>An image manipulation node built using <a href="https://github.com/oliver-moran/jimp/tree/master/packages/jimp">Jimp</a></p>
 <h3>Inputs</h3>
 <dl class="message-properties">
-    <dt>image <span class="property-type">string | base64 | buffer | jimp</span></dt>
+    <dt>image <span class="property-type">string | base64 | buffer | jimp | object/span></dt>
     <dd> the image (jimp object, buffer, base64 string), object or file name to be processed. 
-    <h5>NOTE: A blank image can be created by passing an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</h5>
+    <p>NOTE: A blank image can be created by passing an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</p>
     </dd>
     <dt>parameters <span class="property-type">any</span></dt>
     <dd> depends on the function selected</dd>
@@ -776,10 +770,11 @@
     <dd>An array of jobs carried out on the image. Each element is an object containing a information about the performance and any result returned</dd>
     <dt>performance <span class="property-type">object</span></dt>
     <dd>Performance measurements of the image loading and processing</dd>
-    <dd>
-    <h5>NOTE: If several functions are to be applied to an image, outputting a jimp object to the next jimp node will be faster than passing a buffer or base64 string </h5>
-    <h5>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h5>
-    </dd>
+    <h6>
+    <p>NOTES...</p>
+    <p>If several functions are to be applied to an image, outputting a jimp object to the next jimp node will be faster than passing a buffer or base64 string </p>
+    <p>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</p>
+    </h6>
 </dl>
 
 <h3>Details</h3>
