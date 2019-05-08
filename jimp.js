@@ -279,6 +279,8 @@ module.exports = function(RED) {
                                 let value = inputParameters[index];
                                 if(isDef(value)){
                                     normaliseParams[fParam++] = normaliseJimpFunctionParameter(Jimp, value);
+                                } else {
+                                    normaliseParams[fParam++] = undefined;
                                 }
                             }
                         }  
