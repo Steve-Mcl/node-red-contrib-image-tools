@@ -267,21 +267,21 @@
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
             ret: { value: "img"},
-            parameter1: { value: ""},
+            parameter1: { value: "", required: false},
             parameter1Type: { value: "msg" },
-            parameter2: { value: ""},
+            parameter2: { value: "", required: false},
             parameter2Type: { value: "msg" },
-            parameter3: { value: ""},
+            parameter3: { value: "", required: false},
             parameter3Type: { value: "msg" },
-            parameter4: { value: ""},
+            parameter4: { value: "", required: false},
             parameter4Type: { value: "msg" },
-            parameter5: { value: ""},
+            parameter5: { value: "", required: false},
             parameter5Type: { value: "msg" },
-            parameter6: { value: ""},
+            parameter6: { value: "", required: false},
             parameter6Type: { value: "msg" },
-            parameter7: { value: ""},
+            parameter7: { value: "", required: false},
             parameter7Type: { value: "msg" },
-            parameter8: { value: ""},
+            parameter8: { value: "", required: false},
             parameter8Type: { value: "msg" },
             parameterCount: {value: 0},
             jimpFunction: {value: "none"},
@@ -317,8 +317,6 @@
                 const pname = "parameter" + (index + 1)
                 node._def.defaults[pname].required = isRequired(index);
             }
-            
-            
         },
         oneditprepare: function () {
             var node = this;
