@@ -208,7 +208,7 @@
         "convolute_edgeenhance" : {"name" : "edgeenhance*","fn" : "convolute_edgeenhance", "description" : "edge enhance image (*uses convolute([[0, 0, 0], [-1, 1, 0], [0, 0, 0]])","parameters" : [] },
         "convolute_emboss" : {"name" : "emboss*","fn" : "convolute_emboss", "description" : "emboss image (*uses convolute([[-2, -1, 0], [-1, 1, 1], [0, 1, 2]])","parameters" : [] },
         "convolute_sharpen" : {"name" : "sharpen*","fn" : "convolute_sharpen", "description" : "sharpen image (*uses convolute([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])","parameters" : [] },
-        "convolute_strongsharpen" : {"name" : "strong sharpen*","fn" : " convolute_strongsharpen","description" : "sharpen image (*uses convolute([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])","parameters" : [] },
+        "convolute_strongsharpen" : {"name" : "strong sharpen*","fn" : "convolute_strongsharpen","description" : "sharpen image (*uses convolute([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])","parameters" : [] },
 
         
         "posterize" : {"name" : "posterize","fn" : "posterize", "description" : "apply a posterization effect with n level","parameters" : [
@@ -218,7 +218,7 @@
         "sepia" : {"name" : "sepia","fn" : "sepia", "description" : "apply a sepia wash to the image","parameters" : [] },
 
 
-        "pixelate" : {"name" : "pixelate)","fn" : "pixelate", "description" : "apply a pixelation effect to the image or a region","parameters" : [
+        "pixelate" : {"name" : "pixelate","fn" : "pixelate", "description" : "apply a pixelation effect to the image or a region","parameters" : [
         {"name" : "size", "type" : "num", "required" : true, "hint" : "the size of the pixels" },
         {"name" : "x", "type" : "num", "required" : false, "hint" : "the x position of the region to pixelate" },
         {"name" : "y", "type" : "num", "required" : false, "hint" : "the y position of the region to pixelate" },
@@ -361,12 +361,15 @@
                         return !!v;
                     }                    
                 }
-                $(varSel).typedInput(opts);
-                $(varSel).typedInput('type', typeVal);
+                let $ti = $(varSel);
+                $ti.typedInput(opts);
+                $ti.typedInput('type', typeVal);
                 if(!varVal && typeVal != "Jimp.AUTO" && typeVal != "none")
-                    $(varSel).typedInput('type', def);
+                    $ti.typedInput('type', def);
                 if(defVal  && !varVal)
                     $ti.typedInput('value', defVal);
+                else if(typeVal == "bool" && (varVal == 'true' || varVal == 'false'))
+                    $ti.typedInput('value', (varVal == 'true'));
             }
             
             setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str', 'json'], 'msg');
