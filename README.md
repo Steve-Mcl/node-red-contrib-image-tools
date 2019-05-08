@@ -6,7 +6,7 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
 Pre-requesites
 --------------
 
-none
+None! However some of the examples make use of [node-red-contrib-image-output](https://www.npmjs.com/package/node-red-contrib-image-output) for visualising operations directly in the flow.
 
 Install
 -------
