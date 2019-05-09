@@ -17,6 +17,7 @@
 </style>
 
 <script type="text/javascript">
+debugger
     var imageToolsNodeCommon = {};
     imageToolsNodeCommon.resizeModes = [
         "RESIZE_NEAREST_NEIGHBOR",
@@ -349,18 +350,21 @@
                         if (val === null) { return false;}
                         return (typeof val === 'object');
             }   
+            debugger
             if(!imageToolsNodeCommon.alignModes){
                 imageToolsNodeCommon.alignModes =  [];
-                Object.keys(imageToolsNodeCommon.alignMode).forEach(function(key,index) {
-                    imageToolsNodeCommon.alignModes.push(key);
-                });
+                for (var key in imageToolsNodeCommon.alignMode) {
+                    if (imageToolsNodeCommon.alignMode.hasOwnProperty(property)) {
+                        imageToolsNodeCommon.alignModes.push(key);
+                    }
+                }
             }
             function setupTypedInput(varName, allowableTypes, def, defVal, isOptional) {
                 let varSel = "#node-input-" + varName;
                 let typeSel = varSel + "Type";
                 let curValue = node[varName];
                 let currentType = node[varName + "Type"];
-
+debugger
                 let parameterTypes = allowableTypes.split("|");
                 if(typeof isOptional == "boolean" && isOptional == false){
                     if( !("none" in parameterTypes) ){
@@ -447,17 +451,31 @@
             $dropdown.empty().append('<option value=""></option>')
             let index = 0;
             debugger
-            Object.keys(imageToolsNodeCommon.functions).forEach(function(key,index) {
-                // key: the name of the object key
-                // index: the ordinal position of the key within the object 
-                let element = imageToolsNodeCommon.functions[key];
-                if(node.jimpFunction == key){
-                    $dropdown.append($("<option selected />").val(key).text(element.name));
-                } else if(index == node.jimpFunction)
-                    $dropdown.append($("<option selected />").val(key).text(element.name));
-                else    
-                    $dropdown.append($("<option />").val(key).text(element.name));
-            });
+
+            for (var key in imageToolsNodeCommon.functions) {
+                if (imageToolsNodeCommon.functions.hasOwnProperty(key)) {
+                    // key: the name of the object key
+                    // index: the ordinal position of the key within the object 
+                    const element = imageToolsNodeCommon.functions[key];
+                    if(node.jimpFunction == key){
+                        $dropdown.append($("<option selected />").val(key).text(element.name));
+                    } else if(index == node.jimpFunction)
+                        $dropdown.append($("<option selected />").val(key).text(element.name));
+                    else    
+                        $dropdown.append($("<option />").val(key).text(element.name));
+                }
+            }
+            // Object.keys(imageToolsNodeCommon.functions).forEach(function(key,index) {
+            //     // key: the name of the object key
+            //     // index: the ordinal position of the key within the object 
+            //     let element = imageToolsNodeCommon.functions[key];
+            //     if(node.jimpFunction == key){
+            //         $dropdown.append($("<option selected />").val(key).text(element.name));
+            //     } else if(index == node.jimpFunction)
+            //         $dropdown.append($("<option selected />").val(key).text(element.name));
+            //     else    
+            //         $dropdown.append($("<option />").val(key).text(element.name));
+            // });
 
             let $convertToBatchButton = $("#convertToBatchButton");
 
