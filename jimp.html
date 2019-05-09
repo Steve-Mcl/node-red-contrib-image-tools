@@ -17,8 +17,8 @@
 </style>
 
 <script type="text/javascript">
-    RED.jimpNode = {};
-    RED.jimpNode.resizeModes = [
+    var imageToolsNodeCommon = {};
+    imageToolsNodeCommon.resizeModes = [
         "RESIZE_NEAREST_NEIGHBOR",
         "RESIZE_BILINEAR",
         "RESIZE_BICUBIC",
@@ -26,7 +26,7 @@
         "RESIZE_BEZIER"
     ];
 
-    RED.jimpNode.blendModes = [
+    imageToolsNodeCommon.blendModes = [
         "BLEND_SOURCE_OVER",
         "BLEND_DESTINATION_OVER",
         "BLEND_MULTIPLY",
@@ -40,7 +40,7 @@
     ];
     
 
-    RED.jimpNode.alignMode = {
+    imageToolsNodeCommon.alignMode = {
                         "Left" : 1,
                         "Centre": 2,
                         "Right" : 4,
@@ -57,16 +57,11 @@
                         "Bottom Centre" : 2 + 32,                        
                         "Bottom Right" : 4 + 32,                        
     };
-
-    RED.jimpNode.alignModes =  [];
-    Object.keys(RED.jimpNode.alignMode).forEach(function(key,index) {
-        RED.jimpNode.alignModes.push(key);
-    });
-    
+   
     //TODO: add sections to the options by giving each item a category
     //TODO: consider moving the 'functions' to the server side and use Http Admin endpoint to get a list of functions (for the dropdown)
 
-    RED.jimpNode.functions = {
+    imageToolsNodeCommon.functions = {
 
         "none" : {"name" : "none","fn" : "none", "description" : "Just loads the image.","parameters" : [] },
 
@@ -269,8 +264,8 @@
 
     }
     
-    RED.jimpNode.requiredParameterValidator = function(node,paramNo,v){
-        var fn = RED.jimpNode.functions[node.jimpFunction];
+    imageToolsNodeCommon.requiredParameterValidator = function(node,paramNo,v){
+        var fn = imageToolsNodeCommon.functions[node.jimpFunction];
         var parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
         if(paramNo <= parameterCount){
             var p = fn.parameters[paramNo-1];
@@ -297,35 +292,35 @@
             dataType: { value: "msg" },
             ret: { value: "img"},
             parameter1: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,1,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,1,v) ;
             }},
             parameter1Type: { value: "msg" },
             parameter2: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,2,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,2,v) ;
             }},
             parameter2Type: { value: "msg" },
             parameter3: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,3,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,3,v) ;
             }},
             parameter3Type: { value: "msg" },
             parameter4: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,4,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,4,v) ;
             }},
             parameter4Type: { value: "msg" },
             parameter5: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,5,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,5,v) ;
             }},
             parameter5Type: { value: "msg" },
             parameter6: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,6,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,6,v) ;
             }},
             parameter6Type: { value: "msg" },
             parameter7: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,7,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,7,v) ;
             }},
             parameter7Type: { value: "msg" },
             parameter8: { value: "", validate: function(v){
-                return RED.jimpNode.requiredParameterValidator(this,8,v) ;
+                return imageToolsNodeCommon.requiredParameterValidator(this,8,v) ;
             }},
             parameter8Type: { value: "msg" },
             parameterCount: {value: 0},
@@ -343,7 +338,7 @@
             let node = this;
             let $dropdown = $("#node-input-jimpFunction");
             let choice = $dropdown.val() 
-            let fn = RED.jimpNode.functions[choice];
+            let fn = imageToolsNodeCommon.functions[choice];
             node.jimpFunction = choice;
             node.selectedJimpFunction = fn;
             node.parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
@@ -353,8 +348,13 @@
             var isObject = function (val) {
                         if (val === null) { return false;}
                         return (typeof val === 'object');
+            }   
+            if(!imageToolsNodeCommon.alignModes){
+                imageToolsNodeCommon.alignModes =  [];
+                Object.keys(imageToolsNodeCommon.alignMode).forEach(function(key,index) {
+                    imageToolsNodeCommon.alignModes.push(key);
+                });
             }
-
             function setupTypedInput(varName, allowableTypes, def, defVal, isOptional) {
                 let varSel = "#node-input-" + varName;
                 let typeSel = varSel + "Type";
@@ -375,6 +375,7 @@
                 if(!parameterTypes.find(element => element === currentType)){
                     currentType = def;
                 }
+
                 //convert any custom types to a typedInput object
                 let types = parameterTypes.map(function(t){
                     if(t){
@@ -383,19 +384,19 @@
                                 return {
                                     value:"Jimp",
                                     label:"Resize.",
-                                    options: RED.jimpNode.resizeModes 
+                                    options: imageToolsNodeCommon.resizeModes 
                                 }
                             case "alignMode": 
                                 return {
                                     value:"Align",
                                     label:"Align.",
-                                    options: RED.jimpNode.alignModes 
+                                    options: imageToolsNodeCommon.alignModes 
                                 }
                             case "blend": 
                                 return {
                                     value:"Blend",
                                     label:"Blend.",
-                                    options: RED.jimpNode.blendModes
+                                    options: imageToolsNodeCommon.blendModes
                                 }
                             case "auto": 
                                 return {
@@ -446,10 +447,10 @@
             $dropdown.empty().append('<option value=""></option>')
             let index = 0;
             debugger
-            Object.keys(RED.jimpNode.functions).forEach(function(key,index) {
+            Object.keys(imageToolsNodeCommon.functions).forEach(function(key,index) {
                 // key: the name of the object key
                 // index: the ordinal position of the key within the object 
-                let element = RED.jimpNode.functions[key];
+                let element = imageToolsNodeCommon.functions[key];
                 if(node.jimpFunction == key){
                     $dropdown.append($("<option selected />").val(key).text(element.name));
                 } else if(index == node.jimpFunction)
@@ -463,7 +464,7 @@
             $convertToBatchButton.click(function() {
                 try {
                     let choice = $dropdown.val(); 
-                    let fn = RED.jimpNode.functions[choice];  
+                    let fn = imageToolsNodeCommon.functions[choice];  
                     let paramCount = fn && fn.parameters ? fn.parameters.length : 0;
                     let batchSpec = {
                         name: fn.fn,
@@ -483,7 +484,7 @@
                         } else if(pt === 'Jimp'){
                             inputParameters.push( "Jimp." + pv );
                         } else if(pt === 'Align'){
-                            let value = RED.jimpNode.alignMode[pv] || 0;
+                            let value = imageToolsNodeCommon.alignMode[pv] || 0;
                             inputParameters.push( value );
                         } else if(pt === 'Blend'){
                             inputParameters.push( "Jimp." + pv );
@@ -535,7 +536,7 @@
             $dropdown.change(function() {
                 debugger
                 let choice = $dropdown.val(); 
-                let fn = RED.jimpNode.functions[choice];              
+                let fn = imageToolsNodeCommon.functions[choice];              
                 $convertToBatchButton.prop( "disabled", true );
                 $('.jimp-parameter-group').hide();//hide parameters
                 $("#tip-jimpFunction").hide();//hide the tip
