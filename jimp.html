@@ -17,7 +17,6 @@
 </style>
 
 <script type="text/javascript">
-debugger
     var imageToolsNodeCommon = {};
     imageToolsNodeCommon.resizeModes = [
         "RESIZE_NEAREST_NEIGHBOR",
@@ -350,7 +349,6 @@ debugger
                         if (val === null) { return false;}
                         return (typeof val === 'object');
             }   
-            debugger
             if(!imageToolsNodeCommon.alignModes){
                 imageToolsNodeCommon.alignModes =  [];
                 for (var key in imageToolsNodeCommon.alignMode) {
@@ -364,7 +362,6 @@ debugger
                 let typeSel = varSel + "Type";
                 let curValue = node[varName];
                 let currentType = node[varName + "Type"];
-debugger
                 let parameterTypes = allowableTypes.split("|");
                 if(typeof isOptional == "boolean" && isOptional == false){
                     if( !("none" in parameterTypes) ){
@@ -450,8 +447,6 @@ debugger
             $dropdown.off();
             $dropdown.empty().append('<option value=""></option>')
             let index = 0;
-            debugger
-
             for (var key in imageToolsNodeCommon.functions) {
                 if (imageToolsNodeCommon.functions.hasOwnProperty(key)) {
                     // key: the name of the object key
@@ -552,7 +547,6 @@ debugger
             });
 
             $dropdown.change(function() {
-                debugger
                 let choice = $dropdown.val(); 
                 let fn = imageToolsNodeCommon.functions[choice];              
                 $convertToBatchButton.prop( "disabled", true );
