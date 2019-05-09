@@ -24,6 +24,7 @@ Alternatively, install from a folder
 NOTES
 -----
 * Tested on Node V 10 only. YMMV
+* Image Node doesn't show in IE11 (working on it)
 * Bugs are likely :)
 
 
