@@ -1,10 +1,5 @@
 
 <style>
-    .jimp-parameter-group{
-        /* background-color:#E9E8E8;
-        border: 1px solid #ccc;
-        border-radius: 2px;  */
-    }
     .input-tip-group{
         display:inline-block; 
         width: 70%;         
@@ -643,7 +638,7 @@
                 <input type="hidden" id="node-input-dataType">
                 <input type="text" id="node-input-data" placeholder="">
             </div>
-            <div class="form-tips">Passing an image object into this node much faster as there is no conversion required before processing.</div>
+            <div class="form-tips">A string containing a file path, URL or base64 image can be used as an image source. NOTE: Passing in an image object is faster as there is no conversion required before processing.</div>
         </div>
     </div>
     
@@ -790,8 +785,8 @@
 <h3>Inputs</h3>
 <dl class="message-properties">
     <dt>image <span class="property-type">string | base64 | buffer | jimp | object/span></dt>
-    <dd> the image (jimp object, buffer, base64 string), object or file name to be processed. 
-    <p>NOTE: A blank image can be created by passing an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</p>
+    <dd> the image (jimp object, buffer, file/URL/base64 string) to be processed. 
+    <p>NOTE: To create a blank image pass an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</p>
     </dd>
     <dt>parameters <span class="property-type">any</span></dt>
     <dd> depends on the function selected</dd>
