@@ -1,12 +1,22 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "A node-red node to manipulate images with the jimp library and decode barcodes with zxing",
     "keywords": [
         "node-red",
         "barcode",
         "zxing",
-        "jimp"
+        "jimp",
+        "image processing",
+        "image manipulation",
+        "png",
+        "jpg",
+        "jpeg",
+        "bmp",
+        "bitmap",
+        "resize",
+        "scale",
+        "crop"        
     ],
     "license": "MIT",
     "repository": {
