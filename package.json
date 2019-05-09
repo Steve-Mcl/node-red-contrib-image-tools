@@ -10,8 +10,8 @@
     ],
     "license": "MIT",
     "repository": {
-    "type": "git",
-    "url": "https://github.com/Steve-Mcl/node-red-contrib-image-tools.git"
+        "type": "git",
+        "url": "https://github.com/Steve-Mcl/node-red-contrib-image-tools.git"
     },
     "node-red": {
         "nodes": {
@@ -21,10 +21,7 @@
     },
     "directories": {
         "example": "examples"
-      },
-      "files": [
-        "examples"
-      ],
+    },
     "dependencies": {
         "@jimp/plugin-threshold": "^0.6.0",
         "jimp": "^0.6.1",
