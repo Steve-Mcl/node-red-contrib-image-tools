@@ -78,6 +78,10 @@
         {"name" : "filename", "type" : "str", "required" : true, "hint" : "Name of the file", "defaultType" : "str" }] },
 
 
+        "quality" : {"name" : "quality","fn" : "quality", "description" : "Set the quality of the image. Usefull for reducing size of image before calling the write function.","parameters" : [
+        {"name" : "quality", "type" : "num", "required" : true, "hint" : "Quality value 1 ~ 100" }] },
+
+
         "contain" : {"name" : "contain","fn" : "contain", "description" : "scale the image to the given width and height, some parts of the image may be letter boxed","parameters" : [
         {"name" : "w", "type" : "num", "required" : true, "hint" : "the width to resize the image to" },
         {"name" : "h", "type" : "num", "required" : true, "hint" : "the height to resize the image to" },
@@ -784,7 +788,7 @@
 <p>An image manipulation node built using <a href="https://github.com/oliver-moran/jimp/tree/master/packages/jimp">Jimp</a></p>
 <h3>Inputs</h3>
 <dl class="message-properties">
-    <dt>image <span class="property-type">string | base64 | buffer | jimp | object/span></dt>
+    <dt>image <span class="property-type">string | base64 | buffer | jimp | object</span></dt>
     <dd> the image (jimp object, buffer, file/URL/base64 string) to be processed. 
     <p>NOTE: To create a blank image pass an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</p>
     </dd>
