@@ -1,0 +1,193 @@
+<!-- 
+This image viewer node is heavily based on the excellent works by rikukissa and dceejay
+* rikukissa (https://github.com/rikukissa) 
+* dceejay (https://github.com/dceejay)
+* src: https://github.com/rikukissa/node-red-contrib-image-output
+MIT License included as per Copyright (c) 2018 Riku Rouvila
+
+MIT License
+
+Copyright (c) 2018 Riku Rouvila
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+
+
+<style>
+	.input-tip-group{
+		display:inline-block; 
+		width: 70%;         
+		padding: 2px;  
+	}
+	.input-tip-group label{
+		color: white;
+
+	}
+</style>
+
+<script type="text/javascript">
+	const DEFAULT_WIDTH = 160
+	RED.nodes.registerType('image viewer', {
+		category: 'image tools',
+		paletteLabel: "viewer",
+		icon: "watch.png",
+		align: 'right',
+		color: '#FFAAAA',
+		defaults: {
+			name: { value: "" },
+			width: {
+				value: DEFAULT_WIDTH,
+				required: true,
+				validate: function (v) {
+					return !v || !isNaN(parseInt(v, 10));
+				}
+			},
+			data: {
+				value: "payload",
+				required: true,
+				validate: RED.validators.typedInput("dataType")
+			},
+			dataType: {
+				value: "msg"
+			}
+		},
+		inputs: 1,
+		outputs: 1,
+		label: function () {
+			return this.name || "viewer";
+		},
+		oneditprepare: function () {
+			let node = this;
+			// Set a default width of 160 for existing nodes that don't have that field yet.
+			$('#node-input-width').val(this.width || DEFAULT_WIDTH);
+
+			$('#node-input-data').typedInput({
+				default: 'msg',
+				typeField: $("#node-input-dataType"),
+				types: ['msg','flow','global','str','bin']
+			});
+		}
+	});
+
+	const latestImages = {}
+
+	function remove(nodeid) {
+		const id = nodeid
+		const $img = document.getElementById('image-output-img-' + id)
+		const $bubble = document.getElementById('image-output-bubble-' + id)
+
+		$img && $img.remove()
+		$bubble && $bubble.remove()
+		delete latestImages[id]
+	}
+
+	function redraw(node) {
+		const id = node.id
+		const $img = document.getElementById('image-output-img-' + id)
+		const $bubble = document.getElementById('image-output-bubble-' + id)
+
+		$img && $img.remove()
+		$bubble && $bubble.remove()
+
+		if (latestImages[id]) {
+			render(id, latestImages[id], node)
+		}
+	}
+
+	function render(id, data, node) {
+		let i = new Image();
+		i.src = data;
+		let $img = document.getElementById('image-output-img-' + id)
+		if (!$img) {
+			const $container = document.getElementById(id)
+			if (!$container) { return }
+
+			const bubble = document.createElementNS("http://www.w3.org/2000/svg", 'polyline')
+			bubble.setAttribute('id', 'image-output-bubble-' + id)
+			bubble.setAttribute('style', 'fill:#f9bbbb')
+			bubble.setAttribute('stroke', '#999999')
+			$container.insertBefore(bubble, $container.lastChild.nextSibling)
+
+			const img = document.createElementNS("http://www.w3.org/2000/svg", 'image')
+			img.setAttribute('id', 'image-output-img-' + id)
+			img.setAttribute('x', '0')
+			img.setAttribute('y', '36')
+			img.setAttribute('width', node.width || DEFAULT_WIDTH)
+			img.setAttribute('onclick', 'remove("' + id + '")')
+			$container.insertBefore(img, $container.lastChild.nextSibling)
+			$img = img
+		}
+
+		i.onload = function () {
+			$img.setAttribute('height', node.width * i.height / i.width)
+			const bubbleId = $img.id.replace("img", "bubble");
+			const $bubble = document.getElementById(bubbleId)
+			let imgBbox = $img.getBBox()
+			imgBbox.x = 0;
+			imgBbox.y = 36;
+			imgBbox.width = imgBbox.width || node.width || DEFAULT_WIDTH;
+			imgBbox.height = imgBbox.height || node.width * i.height / i.width;
+			const left = imgBbox.x
+			const top = imgBbox.y
+			const right = imgBbox.x + imgBbox.width
+			const bottom = imgBbox.y + imgBbox.height
+			const points =
+				(left + 10) + "," + (top - 5) + " " + 
+				(left + 10) + "," + top + " " +
+				right + "," + top + " " +
+				right + "," + bottom + " " +
+				left  + "," + bottom + " " +
+				left  + "," + top + " " +
+				(left + 5) + "," + top + " " +
+				(left + 5) + "," + (top - 5)
+			$bubble.setAttribute('points', points)
+		}
+
+		$img.setAttribute('href', data)
+	}
+
+	RED.events.on("editor:save", redraw)
+
+	RED.comms.subscribe('image', function (event, data) {
+		if (data.hasOwnProperty("data")) {
+			latestImages[data.id] = data.data
+			render(data.id, data.data, RED.nodes.node(data.id))
+		}
+		else {
+			remove(data.id);
+		}
+	})
+
+</script>
+
+<script type="text/x-red" data-template-name="image viewer">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row">
+		<label style="padding-top: 8px" for="node-input-data"><i class="fa fa-file-image-o"></i> Image</label>
+		<input type="text" id="node-input-data" style="width:70%">
+		<input type="hidden" id="node-input-dataType">
+	</div>
+	<div class="form-row">
+		<label for="node-input-width"><i class="fa fa-arrows-h"></i> Width</label>
+		<input type="number" id="node-input-width">
+	</div>
+</script>

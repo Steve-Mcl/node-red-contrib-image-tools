@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "description": "A node-red node to manipulate images with the jimp library and decode barcodes with zxing",
     "keywords": [
         "node-red",
@@ -9,6 +9,7 @@
         "jimp",
         "image processing",
         "image manipulation",
+        "image viewer",
         "png",
         "jpg",
         "jpeg",
@@ -26,7 +27,8 @@
     "node-red": {
         "nodes": {
             "jimp": "jimp.js",
-            "xzing2dDecode": "xzing2dDecode.js"
+            "xzing2dDecode": "xzing2dDecode.js",
+            "imageViewer": "imageViewer.js"
         }
     },
     "directories": {
