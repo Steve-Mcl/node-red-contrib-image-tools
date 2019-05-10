@@ -125,7 +125,8 @@ module.exports = function(RED) {
                     let url = data.replace(/^data:image\/\w+;base64,/, "");
                     data = new Buffer(url, 'base64');
                     performance.end("base64_to_buffer");
-                } else if(data instanceof Jimp){
+                } 
+                if(data instanceof Jimp){
                     decode(data,specification);
                 } else {  
                     performance.start("jimp_read");
