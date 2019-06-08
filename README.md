@@ -19,7 +19,7 @@ FEATURES
   * Over 40 image function built in with many more possible by using [convolution kernels](https://en.wikipedia.org/wiki/Kernel_(image_processing))
   * Perform 1 or more images processes in each node
     * TIP: you can convert a function to batch JSON my clicking the button adjacent to the function dropdown field
-  * All function parameters can be either fixed or passed in my msg/flow/global
+  * All function parameters can be either fixed or passed in by msg/flow/global
   * Can output image data as a buffer or base64 string.
   * All functions and parameters are self doumenting - a tip under each item in the node editor helps the user
 
@@ -58,12 +58,14 @@ Install
 -------
 
 Run the following command in the root directory of your Node-RED install.
-Usually this is `~/.node-red` or `%userprofile%\.node-red`.
+(Usually this is `~/.node-red` or `%userprofile%\.node-red`).
 
 Install from GIT
+
     npm install Steve-Mcl/node-red-contrib-image-tools
 
 Install from NPM 
+
     npm install node-red-contrib-image-tools 
 
 Alternatively, install from a folder
