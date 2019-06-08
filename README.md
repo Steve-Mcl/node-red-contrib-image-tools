@@ -29,7 +29,8 @@ FEATURES
 
 
 * Other...
-  * Built in samples.  In node-red, look under the hamburger menu >> import >> examples >> image tools
+  * Built in examples.  
+    * **In node-red, look under the hamburger menu >> import >> examples >> image tools**
 
 Screen shots
 ------------
