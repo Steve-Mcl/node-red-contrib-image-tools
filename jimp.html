@@ -20,6 +20,21 @@
         "RESIZE_HERMITE",
         "RESIZE_BEZIER"
     ];
+    imageToolsNodeCommon.jimpFonts = [
+        "FONT_SANS_8_BLACK",
+        "FONT_SANS_10_BLACK",
+        "FONT_SANS_12_BLACK",
+        "FONT_SANS_14_BLACK",
+        "FONT_SANS_16_BLACK",
+        "FONT_SANS_32_BLACK",
+        "FONT_SANS_64_BLACK",
+        "FONT_SANS_128_BLACK",
+        "FONT_SANS_8_WHITE",
+        "FONT_SANS_16_WHITE",
+        "FONT_SANS_32_WHITE",
+        "FONT_SANS_64_WHITE",
+        "FONT_SANS_128_WHITE"
+    ];
 
     imageToolsNodeCommon.blendModes = [
         "BLEND_SOURCE_OVER",
@@ -51,7 +66,18 @@
                         "Bottom Left" : 1 + 32,
                         "Bottom Centre" : 2 + 32,                        
                         "Bottom Right" : 4 + 32,                        
-    };
+    };  
+    
+    imageToolsNodeCommon.alignModesX = [
+        "HORIZONTAL_ALIGN_LEFT",
+        "HORIZONTAL_ALIGN_CENTER",
+        "HORIZONTAL_ALIGN_RIGHT"                 
+    ];
+    imageToolsNodeCommon.alignModesY = [
+        "VERTICAL_ALIGN_TOP",
+        "VERTICAL_ALIGN_MIDDLE",
+        "VERTICAL_ALIGN_BOTTOM"
+    ];
    
     //TODO: add sections to the options by giving each item a category
     //TODO: consider moving the 'functions' to the server side and use Http Admin endpoint to get a list of functions (for the dropdown)
@@ -259,7 +285,25 @@
 
         "diff" : {"name" : "diff","fn" : "diff", "description" : "Using a mix of hamming distance and pixel diffing to compare images. Returns an image showing differences and msg.jobs[x].result will contain the proportion of different pixels (0-1), where 0 means the images are pixel identical","parameters" : [
         {"name" : "image2", "type" : "", "required" : true, "hint" : "image to compare to" },
-        {"name" : "threshold", "type" : "num", "required" : false, "hint" : "threshold ranges 0-1 (default: 0.1)" }] }
+        {"name" : "threshold", "type" : "num", "required" : false, "hint" : "threshold ranges 0-1 (default: 0.1)" }] },
+
+        "print" : {"name" : "print","fn" : "print", "description" : "Print text to the image","parameters" : [
+        {"name" : "font", "type" : "jimpFont", "required" : true, "hint" : "font to print" },
+        {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
+        {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
+        {"name" : "text", "type" : "str", "required" : true, "hint" : "text to print" },
+        {"name" : "maxWidth", "type" : "num", "required" : false, "hint" : "wrap text at maxWidth" },
+        {"name" : "maxHeight", "type" : "num", "required" : false, "hint" : "" }] },
+        
+        "print2" : {"name" : "print aligned","fn" : "print", "description" : "Print text to the image","parameters" : [
+        {"name" : "font|str", "type" : "jimpFont", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+        {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
+        {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
+        {"name" : "text", "group" : "options", "type" : "str", "required" : true, "hint" : "text to print" },
+        {"name" : "alignmentX", "group" : "options", "type" : "AlignX", "required" : false, "hint" : "X Alignment" },
+        {"name" : "alignmentY", "group" : "options", "type" : "AlignY", "required" : false, "hint" : "Y Alignment" },
+        {"name" : "maxWidth", "type" : "auto|num", "required" : false, "hint" : "wrap text at maxWidth" },
+        {"name" : "maxHeight", "type" : "auto|num", "required" : false, "hint" : "" }] }
 
     }
     
@@ -270,7 +314,7 @@
             var p = fn.parameters[paramNo-1];
             var varName = "parameter" + paramNo;
             let typeVal = node[varName + 'Type'];
-            if(typeVal == "Jimp.AUTO" || typeVal == "none"){
+            if(typeVal == "Jimp.AUTO" || typeVal == "auto" || typeVal == "none"){
                 return true;
             }
             if(p && p.required){
@@ -357,6 +401,7 @@
                 }
             }
             function setupTypedInput(varName, allowableTypes, def, defVal, isOptional) {
+                debugger
                 let varSel = "#node-input-" + varName;
                 let typeSel = varSel + "Type";
                 let currentValue = node[varName];
@@ -401,11 +446,31 @@
                                     label:"Resize.",
                                     options: imageToolsNodeCommon.resizeModes 
                                 }
+                            case "jimpFont":
+                                return {
+                                    value:"jimpFont",
+                                    label:"Font.",
+                                    options: imageToolsNodeCommon.jimpFonts 
+                                }
                             case "alignMode": 
                                 return {
                                     value:"alignMode",
                                     label:"Align.",
                                     options: imageToolsNodeCommon.alignModes 
+                                }
+                            case "AlignX": 
+                            case "alignModeX": 
+                                return {
+                                    value:"AlignX",
+                                    label:"AlignX.",
+                                    options: imageToolsNodeCommon.alignModesX 
+                                }
+                            case "AlignY": 
+                            case "alignModeY": 
+                                return {
+                                    value:"AlignY",
+                                    label:"AlignY.",
+                                    options: imageToolsNodeCommon.alignModesY 
                                 }
                             case "blend": 
                                 return {
@@ -414,9 +479,10 @@
                                     options: imageToolsNodeCommon.blendModes
                                 }
                             case "auto": 
+                            case "Jimp.AUTO": 
                                 return {
-                                    value:"Jimp.AUTO",
-                                    label:"Jimp.AUTO",
+                                    value:"auto",
+                                    label:"Auto",
                                     hasValue: false 
                                 }
                             case "none": 
@@ -447,7 +513,7 @@
                 $ti.typedInput(opts);
                 $ti.typedInput("type", currentType);
                 
-                if(!currentValue && currentType != "Jimp.AUTO" && currentType != "none")
+                if(!currentValue && currentType != "Jimp.AUTO" && currentValue && currentType != "auto" && currentType != "none")
                     $ti.typedInput("type", def);
                 if(currentValue)
                     $ti.typedInput("value", currentValue);
@@ -512,11 +578,19 @@
                         } else if(pt === 'Align' || pt === 'alignMode'){
                             let value = imageToolsNodeCommon.alignMode[pv] || 0;
                             inputParameters.push( value );
+                        } else if(pt === 'AlignX' || pt === 'alignModeX'){
+                            let value = "Jimp." + pv;
+                            inputParameters.push( value );
+                        } else if(pt === 'AlignY' || pt === 'alignModeY'){
+                            let value = "Jimp." + pv;
+                            inputParameters.push( value );
                         } else if(pt === 'Blend'){
+                            inputParameters.push( "Jimp." + pv );
+                        } else if(pt === 'Font'){
                             inputParameters.push( "Jimp." + pv );
                         } else if(pt === 'bool'){
                             inputParameters.push( (pv === true || pv === "true") );
-                        } else if(pt === 'Jimp.AUTO'){
+                        } else if(pt === 'Jimp.AUTO' || pt === 'auto'){
                             inputParameters.push( -1 );
                         } else {
                             inputParameters.push(pv);

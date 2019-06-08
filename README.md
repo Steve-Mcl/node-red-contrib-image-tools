@@ -15,6 +15,7 @@ FEATURES
 * image node
     * Read image from file, http, base64 string or buffer
     * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`
+    * Print text to an image
     * Over 40 image function built in with many more possible by using [convolution kernels](https://en.wikipedia.org/wiki/Kernel_(image_processing))
     * Perform 1 or more images processes in each node
       * TIP: you can convert a function to batch JSON my clicking the button adjacent to the function dropdown field
@@ -33,7 +34,7 @@ FEATURES
 Pre-requesites
 --------------
 
-None! 
+None!
 
 
 Install
@@ -42,12 +43,17 @@ Install
 Run the following command in the root directory of your Node-RED install.
 Usually this is `~/.node-red` or `%userprofile%\.node-red`.
 
+Install from GIT
+    npm install Steve-Mcl/node-red-contrib-image-tools
+
+Install from NPM 
     npm install node-red-contrib-image-tools 
 
 Alternatively, install from a folder
 
     npm install c:/tempfolder/node-red-contrib-image-tools
 
+Or simply copy the folder `node-red-contrib-image-tools` into a folder named `nodes` inside your node-red folder then `cd` into `nodes/node-red-contrib-image-tools` and execute `npm install`
 
 NOTES
 -----
@@ -57,6 +63,5 @@ NOTES
 
 TODO
 ----
-* Add functions to permit writing text on to an image
 * Add functions to get and set pixels
 

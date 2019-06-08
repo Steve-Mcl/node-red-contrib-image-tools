@@ -1,44 +1,14 @@
 
-//FUTURE: shared font manager singleton that loads on demand & caches them for faster operation
-// let singleton = null
-// class FontManager {
-//   static instance () {
-//     if (singleton) return singleton
-//     singleton = new FontManager()
-//     return singleton
-//   }
+var fonts = new (function () {
+    var __fonts = {}
 
-//   constructor () {
-//     this.fonts = Object.create(null)
-//   }
-
-//   /**
-//    *
-//    *
-//    * @param {*} Jimp - a Jimp instance where loadFont can be called against (required)
-//    * @param {*} name - The name of the font to load. This can be a file name reference to an fnt file or a built in e.g. 'Jimp.FONT_SANS_32_BLACK' (required)
-//    * @returns
-//    * @memberof FontManager
-//    */
-//   load (Jimp,name) {
-//     const { fonts } = this
-//     if(name.startsWith("Jimp.FONT_")){
-//         name = Jimp[name.substr(5)];
-//     }
-
-//     if (name in fonts) {
-//       return Promise.resolve(fonts[name]);
-//     }
-
-//     return Jimp.loadFont(name).then(function (font) {
-//       fonts[name] = font
-//       return font
-//     })
-//   }
-// }
-
-
-
+    this.getFont = function (name) {
+        return __fonts[name];
+    }
+    this.setFont = function (name, font) {
+        __fonts[name] = font;
+    }
+})()
 
 module.exports = function(RED) {
     function jimpNode(config) {
@@ -50,7 +20,7 @@ module.exports = function(RED) {
 
         const Jimp = configure({ plugins: [threshold] }, JimpBase)
         //FUTURE: const theFontMgr = FontManager.instance();        
-
+        
         const convolutions = {
             convolute_sharpen: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]],
             convolute_strongsharpen: [[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]],
@@ -112,7 +82,7 @@ module.exports = function(RED) {
             if(typeof p == "string"){ 
                 if(p.startsWith("Align.")){
                     let jp = p.replace("Align.","")
-                    var alignMode = {
+                    let alignMode = {
                         "Left" : 1,
                         "Centre": 2,
                         "Right" : 4,
@@ -132,8 +102,23 @@ module.exports = function(RED) {
                     if(alignMode[jp] != null){
                         return alignMode[jp];
                     }
+                } else if(p.startsWith("AlignX.")){
+                    let jp = p.replace("AlignX.","")
+                    if(j[jp] != null){
+                        return j[jp];
+                    }
+                } else if(p.startsWith("AlignY.")){
+                    let jp = p.replace("AlignY.","")
+                    if(j[jp] != null){
+                        return j[jp];
+                    }
                 } else if(p.startsWith("Jimp.")){
                     let jp = p.replace("Jimp.","")
+                    if(j[jp] != null){
+                        return j[jp];
+                    }
+                } else if(p.startsWith("Font.")){
+                    let jp = p.replace("Font.","")
                     if(j[jp] != null){
                         return j[jp];
                     }
@@ -150,7 +135,7 @@ module.exports = function(RED) {
         }
           
         node.on('input', function(msg) {
-            
+
             var performance = new performanceLogger(node.id);
             performance.start("total");
 
@@ -199,8 +184,8 @@ module.exports = function(RED) {
                     }
                     const nodeParam = node["parameter" + paramNo];
                     const nodeParamType = node["parameter" + paramNo + "Type"];
-                    if(nodeParam || nodeParamType == "Jimp.AUTO" || fn.parameters[paramIndex].required) {
-                        if(nodeParamType == "Jimp.AUTO"){
+                    if(nodeParam || nodeParamType == "Jimp.AUTO" || nodeParamType == "auto" || fn.parameters[paramIndex].required) {
+                        if(nodeParamType == "Jimp.AUTO" || nodeParamType == "auto"){
                             inputParameters[paramIndex] = -1;//Jimp.AUTO == -1
                         } else {
                             RED.util.evaluateNodeProperty(nodeParam,nodeParamType,node,msg,(err,value) => {
@@ -210,7 +195,12 @@ module.exports = function(RED) {
                                 } else {
                                     let p = {};
                                     inputParameters[paramIndex] = value;
-                                    if(nodeParamType === 'Jimp' || nodeParamType === 'Align' || nodeParamType === 'Blend'){
+                                    if(nodeParamType === 'Jimp' || 
+                                        nodeParamType === 'Align' || 
+                                        nodeParamType === 'AlignX' || 
+                                        nodeParamType === 'AlignY' || 
+                                        nodeParamType === 'Blend' || 
+                                        nodeParamType === 'Font'){
                                         inputParameters[paramIndex] = nodeParamType + '.' + value;
                                     }
                                 }
@@ -294,6 +284,7 @@ module.exports = function(RED) {
                     if(!job.parameters){
                         job.parameters = [];
                     }
+
                     let theResult;
                     if(img[job.name]){
                         theResult = img[job.name](...job.parameters); //call the image lib function
@@ -320,7 +311,7 @@ module.exports = function(RED) {
                     }
                 }
                                 
-                /*async*/ function imageProcessor(Jimp,img,jobs,node,msg,performance){
+                async function imageProcessor(Jimp,img,jobs,node,msg,performance){
                     let doWork = (Array.isArray(jobs) && jobs.length > 0)
                     if(doWork){
                         var jobPerformance = new performanceLogger(node.id);
@@ -341,7 +332,43 @@ module.exports = function(RED) {
                             }
                             let perfMeasureName = "process" + (i+1) + "_" + job.name;
                             jobPerformance.start(perfMeasureName);
-                            /*await*/ doProcess(Jimp,img,job);
+                            
+                            if(job.name == "print"){
+                                
+                                //this is a print request where the text is an object with alignment
+                                //if either of parameters [4] or [5] are maxWidth/maxHeight
+                                //are set to auto (-1) then set them to actual height / width
+                                if(job.parameters[4] == -1){
+                                    job.parameters[4] = img.getWidth()
+                                }
+                                if(job.parameters[5] == -1){
+                                    job.parameters[5] = img.getHeight()
+                                }
+
+                                let fontFile = job.parameters[0];
+                                if(fontFile.startsWith("FONT_")){
+                                    fontFile = Jimp[fontFile];
+                                }
+                                //if(!fonts) fonts = {};
+                                let font = fonts.getFont(fontFile);
+                                if(font){
+                                    job.parameters[0] = font;
+                                    doProcess(Jimp,img,job);
+                                } else {
+                                    try {
+                                        let p = Jimp.loadFont(fontFile);
+                                        let f = await p;
+                                        fonts.setFont(fontFile, f)
+                                        job.parameters[0] = f;
+                                        doProcess(Jimp,img,job);
+                                    } catch (e) {
+                                        console.error(e);
+                                    }
+                                }
+                            } else {
+                                doProcess(Jimp,img,job);
+                            }
+                             
                             jobPerformance.end(perfMeasureName);
                             job.performance = jobPerformance.getPerformance(perfMeasureName);
 
@@ -365,6 +392,7 @@ module.exports = function(RED) {
                         case "img":
                             msg.payload = img;
                             msg.performance = performance.getPerformance();
+                            console.log(`node.send()  ${node.id},${msg._msgid}`)
                             node.send(msg);
                             break;
                         case "buf":
@@ -378,6 +406,7 @@ module.exports = function(RED) {
                                 performance.end("total");
                                 msg.payload = buffer;
                                 msg.performance = performance.getPerformance();
+                                console.log(`node.send() ${node.id},${msg._msgid}`)
                                 node.send(msg);
                             });
                             break;
@@ -392,6 +421,7 @@ module.exports = function(RED) {
                                 performance.end("total");
                                 msg.payload = b64;
                                 msg.performance = performance.getPerformance();
+                                console.log(`node.send()  ${node.id},${msg._msgid}`)
                                 node.send(msg);
                             });    
                             break;
@@ -399,7 +429,6 @@ module.exports = function(RED) {
                         default:
                             break;
                     }
-
                 }
 
                 //if image is base64, convert it to a buffer
