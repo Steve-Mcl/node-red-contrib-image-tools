@@ -401,7 +401,6 @@
                 }
             }
             function setupTypedInput(varName, allowableTypes, def, defVal, isOptional) {
-                debugger
                 let varSel = "#node-input-" + varName;
                 let typeSel = varSel + "Type";
                 let currentValue = node[varName];
@@ -717,7 +716,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="jimp-image">
+<script type="text/html" data-template-name="jimp-image">
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -875,7 +874,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="jimp-image">
+<script type="text/html" data-help-name="jimp-image">
 <p>An image manipulation node built using <a href="https://github.com/oliver-moran/jimp/tree/master/packages/jimp">Jimp</a></p>
 <h3>Inputs</h3>
 <dl class="message-properties">

@@ -79,12 +79,6 @@ NOTES
 * Tested on Node V 10 only. YMMV
 * Bugs are likely :)
 
-
-TODO
-----
-* Add functions to get and set pixels
-
-
 KNOWN ISSUES
 ------------
 Clicking the preview image in IE doesnt dismiss it (works in chrome)
