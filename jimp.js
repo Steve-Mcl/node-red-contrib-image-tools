@@ -451,7 +451,7 @@ module.exports = function(RED) {
                     var args = [data];
                     if(isObject(data) && data.w && data.h){
                         perfName = "jimp_create"
-                        args = [data.h, data.w];
+                        args = [data.w, data.h];
                         if(data.background || typeof data.background == "number"){
                             args.push(data.background)
                         }
