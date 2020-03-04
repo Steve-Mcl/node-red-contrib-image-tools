@@ -309,6 +309,7 @@ module.exports = function(RED) {
                             job.result = true;
                             break;
                     }
+                    return img; 
                 }
                                 
                 async function imageProcessor(Jimp,img,jobs,node,msg,performance){
@@ -353,20 +354,20 @@ module.exports = function(RED) {
                                 let font = fonts.getFont(fontFile);
                                 if(font){
                                     job.parameters[0] = font;
-                                    doProcess(Jimp,img,job);
+                                    img = doProcess(Jimp,img,job);
                                 } else {
                                     try {
                                         let p = Jimp.loadFont(fontFile);
                                         let f = await p;
                                         fonts.setFont(fontFile, f)
                                         job.parameters[0] = f;
-                                        doProcess(Jimp,img,job);
+                                        img = doProcess(Jimp,img,job);
                                     } catch (e) {
                                         console.error(e);
                                     }
                                 }
                             } else {
-                                doProcess(Jimp,img,job);
+                                img = doProcess(Jimp,img,job);
                             }
                              
                             jobPerformance.end(perfMeasureName);
