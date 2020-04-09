@@ -165,7 +165,7 @@ SOFTWARE.
 
 	RED.events.on("editor:save", redraw)
 
-	RED.comms.subscribe('image', function (event, data) {
+	RED.comms.subscribe('image-tools-image-viewer', function (event, data) {
 		if (data.hasOwnProperty("data")) {
 			latestImages[data.id] = data.data
 			render(data.id, data.data, RED.nodes.node(data.id))

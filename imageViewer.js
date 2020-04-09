@@ -92,7 +92,7 @@ module.exports = function (RED) {
                 if(isString && isBase64Image && hasMime) {				
 					//its already base 64 with mime
 					node.send(msg);//pass it on before displaying
-					RED.comms.publish("image", { id: this.id, data: dataInput });
+					RED.comms.publish("image-tools-image-viewer", { id: this.id, data: dataInput });					
 				} else if (dataInput instanceof Jimp) {
 					dataInput.getBase64(Jimp.AUTO, (err, b64) => {
 						if (err) {
@@ -100,7 +100,7 @@ module.exports = function (RED) {
 							return;
 						}
 						node.send(msg);//pass it on before displaying
-						RED.comms.publish("image", { id: this.id, data: b64 });
+						RED.comms.publish("image-tools-image-viewer", { id: this.id, data: b64 });
 					});
 				} else {
 					var imageData;
@@ -144,7 +144,7 @@ module.exports = function (RED) {
 		});
 
 		node.on("close", function () {
-			RED.comms.publish("image", { id: this.id });
+			RED.comms.publish("image-tools-image-viewer", { id: this.id });
 			node.status({});
 		});
 	}
