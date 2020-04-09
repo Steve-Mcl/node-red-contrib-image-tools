@@ -16,6 +16,20 @@ module.exports = function(RED) {
         var JimpBase = require('jimp');
         const threshold = require('@jimp/plugin-threshold')
         const configure = require('@jimp/custom')
+        const isBase64 = require('is-base64');
+		const _prefixURIMap = {
+			"iVBOR": "data:image/png;base64,",
+			"R0lGO": "data:image/gif;base64,",
+			"/9j/4": "data:image/jpeg;base64,",
+			"Qk02U": "data:image/bmp;base64,"
+		}
+		const createDataURI = function(rawImage) {
+			let first5 = rawImage.substr(0, 5)
+			if(_prefixURIMap[first5]){
+				return _prefixURIMap[first5] + rawImage;
+			}
+			return _prefixURIMap["iVBOR"] + rawImage;//default to png
+		}        
         const performanceLogger = require('./performanceLogger.js');
 
         const Jimp = configure({ plugins: [threshold] }, JimpBase)
@@ -350,7 +364,7 @@ module.exports = function(RED) {
                                 }
                                 if(fontName.startsWith("FONT_")){
                                     fontFile = Jimp[fontFile];
-                                }
+                                }                                
                                 let font = fonts.getFont(fontFile);
                                 if(font){
                                     job.parameters[0] = font;
@@ -432,10 +446,26 @@ module.exports = function(RED) {
                 }
 
                 //if image is base64, convert it to a buffer
-                if(typeof data == 'string' && data.substr(0,30).indexOf('base64') != -1 && data.substr(0,4).indexOf('data') == 0) {
+                let isBuffer = Buffer.isBuffer(data);
+                let isArray = Array.isArray(data);
+                let isString = typeof data === 'string';
+                let hasMime = false, isBase64Image = false
+                if(isString){
+                    hasMime = data.startsWith("data:");
+					isBase64Image = isBase64(data,{mimeRequired: hasMime});
+                }
+                let isfileName = isString && !isBase64Image;
+                if(isString && isBase64Image) {
+                    //convert to buffer ready for loading in jimp
                     performance.start("base64_to_buffer");
-                    let url = data.replace(/^data:image\/\w+;base64,/, "");
-                    data = new Buffer(url, 'base64');
+                    let b64Data;
+                    if(hasMime){
+                        b64Data = data.replace(/^data:image\/\w+;base64,/, "");//get data part only 
+                    } else {
+                        b64Data = data;
+                    }
+                    //data = new Buffer(b64Data, 'base64'); depreciated
+                    data = Buffer.from(b64Data, 'base64');
                     performance.end("base64_to_buffer");
                 } 
                 //if data is a Jimp, then crack on with image processing functions
@@ -469,8 +499,6 @@ module.exports = function(RED) {
                         .catch(err => {
                             nodeStatusImageProcessError(err,msg);
                         });
-                        
-                    
                 }
                 
             } catch (err) {

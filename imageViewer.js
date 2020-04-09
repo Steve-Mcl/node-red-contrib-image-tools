@@ -31,7 +31,20 @@ SOFTWARE.
 module.exports = function (RED) {
 	function imageViewer(config) {
 		var Jimp = require('jimp');
-
+        const isBase64 = require('is-base64');
+		const _prefixURIMap = {
+			"iVBOR": "data:image/png;base64,",
+			"R0lGO": "data:image/gif;base64,",
+			"/9j/4": "data:image/jpeg;base64,",
+			"Qk02U": "data:image/bmp;base64,"
+		}
+		const createDataURI = function(rawImage) {
+			let first5 = rawImage.substr(0, 5)
+			if(_prefixURIMap[first5]){
+				return _prefixURIMap[first5] + rawImage;
+			}
+			return _prefixURIMap["iVBOR"] + rawImage;//default to png
+		}
 		RED.nodes.createNode(this, config);
 		var node = this;
 		node.data = config.data || "";//data
@@ -62,8 +75,22 @@ module.exports = function (RED) {
 				if (!dataInput) {
 					nodeStatusError(err, msg, "Error. Check the Image parameter");
 				}
-				if (typeof dataInput == 'string' && dataInput.substr(0, 30).indexOf('base64') != -1 && dataInput.substr(0, 4).indexOf('data') == 0) {
-					//its already base 64
+				
+				let isBuffer = Buffer.isBuffer(dataInput);
+                let isArray = Array.isArray(dataInput);
+                let isString = typeof dataInput === 'string';
+				let hasMime = false, isBase64Image = false;
+                if(isString){
+                    hasMime = dataInput.startsWith("data:");
+					isBase64Image = isBase64(dataInput,{mimeRequired: hasMime});
+					if(isBase64Image && !hasMime){
+						dataInput = createDataURI(dataInput);
+						hasMime = true;
+					}
+                }
+                let isfileName = isString && !isBase64Image;
+                if(isString && isBase64Image && hasMime) {				
+					//its already base 64 with mime
 					node.send(msg);//pass it on before displaying
 					RED.comms.publish("image", { id: this.id, data: dataInput });
 				} else if (dataInput instanceof Jimp) {
@@ -77,15 +104,17 @@ module.exports = function (RED) {
 					});
 				} else {
 					var imageData;
-					if(Buffer.isBuffer(dataInput)){
+					if(isString && isBase64Image && !hasMime){
+						imageData = Buffer.from(dataInput, 'base64')
+					} else if(Buffer.isBuffer(dataInput)){
 						//make a copy of the buffer before sending it on
-						imageData = new Buffer(dataInput.length);
+						imageData = new Buffer.alloc(dataInput.length);
 						dataInput.copy(imageData);
 					} else {
 						imageData = dataInput;
 					}
 					
-					node.send(msg);//we have a copt of the data - pass ont the msg now
+					node.send(msg);//we have a copy of the data - pass ont the msg now
 
 					//now generate an image from the buffer/url/path
 					Jimp.read(imageData)
