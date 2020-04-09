@@ -38,6 +38,8 @@
     "dependencies": {
         "@jimp/plugin-threshold": "^0.10.1",
         "jimp": "^0.10.1",
+        "@jimp/plugin-color": "^0.10.1",
+        "@jimp/plugin-resize": "^0.10.1",
         "@zxing/library": "^0.16.0",
         "is-base64": "^1.1.0"
     }
