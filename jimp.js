@@ -142,7 +142,6 @@ module.exports = function(RED) {
             /* ****************  Node status **************** */
             node.status({});//clear status
             var nodeStatusError = function(err,msg,statusText){
-                console.error(err);
                 node.error(err,msg);
                 node.status({fill:"red",shape:"dot",text:statusText});
             }
@@ -392,7 +391,6 @@ module.exports = function(RED) {
                         case "img":
                             msg.payload = img;
                             msg.performance = performance.getPerformance();
-                            console.log(`node.send()  ${node.id},${msg._msgid}`)
                             node.send(msg);
                             break;
                         case "buf":
@@ -406,7 +404,6 @@ module.exports = function(RED) {
                                 performance.end("total");
                                 msg.payload = buffer;
                                 msg.performance = performance.getPerformance();
-                                console.log(`node.send() ${node.id},${msg._msgid}`)
                                 node.send(msg);
                             });
                             break;
@@ -421,7 +418,6 @@ module.exports = function(RED) {
                                 performance.end("total");
                                 msg.payload = b64;
                                 msg.performance = performance.getPerformance();
-                                console.log(`node.send()  ${node.id},${msg._msgid}`)
                                 node.send(msg);
                             });    
                             break;
