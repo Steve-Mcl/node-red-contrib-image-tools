@@ -32,8 +32,7 @@ module.exports = function(RED) {
 		}        
         const performanceLogger = require('./performanceLogger.js');
 
-        const Jimp = configure({ plugins: [threshold] }, JimpBase)
-        //FUTURE: const theFontMgr = FontManager.instance();        
+        const Jimp = JimpBase;// configure({ plugins: [threshold] }, JimpBase)
         
         const convolutions = {
             convolute_sharpen: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]],
