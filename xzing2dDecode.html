@@ -4,7 +4,7 @@
 }
 </style>
 <script type="text/javascript">
-    
+(function() {
     RED.nodes.registerType('2d Barcode Decoder', {
         category: 'image tools',
         paletteLabel: "2D Barcode Decoder",
@@ -53,6 +53,7 @@
             setupTypedInput('specification', ['msg', 'flow', 'global', 'json'], 'json');
         }
     });
+})();    
 </script>
 
 <script type="text/x-red" data-template-name="2d Barcode Decoder">

@@ -42,6 +42,7 @@ SOFTWARE.
 </style>
 
 <script type="text/javascript">
+(function() {
 	const DEFAULT_WIDTH = 160
 	RED.nodes.registerType('image viewer', {
 		category: 'image tools',
@@ -173,7 +174,7 @@ SOFTWARE.
 			remove(data.id);
 		}
 	})
-
+})(); 
 </script>
 
 <script type="text/x-red" data-template-name="image viewer">
