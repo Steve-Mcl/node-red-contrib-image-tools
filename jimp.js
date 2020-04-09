@@ -343,25 +343,29 @@ module.exports = function(RED) {
                                 if(job.parameters[5] == -1){
                                     job.parameters[5] = img.getHeight()
                                 }
-
                                 let fontFile = job.parameters[0];
-                                if(fontFile.startsWith("FONT_")){
+                                let fontName = (fontFile || "FONT_SANS_10_BLACK").toUpperCase();
+                                if(fontName.startsWith("JIMP.FONT_")){
+                                    fontName = fontName.replace("JIMP.","")
+                                }
+                                if(fontName.startsWith("FONT_")){
                                     fontFile = Jimp[fontFile];
                                 }
-                                //if(!fonts) fonts = {};
                                 let font = fonts.getFont(fontFile);
                                 if(font){
                                     job.parameters[0] = font;
                                     doProcess(Jimp,img,job);
                                 } else {
                                     try {
+                                        if(!fontFile) throw new Error(`'Print' error - cannot load font ${fontName}`)
                                         let p = Jimp.loadFont(fontFile);
                                         let f = await p;
+                                        if(!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
                                         fonts.setFont(fontFile, f)
                                         job.parameters[0] = f;
                                         doProcess(Jimp,img,job);
                                     } catch (e) {
-                                        console.error(e);
+                                        node.error(e, msg);
                                     }
                                 }
                             } else {
