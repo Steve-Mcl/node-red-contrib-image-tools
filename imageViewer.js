@@ -125,7 +125,7 @@ module.exports = function (RED) {
 										nodeStatusError(err, msg, "Error getting base64 image")
 										return;
 									}
-									RED.comms.publish("image", { id: this.id, data: b64 });
+									RED.comms.publish("image-tools-image-viewer", { id: this.id, data: b64 });
 								});
 
 							} catch (err) {
