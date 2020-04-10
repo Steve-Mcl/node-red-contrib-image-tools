@@ -114,40 +114,40 @@ SOFTWARE.
 	function render(id, data, node) {
 		let i = new Image();
 		i.src = data;
-		let $img = document.getElementById('image-output-img-' + id)
+		let $img = document.getElementById('image-output-img-' + id);
 		if (!$img) {
-			const $container = document.getElementById(id)
-			if (!$container) { return }
+			const $container = document.getElementById(id);
+			if (!$container) { return };
 
-			const bubble = document.createElementNS("http://www.w3.org/2000/svg", 'polyline')
-			bubble.setAttribute('id', 'image-output-bubble-' + id)
-			bubble.setAttribute('style', 'fill:#f9bbbb')
-			bubble.setAttribute('stroke', '#999999')
-			$container.insertBefore(bubble, $container.lastChild.nextSibling)
+			const bubble = document.createElementNS("http://www.w3.org/2000/svg", 'polyline');
+			bubble.setAttribute('id', 'image-output-bubble-' + id);
+			bubble.setAttribute('style', 'fill:#f9bbbb');
+			bubble.setAttribute('stroke', '#999999');
+			$container.insertBefore(bubble, $container.lastChild.nextSibling);
 
-			const img = document.createElementNS("http://www.w3.org/2000/svg", 'image')
-			img.setAttribute('id', 'image-output-img-' + id)
-			img.setAttribute('x', '0')
-			img.setAttribute('y', '45')
-			img.setAttribute('width', node.width || DEFAULT_WIDTH)
-			img.setAttribute('onclick', 'remove("' + id + '")')
-			$container.insertBefore(img, $container.lastChild.nextSibling)
-			$img = img
+			const img = document.createElementNS("http://www.w3.org/2000/svg", 'image');
+			img.setAttribute('id', 'image-output-img-' + id);
+			img.setAttribute('x', '1');
+			img.setAttribute('y', '47');
+			img.setAttribute('width', node.width || DEFAULT_WIDTH);
+			img.setAttribute('onclick', 'remove("' + id + '")');
+			$container.insertBefore(img, $container.lastChild.nextSibling);
+			$img = img;
 		}
 
 		i.onload = function () {
-			$img.setAttribute('height', node.width * i.height / i.width)
+			$img.setAttribute('height', node.width * i.height / i.width);
 			const bubbleId = $img.id.replace("img", "bubble");
-			const $bubble = document.getElementById(bubbleId)
-			let imgBbox = $img.getBBox()
-			imgBbox.x = 0;
-			imgBbox.y = 45;
-			imgBbox.width = imgBbox.width || node.width || DEFAULT_WIDTH;
-			imgBbox.height = imgBbox.height || node.width * i.height / i.width;
-			const left = imgBbox.x
-			const top = imgBbox.y + 2
-			const right = imgBbox.x + imgBbox.width
-			const bottom = imgBbox.y + imgBbox.height
+			const $bubble = document.getElementById(bubbleId);
+			let imgBbox = $img.getBBox();
+			imgBbox.x = 1;
+			imgBbox.y = 47;
+			imgBbox.width = (imgBbox.width || node.width || DEFAULT_WIDTH);
+			imgBbox.height = (imgBbox.height || node.width * i.height / i.width);
+			const left = imgBbox.x;
+			const top = imgBbox.y;
+			const right = imgBbox.x + imgBbox.width;
+			const bottom = (imgBbox.y + imgBbox.height) ;
 			const points =
 				(left + 4) + "," + (top - 17) + " " +
 				(left + 4) + "," + top + " " +
@@ -155,10 +155,10 @@ SOFTWARE.
 				right + "," + bottom + " " +
 				left + "," + bottom + " " +
 				left + "," + (top - 21)
-			$bubble.setAttribute('points', points)
+			$bubble.setAttribute('points', points);
 		}
 
-		$img.setAttribute('href', data)
+		$img.setAttribute('href', data);
 	}
 
 	RED.events.on("editor:save", redraw)
