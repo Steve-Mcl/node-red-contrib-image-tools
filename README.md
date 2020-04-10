@@ -3,6 +3,23 @@ node-red-contrib-image-tools
 
 A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functions on images and decode barcodes.
 
+IMPORTANT - Breaking changes in V1
+---------
+Version 1 has breaking change ~ vs ~ V0.x versions.
+Existing flows using the "2D Barcode Decode" node will need to be modified. The easy way of fixing this is to delete any "2D Barchode Decode" & deploy, then update the node, then re-add the new "Barcode Decode" nodes.
+
+Alternatively, you can avoid this issue by performing the following steps...
+
+1. Upgrade node-red-contrib-image-tools
+1. Stop node-red
+1. Make a bakup of your flow.json file
+1. Opening your flow.json file in a text editor 
+1. Search / replace all instances of `"type":"2D Barcode Decoder"` with `"type":"Barcode Decoder"`
+1. Save and close your flow file
+1. Start node-red
+
+
+
 FEATURES
 --------
 * image viewer node
