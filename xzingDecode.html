@@ -5,9 +5,9 @@
 </style>
 <script type="text/javascript">
 (function() {
-    RED.nodes.registerType('2d Barcode Decoder', {
+    RED.nodes.registerType('Barcode Decoder', {
         category: 'image tools',
-        paletteLabel: "2D Barcode Decoder",
+        paletteLabel: "Barcode Decoder",
         //labelStyle: "node-label-white",
         icon: "qrcode.png",
         color: '#FFAAAA',//'#f24b69',
@@ -15,14 +15,13 @@
             name: { value: "" },
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
-            specification: { value: "", validate: RED.validators.typedInput("specificationType") },
+            specification: { value: '{"QR": false, "dataMatrix": false, "tryHarder": true}', validate: RED.validators.typedInput("specificationType") },
             specificationType: { value: "json" },
         },
         inputs: 1,
         outputs: 1,
-
         label: function () {
-            return this.name || "2D Barcode Decoder";
+            return this.name || "Barcode Decoder";
         },
         oneditprepare: function () {
             let node = this;
@@ -56,26 +55,26 @@
 })();    
 </script>
 
-<script type="text/html" data-template-name="2d Barcode Decoder">
+<script type="text/html" data-template-name="Barcode Decoder">
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="xzing2dDecode.label.data"> image</span></label>
+        <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="xzingDecode.label.data"> image</span></label>
         <input type="hidden" id="node-input-dataType">
         <input style="width: 70%" type="text" id="node-input-data" placeholder="image.jpg">
     </div>
     <div class="form-row">
-        <label for="node-input-specification"><i class="fa fa-code"></i><span data-i18n="xzing2dDecode.label.specification"> specification</span></label>
+        <label for="node-input-specification"><i class="fa fa-code"></i><span data-i18n="xzingDecode.label.specification"> specification</span></label>
         <input type="hidden" id="node-input-specificationType">
         <input style="width: 70%" type="text" id="node-input-specification" placeholder="{QR: true, dataMatrix: false, tryHarder: true}">
     </div>
  
 </script>
 
-<script type="text/html" data-help-name="2d Barcode Decoder">
-<p>A 2D barcode decoder node built with zxing and Jimp</p>
+<script type="text/html" data-help-name="Barcode Decoder">
+<p>A barcode decoder node built with zxing and Jimp</p>
 
 <h3>Inputs</h3>
 <dl class="message-properties">
@@ -83,9 +82,17 @@
     <dd> the file (buffer / base64 string) or file name to be processed. </dd>
     <dt>specification <span class="property-type">string | JSON</span></dt>
     <dd> the specification to use when decoding the barcode in the image</dd>
-    Example...
+    Specification Example to read QR...
     <code>
             {"QR": true, "dataMatrix": false, "tryHarder": true}
+    </code>
+    Specification Example to read Datamatrix...
+    <code>
+            {"QR": false, "dataMatrix": true, "tryHarder": true}
+    </code>
+    Specification Example to read 1D barcodes only...
+    <code>
+            {"QR": false, "dataMatrix": false, "tryHarder": true}
     </code>
 </dl>
 <h3>Output</h3>

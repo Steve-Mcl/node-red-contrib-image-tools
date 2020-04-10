@@ -1,14 +1,14 @@
 node-red-contrib-image-tools
 ============================
 
-A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functions on images and decode 2D barcodes.
+A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functions on images and decode barcodes.
 
 FEATURES
 --------
 * image viewer node
   * View images in the node-red editor (for preview / debug purposes)
-  * **Full credit** to [rikukissa](https://github.com/rikukissa) and [dceejay](https://github.com/dceejay) for the excellent [node-red-contrib-image-output](https://github.com/rikukissa/node-red-contrib-image-output) on which this is heavily based. (Copy of MIT license included in src files as requested)
-  * Features include ability to send jimp image, buffer, base64 string, file name, 
+  * **Full credit** to [rikukissa](https://github.com/rikukissa) and [dceejay](https://github.com/dceejay) for the excellent [node-red-contrib-image-output](https://github.com/rikukissa/node-red-contrib-image-output) on which the "image viewer node" is heavily based. (Copy of MIT license included in src files as requested)
+  * Features include ability to display a jimp image, buffer, file name, base64 string, Data URL, Image URL.
   * Works in Internet Explorer (IE11 tested)
 
 
@@ -24,8 +24,8 @@ FEATURES
   * All functions and parameters are self doumenting - a tip under each item in the node editor helps the user
 
 
-* 2D Barcode Decode node
-  * Ability to decode QR and Data Matrix barcodes
+* Barcode Decode node
+  * Ability to decode 1D, QR and Data Matrix barcodes. See [supported formats](https://www.npmjs.com/package/@zxing/library#supported-formats).
 
 
 * Other...

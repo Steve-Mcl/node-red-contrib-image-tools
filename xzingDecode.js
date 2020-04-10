@@ -1,16 +1,16 @@
 module.exports = function(RED) {
     
-    function xzing2dDecode(config) {
+    function xzingDecode(config) {
         RED.nodes.createNode(this,config);
         const Jimp = require('jimp');
-        const performanceLogger = require('./performanceLogger.js');
+        const performanceLogger = require('node-red-contrib-image-tools/performanceLogger');
         const { MultiFormatReader, BarcodeFormat, DecodeHintType, RGBLuminanceSource, BinaryBitmap, HybridBinarizer } = require('@zxing/library/esm5');
 
         var node = this;
-		node.data = config.data || "";//data
+		node.data = config.data || "payload";//data
 		node.dataType = config.dataType || "msg";
-        node.specification = config.specification || "";//specification
-        node.specificationType = config.specificationType || "str";
+        node.specification = config.specification || '{"QR": false, "dataMatrix": false, "tryHarder": true}';//specification
+        node.specificationType = config.specificationType || "json";
 
         function decode2d(img,options){
            
@@ -153,5 +153,5 @@ module.exports = function(RED) {
            
         });
     }
-    RED.nodes.registerType("2d Barcode Decoder",xzing2dDecode);
+    RED.nodes.registerType("Barcode Decoder",xzingDecode);
 }
