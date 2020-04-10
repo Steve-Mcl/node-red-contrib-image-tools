@@ -53,7 +53,7 @@ Screen shots
 ------------
 
 Get image from internet...<br>
-![chrome_2019-06-08_15-50-57](https://user-images.githubusercontent.com/44235289/59148818-421a4c00-8a05-11e9-8dd1-08342298132a.png)
+![kittens](https://user-images.githubusercontent.com/44235289/79025855-dea9ff00-7b7e-11ea-98de-2297d879962d.png)
 
 Image processing...<br>
 ![Image_processing](https://user-images.githubusercontent.com/44235289/59148882-30857400-8a06-11e9-9b7a-227e761bd617.png)
@@ -62,7 +62,7 @@ Printing text...<br>
 ![printing_text](https://user-images.githubusercontent.com/44235289/59148604-fcf51a80-8a02-11e9-9a6b-f1578d6ee391.gif)
 
 Barcode decoding...<br>
-![barcode](https://user-images.githubusercontent.com/44235289/79021999-e5cc0f80-7b74-11ea-8cd5-456497313671.gif)
+![barcode](https://user-images.githubusercontent.com/44235289/79025486-d43b3580-7b7d-11ea-8f42-b7ad6471d00c.gif)
 
 
 Pre-requesites
