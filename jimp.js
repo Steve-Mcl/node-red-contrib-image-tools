@@ -13,7 +13,7 @@ var fonts = new (function () {
 module.exports = function(RED) {
     function jimpNode(config) {
         RED.nodes.createNode(this,config);
-        var JimpBase = require('jimp');
+        var Jimp = require('jimp');
         const threshold = require('@jimp/plugin-threshold')
         const configure = require('@jimp/custom')
         const isBase64 = require('is-base64');
@@ -32,8 +32,12 @@ module.exports = function(RED) {
 		}        
         const performanceLogger = require('./performanceLogger.js');
 
-        const Jimp = JimpBase;// configure({ plugins: [threshold] }, JimpBase)
-        
+        //const Jimp = JimpBase;
+        //const Jimp = configure({ plugins: [threshold] }, JimpBase);
+
+        //var Jimp = JimpBase
+        configure({ plugins: [threshold] }, Jimp);
+
         const convolutions = {
             convolute_sharpen: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]],
             convolute_strongsharpen: [[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]],
