@@ -5,6 +5,8 @@
     "keywords": [
         "node-red",
         "barcode",
+        "datamatrix",
+        "QR",
         "zxing",
         "jimp",
         "image editing",
