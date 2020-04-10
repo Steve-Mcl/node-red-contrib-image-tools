@@ -12,21 +12,39 @@ module.exports = function(RED) {
         node.specification = config.specification || '{"QR": false, "dataMatrix": false, "tryHarder": true}';//specification
         node.specificationType = config.specificationType || "json";
 
-        function decode2d(img,options){
+          function decode2d(img,options){
            
             const bitmap = img.bitmap;
             const hints = new Map();
-            const formats = [];//[BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX];
-            const defaults = {QR: true, dataMatrix: true, tryHarder: true};
+            const formats = [];
+            const defaults = {format : ["QR", "DATA_MATRIX"], tryHarder: true};
             options = options || {};
             options.QR = options.QR == undefined ? defaults.QR : options.QR;
             options.dataMatrix = options.dataMatrix == undefined ? defaults.dataMatrix : options.dataMatrix;
             options.tryHarder = options.tryHarder == undefined ? defaults.tryHarder : options.tryHarder;
-
-            if(options.QR)
+            
+            
+            if(options.format){
+                let _formats = options.format;
+                if(Array.isArray(_formats) === false){
+                    _formats = [_formats];
+                }
+                for (let index = 0; index < _formats.length; index++) {
+                    const format = BarcodeFormat[_formats[index]];
+                    if(format || format === 0){
+                        if(formats.includes(format) === false){
+                            formats.push(format);
+                        }
+                    }
+                }
+            }
+         
+            //legacy options - user should use options.format
+            if(options.QR && formats.includes(BarcodeFormat.QR_CODE) === false)
                 formats.push(BarcodeFormat.QR_CODE);
-            if(options.dataMatrix)
+            if(options.dataMatrix && formats.includes(BarcodeFormat.DATA_MATRIX) === false)
                 formats.push(BarcodeFormat.DATA_MATRIX);
+
             if(formats.length)
                 hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
             if(options.tryHarder)

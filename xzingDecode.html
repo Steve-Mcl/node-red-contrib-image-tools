@@ -15,7 +15,7 @@
             name: { value: "" },
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
-            specification: { value: '{"QR": false, "dataMatrix": false, "tryHarder": true}', validate: RED.validators.typedInput("specificationType") },
+            specification: { value: '{format : ["QR", "DATA_MATRIX"], tryHarder: true}', validate: RED.validators.typedInput("specificationType") },
             specificationType: { value: "json" },
         },
         inputs: 1,
@@ -82,18 +82,19 @@
     <dd> the file (buffer / base64 string) or file name to be processed. </dd>
     <dt>specification <span class="property-type">string | JSON</span></dt>
     <dd> the specification to use when decoding the barcode in the image</dd>
-    Specification Example to read QR...
+    Specification Example to read QR only...
     <code>
-            {"QR": true, "dataMatrix": false, "tryHarder": true}
+        {format: ["QR_CODE"], "tryHarder": true}
     </code>
-    Specification Example to read Datamatrix...
+    Specification Example to read Datamatrix only...
     <code>
-            {"QR": false, "dataMatrix": true, "tryHarder": true}
+        {format: ["DATA_MATRIX"], "tryHarder": true}
     </code>
-    Specification Example to read 1D barcodes only...
+    Specification Example to read 3 different type of barcode...
     <code>
-            {"QR": false, "dataMatrix": false, "tryHarder": true}
+        {format: ["EAN_32", "RSS_14", "ITF"], "tryHarder": true}
     </code>
+    <b>To see all currently supported types, import the example "Barcodes" or refer <a target="_blank" href="https://github.com/zxing-js/library#supported-formats">supported-formats</a> 
 </dl>
 <h3>Output</h3>
 <dl class="message-properties">

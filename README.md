@@ -61,8 +61,8 @@ Image processing...<br>
 Printing text...<br>
 ![printing_text](https://user-images.githubusercontent.com/44235289/59148604-fcf51a80-8a02-11e9-9a6b-f1578d6ee391.gif)
 
-QR and Datamatrix 2D barcode decode...<br>
-![qr_dm](https://user-images.githubusercontent.com/44235289/59148979-873f7d80-8a07-11e9-9b67-b2ae92f445ee.png)
+Barcode decoding...<br>
+![barcode](https://user-images.githubusercontent.com/44235289/79021999-e5cc0f80-7b74-11ea-8cd5-456497313671.gif)
 
 
 Pre-requesites
