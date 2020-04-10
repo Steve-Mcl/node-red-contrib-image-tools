@@ -293,6 +293,12 @@ module.exports = function(RED) {
 
 
                 function doProcess(Jimp, img, job){
+                    let returnValue = {
+                        success: false,
+                        result: null,
+                        image: img,
+                        takeImage: false,
+                    }
                     if(!job.parameters){
                         job.parameters = [];
                     }
@@ -300,27 +306,53 @@ module.exports = function(RED) {
                     let theResult;
                     if(img[job.name]){
                         theResult = img[job.name](...job.parameters); //call the image lib function
-                        if(theResult instanceof Error)
+                        returnValue.result = theResult;
+                        if(theResult instanceof Error){
+                            returnValue.success = false;
                             throw theResult;
-                    } else {
+                        }
+                        returnValue.success = true;
+                        returnValue.image = img;
+                    } else if(Jimp[job.name]) {
+                        //img._debug_tag="orig input img"
                         theResult = Jimp[job.name](img,...job.parameters);
+                        returnValue.takeImage = true;
+                        if(theResult instanceof Jimp){
+                            returnValue.image = theResult;
+                        }
+                        //theResult.image._debug_tag="diff result"
+                    } else {
+                        throw new Error(`Process '${job.name}' is not supported`)
                     }
                     switch (job.name) {
                         case "diff":
                             job.result = theResult.percent;
-                            img = theResult.image;
+                            returnValue.result = theResult.percent;
+                            returnValue.takeImage = true;
+                            returnValue.image = theResult && theResult.image;
+                            returnValue.success = returnValue && (returnValue.image instanceof Jimp);
                             break;
                         case "distance":
                             job.result = theResult;
+                            returnValue.success = !!theResult;
+                            returnValue.result = theResult;
+                            returnValue.image = img;
                             break;
                         case "histogram":
                             job.result = theResult;
+                            returnValue.success = !!theResult;
+                            returnValue.result = theResult;
+                            returnValue.image = img;
                             break;
                     
                         default:
                             job.result = true;
+                            returnValue.success = true;
+                            returnValue.result = true;
+                            returnValue.image = img;
                             break;
                     }
+                    return returnValue;
                 }
                                 
                 async function imageProcessor(Jimp,img,jobs,node,msg,performance){
@@ -330,6 +362,9 @@ module.exports = function(RED) {
 
                         //loop through jobs & carry them out
                         for(let i = 0; i < jobs.length; i++){
+                            var processResult = {
+                                image: img
+                            };
                             let job = jobs[i];//get the job
                             //check job is valid and has a function name 
                             if(!job || !job.name || job.name === 'none'){
@@ -365,29 +400,25 @@ module.exports = function(RED) {
                                     fontFile = Jimp[fontFile];
                                 }                                
                                 let font = fonts.getFont(fontFile);
+                                
                                 if(font){
                                     job.parameters[0] = font;
-                                    doProcess(Jimp,img,job);
+                                    processResult = doProcess(Jimp,img,job);    
                                 } else {
-                                    try {
-                                        if(!fontFile) throw new Error(`'Print' error - cannot load font ${fontName}`)
-                                        let p = Jimp.loadFont(fontFile);
-                                        let f = await p;
-                                        if(!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
-                                        fonts.setFont(fontFile, f)
-                                        job.parameters[0] = f;
-                                        doProcess(Jimp,img,job);
-                                    } catch (e) {
-                                        node.error(e, msg);
-                                    }
+                                    if(!fontFile) throw new Error(`'Print' error - cannot load font ${fontName}`)
+                                    let p = Jimp.loadFont(fontFile);
+                                    let f = await p;
+                                    if(!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
+                                    fonts.setFont(fontFile, f)
+                                    job.parameters[0] = f;
+                                    processResult = doProcess(Jimp,img,job);
                                 }
                             } else {
-                                doProcess(Jimp,img,job);
+                                processResult = doProcess(Jimp,img,job);
                             }
-                             
+                            img = processResult && processResult.takeImage ? processResult.image : img;
                             jobPerformance.end(perfMeasureName);
                             job.performance = jobPerformance.getPerformance(perfMeasureName);
-
                         }
                     }
 
