@@ -128,7 +128,7 @@ SOFTWARE.
 			const img = document.createElementNS("http://www.w3.org/2000/svg", 'image')
 			img.setAttribute('id', 'image-output-img-' + id)
 			img.setAttribute('x', '0')
-			img.setAttribute('y', '36')
+			img.setAttribute('y', '45')
 			img.setAttribute('width', node.width || DEFAULT_WIDTH)
 			img.setAttribute('onclick', 'remove("' + id + '")')
 			$container.insertBefore(img, $container.lastChild.nextSibling)
@@ -141,22 +141,20 @@ SOFTWARE.
 			const $bubble = document.getElementById(bubbleId)
 			let imgBbox = $img.getBBox()
 			imgBbox.x = 0;
-			imgBbox.y = 36;
+			imgBbox.y = 45;
 			imgBbox.width = imgBbox.width || node.width || DEFAULT_WIDTH;
 			imgBbox.height = imgBbox.height || node.width * i.height / i.width;
 			const left = imgBbox.x
-			const top = imgBbox.y
+			const top = imgBbox.y + 2
 			const right = imgBbox.x + imgBbox.width
 			const bottom = imgBbox.y + imgBbox.height
 			const points =
-				(left + 10) + "," + (top - 5) + " " + 
-				(left + 10) + "," + top + " " +
+				(left + 4) + "," + (top - 17) + " " +
+				(left + 4) + "," + top + " " +
 				right + "," + top + " " +
 				right + "," + bottom + " " +
-				left  + "," + bottom + " " +
-				left  + "," + top + " " +
-				(left + 5) + "," + top + " " +
-				(left + 5) + "," + (top - 5)
+				left + "," + bottom + " " +
+				left + "," + (top - 21)
 			$bubble.setAttribute('points', points)
 		}
 
