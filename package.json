@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "A dynamic Image editor node with over 40 functions, a viewer node and a barcode decoder node",
     "keywords": [
         "node-red",
