@@ -22,7 +22,6 @@ module.exports = function(RED) {
         node.CODE_128 = config.CODE_128;
         node.ITF = config.ITF;
         node.RSS_14 = config.RSS_14;
-    debugger;
         node.formats = [];
         let stringformats = []
         if(node.DATA_MATRIX) {stringformats.push("DATA_MATRIX")}
@@ -35,7 +34,7 @@ module.exports = function(RED) {
         if(node.ITF) {stringformats.push("ITF")}
         if(node.RSS_14) {stringformats.push("RSS_14")}
         node.formats = barcodeStringFormatsConvertor(stringformats);
-
+        node.status({fill:"grey",shape:"ring",text:"Initialised"});
         function barcodeStringFormatsConvertor(ArrayOfStringFormats){
             let formats = null;
             try {
@@ -167,7 +166,7 @@ module.exports = function(RED) {
                             _decode(img, formats, tryHarder);
                         })
                         .catch(err => {
-                            console.error(err);
+                            //console.error(err);
                             node.error(err,msg);
                             node.status({fill:"red",shape:"dot",text:"Error processing image"});
                             return;//halt flow
@@ -175,10 +174,10 @@ module.exports = function(RED) {
                 }
                
             } catch (error) {
-                console.error(error);
+                //console.error(error);
                 if(error.name = "NotFoundException" || error.message == "No MultiFormat Readers were able to detect the code."){
                     //do nothing 
-                    node.status({fill:"yellow",shape:"dot",text:"Not found"});
+                    node.status({fill:"yellow",shape:"ring",text:"Not found"});
                     return;//halt flow
                 } 
                 //other errors
