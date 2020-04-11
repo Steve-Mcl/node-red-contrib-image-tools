@@ -2,6 +2,61 @@
 .node-label-white{
     color: white;
 }
+    
+.checklist {
+    margin: auto;
+    display: inline-grid;
+}
+
+/*Checkboxes styles*/
+.checklist > input[type="checkbox"] { display: none; }
+
+.checklist > input[type="checkbox"] + label {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 5px;
+    /* font: 14px/20px 'Open Sans', Arial, sans-serif; */
+    /* color: #ddd; */
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    width: 100%;
+}
+
+.checklist > input[type="checkbox"] + label:last-child { margin-bottom: 0; }
+
+.checklist > input[type="checkbox"] + label:before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-width: 1px;
+  border-style: solid;
+  /* border: 1px solid #6cc0e5; */
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: .6;
+  -webkit-transition: all .12s, border-color .08s;
+  transition: all .12s, border-color .08s;
+}
+
+.checklist > input[type="checkbox"]:checked + label:before {
+  width: 10px;
+  top: -5px;
+  left: 5px;
+  border-radius: 0;
+  opacity: 1;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+    
+
+
 </style>
 <script type="text/javascript">
 (function() {
@@ -15,8 +70,17 @@
             name: { value: "" },
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
-            specification: { value: '{format : ["QR", "DATA_MATRIX"], tryHarder: true}', validate: RED.validators.typedInput("specificationType") },
-            specificationType: { value: "json" },
+            tryharder: { value: false, validate: RED.validators.typedInput("tryharderType") },
+            tryharderType: { value: "bool" },
+            QR_CODE : { value: true},
+            DATA_MATRIX : { value: false},
+            PDF_417 : { value: false},
+            EAN_8 : { value: false},
+            EAN_13 : { value: false},
+            CODE_39 : { value: false},
+            CODE_128 : { value: false},
+            ITF : { value: false},
+            RSS_14 : { value: false},
         },
         inputs: 1,
         outputs: 1,
@@ -25,7 +89,6 @@
         },
         oneditprepare: function () {
             let node = this;
-            debugger
             function setupTypedInput(varName, types, def) {
                 let varSel = '#node-input-' + varName;
                 let typeSel = varSel + 'Type';
@@ -47,9 +110,10 @@
                 });
                 $(varSel).typedInput('type', typeVal);
             }
-
             setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
-            setupTypedInput('specification', ['msg', 'flow', 'global', 'json'], 'json');
+            setupTypedInput('tryharder', ['bool', 'msg', 'flow', 'global'], 'bool');
+        },
+        oneditsave(){
         }
     });
 })();    
@@ -66,9 +130,32 @@
         <input style="width: 70%" type="text" id="node-input-data" placeholder="image.jpg">
     </div>
     <div class="form-row">
-        <label for="node-input-specification"><i class="fa fa-code"></i><span data-i18n="xzingDecode.label.specification"> specification</span></label>
-        <input type="hidden" id="node-input-specificationType">
-        <input style="width: 70%" type="text" id="node-input-specification" placeholder="{QR: true, dataMatrix: false, tryHarder: true}">
+        <label for="node-input-format"><i class="fa fa-barcode"></i><span data-i18n="xzingDecode.label.format"> format</span></label>
+        <div class="checklist">
+                <input type="checkbox" id="node-input-DATA_MATRIX" title="DATA_MATRIX" data-value="DATA_MATRIX"> 
+                <label for="node-input-DATA_MATRIX" title="DATA_MATRIX">Datamatrix</label>
+                <input type="checkbox" id="node-input-QR_CODE" title="QR_CODE" data-value="QR_CODE"> 
+                <label for="node-input-QR_CODE" title="QR_CODE">QR</label>
+                <input type="checkbox" id="node-input-PDF_417" title="PDF_417" data-value="PDF_417"> 
+                <label for="node-input-PDF_417" title="PDF_417">PDF 417</label>
+                <input type="checkbox" id="node-input-EAN_8" title="EAN_8" data-value="EAN_8"> 
+                <label for="node-input-EAN_8" title="EAN_8">EAN 8</label>
+                <input type="checkbox" id="node-input-EAN_13" title="EAN_13" data-value="EAN_13"> 
+                <label for="node-input-EAN_13" title="EAN_13">EAN 13</label>
+                <input type="checkbox" id="node-input-CODE_39" title="CODE_39" data-value="CODE_39"> 
+                <label for="node-input-CODE_39" title="CODE_39">Code 39</label>
+                <input type="checkbox" id="node-input-CODE_128" title="CODE_128" data-value="CODE_128"> 
+                <label for="node-input-CODE_128" title="CODE_128">Code 128</label>
+                <input type="checkbox" id="node-input-ITF" title="ITF" data-value="ITF"> 
+                <label for="node-input-ITF" title="ITF">ITF</label>
+                <input type="checkbox" id="node-input-RSS_14" title="RSS_14" data-value="RSS_14"> 
+                <label for="node-input-RSS_14" title="RSS_14">RSS 14</label>
+        </div>
+    </div>
+    <div class="form-row">
+        <label for="node-input-tryharder"><i class="fa fa-cogs"></i><span data-i18n="xzingDecode.label.tryharder"> try harder</span></label>
+        <input type="hidden" id="node-input-tryharderType">
+        <input style="width: 70%" type="text" id="node-input-tryharder" >
     </div>
  
 </script>
@@ -78,23 +165,22 @@
 
 <h3>Inputs</h3>
 <dl class="message-properties">
-    <dt>image <span class="property-type">string | base64 | buffer</span></dt>
-    <dd> the file (buffer / base64 string) or file name to be processed. </dd>
-    <dt>specification <span class="property-type">string | JSON</span></dt>
-    <dd> the specification to use when decoding the barcode in the image</dd>
-    Specification Example to read QR only...
-    <code>
-        {format: ["QR_CODE"], "tryHarder": true}
-    </code>
-    Specification Example to read Datamatrix only...
-    <code>
-        {format: ["DATA_MATRIX"], "tryHarder": true}
-    </code>
-    Specification Example to read 3 different type of barcode...
-    <code>
-        {format: ["EAN_32", "RSS_14", "ITF"], "tryHarder": true}
-    </code>
-    <b>To see all currently supported types, import the example "Barcodes" or refer <a target="_blank" href="https://github.com/zxing-js/library#supported-formats">supported-formats</a> 
+    <dt>image <span class="property-type">string | base64 | buffer | object</span></dt>
+    <dd> the image (Jimp image / buffer / base64 string / file name / URL) to be decoded. </dd>
+    <dt>format <span class="property-type">JSON</span></dt>
+    <dd> 
+        The barcode formats to use can be overriden by sending an array of strings in <code>msg.barcodeFormats</code>. 
+        Choosing the correct format can reduce processng time and improve accuracy.
+        <p style="padding-left: 2px">
+            <b>Overiding barcode formats by setting <code>msg.barcodeFormats</code>...</b><br>
+            Example to read QR only: <code>["QR_CODE"]</code><br>
+            Example to read Datamatrix only: <code>["DATA_MATRIX"]</code><br>
+            Example to read 3 different types of barcode: <code>["EAN_32", "RSS_14", "ITF"]</code><br>
+            <b>To see all currently supported types, import the example "Barcodes" or refer to <a target="_blank" href="https://github.com/zxing-js/library#supported-formats">supported-formats</a> </b>
+        </p>
+    </dd>
+    <dt>tryharder <span class="property-type">bool</span></dt>
+    <dd> if <code>true</code>, this flag instructs the decoder to try harder when looking for a barcode (slower).</dd>
 </dl>
 <h3>Output</h3>
 <dl class="message-properties">
@@ -104,5 +190,13 @@
     <dd>Performance measurements of the image loading and processing</dd>
     <h4>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h4>
 </dl>
+<!-- <h3>Notes</h3>
+<p>
+    <ul>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+</p> -->
 
 </script>
