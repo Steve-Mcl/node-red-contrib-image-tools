@@ -6,13 +6,13 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
 IMPORTANT - Breaking changes in V1
 ---------
 Version 1 has breaking change ~ vs ~ V0.x versions.
-Existing flows using the "2D Barcode Decode" node will need to be modified. The easy way of fixing this is to delete any "2D Barchode Decode" & deploy, then update the node, then re-add the new "Barcode Decode" nodes.
+Existing flows using the "2D Barcode Decode" node will need to be modified. The easy way of fixing this is to delete any "2D Barcode Decode" & deploy, then update the node, then re-add the new "Barcode Decode" nodes.
 
 Alternatively, you can avoid this issue by performing the following steps...
 
 1. Upgrade node-red-contrib-image-tools
 1. Stop node-red
-1. Make a bakup of your flow.json file
+1. Make a backup of your flow.json file
 1. Opening your flow.json file in a text editor 
 1. Search / replace all instances of `"type":"2D Barcode Decoder"` with `"type":"Barcode Decoder"`
 1. Save and close your flow file
@@ -34,11 +34,11 @@ FEATURES
   * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`
   * Print text to an image
   * Over 40 image function built in with many more possible by using [convolution kernels](https://en.wikipedia.org/wiki/Kernel_(image_processing))
-  * Perform 1 or more images processes in each node
-    * TIP: you can convert a function to batch JSON my clicking the button adjacent to the function dropdown field
+  * Perform 1 or multiple (batch) images processes in each node
+    * TIP: you can convert a function to batch JSON by clicking the button adjacent to the function dropdown field. Then simply edit the batch JSON into an array `[{...},{...},{...}]` to perform as many operations as needed in one go.
   * All function parameters can be either fixed or passed in by msg/flow/global
-  * Can output image data as a buffer or base64 string.
-  * All functions and parameters are self doumenting - a tip under each item in the node editor helps the user
+  * Can output image data as a Jimp image, a buffer or base64 string.
+  * All functions and parameters are self documenting - a tip under each item in the node editor helps the user
 
 
 * Barcode Decode node
@@ -65,7 +65,7 @@ Barcode decoding...<br>
 ![barcode](https://user-images.githubusercontent.com/44235289/79025486-d43b3580-7b7d-11ea-8f42-b7ad6471d00c.gif)
 
 
-Pre-requesites
+Pre-requisites
 --------------
 
 None!
@@ -98,5 +98,5 @@ NOTES
 
 KNOWN ISSUES
 ------------
-Clicking the preview image in IE doesnt dismiss it (works in chrome)
+Clicking the preview image in IE doesn't dismiss it (works in chrome)
 
