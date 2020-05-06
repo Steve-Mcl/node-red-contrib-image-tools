@@ -154,7 +154,7 @@ module.exports = function(RED) {
             }
 
             if(Array.isArray(p)){
-                for (let index = 0; index < array.length; index++) {
+                for (let index = 0; index < p.length; index++) {
                     p[index] = normaliseJimpFunctionParameter(j,p[index]);
                 }
                 return p;
