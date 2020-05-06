@@ -96,7 +96,9 @@ module.exports = function(RED) {
             return false
         }
         function normaliseJimpFunctionParameter(j,p){
-
+            if(p instanceof Jimp){
+                return p;
+            }
             function normaliseJimpFunctionParameterValue(j,p){
                 if(typeof p == "string"){ 
                     if(p.startsWith("Align.")){
