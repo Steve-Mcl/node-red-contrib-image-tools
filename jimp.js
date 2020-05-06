@@ -96,59 +96,79 @@ module.exports = function(RED) {
             return false
         }
         function normaliseJimpFunctionParameter(j,p){
-            if(typeof p == "string"){ 
-                if(p.startsWith("Align.")){
-                    let jp = p.replace("Align.","")
-                    let alignMode = {
-                        "Left" : 1,
-                        "Centre": 2,
-                        "Right" : 4,
-                        "Top" : 8,
-                        "Middle": 16,
-                        "Bottom": 32,
-                        "Top Left" : 1 + 8,
-                        "Top Centre" : 2 + 8,
-                        "Top Right" : 4 + 8,
-                        "Middle Left" : 1 + 16,
-                        "Middle Centre" : 2 + 16,                        
-                        "Middle Right" : 4 + 16,                        
-                        "Bottom Left" : 1 + 32,
-                        "Bottom Centre" : 2 + 32,                        
-                        "Bottom Right" : 4 + 32,                        
-                    }   
-                    if(alignMode[jp] != null){
-                        return alignMode[jp];
+
+            function normaliseJimpFunctionParameterValue(j,p){
+                if(typeof p == "string"){ 
+                    if(p.startsWith("Align.")){
+                        let jp = p.replace("Align.","")
+                        let alignMode = {
+                            "Left" : 1,
+                            "Centre": 2,
+                            "Right" : 4,
+                            "Top" : 8,
+                            "Middle": 16,
+                            "Bottom": 32,
+                            "Top Left" : 1 + 8,
+                            "Top Centre" : 2 + 8,
+                            "Top Right" : 4 + 8,
+                            "Middle Left" : 1 + 16,
+                            "Middle Centre" : 2 + 16,                        
+                            "Middle Right" : 4 + 16,                        
+                            "Bottom Left" : 1 + 32,
+                            "Bottom Centre" : 2 + 32,                        
+                            "Bottom Right" : 4 + 32,                        
+                        }   
+                        if(alignMode[jp] != null){
+                            return alignMode[jp];
+                        }
+                    } else if(p.startsWith("AlignX.")){
+                        let jp = p.replace("AlignX.","")
+                        if(j[jp] != null){
+                            return j[jp];
+                        }
+                    } else if(p.startsWith("AlignY.")){
+                        let jp = p.replace("AlignY.","")
+                        if(j[jp] != null){
+                            return j[jp];
+                        }
+                    } else if(p.startsWith("Jimp.")){
+                        let jp = p.replace("Jimp.","")
+                        if(j[jp] != null){
+                            return j[jp];
+                        }
+                    } else if(p.startsWith("Font.")){
+                        let jp = p.replace("Font.","")
+                        if(j[jp] != null){
+                            return j[jp];
+                        }
+                    } else if(p.startsWith("Blend.")){
+                        let jp = p.replace("Blend.","")
+                        if(j[jp] != null){
+                            return j[jp];
+                        }
+                    } else if(isJSON(p)){
+                        return JSON.parse(p);
                     }
-                } else if(p.startsWith("AlignX.")){
-                    let jp = p.replace("AlignX.","")
-                    if(j[jp] != null){
-                        return j[jp];
-                    }
-                } else if(p.startsWith("AlignY.")){
-                    let jp = p.replace("AlignY.","")
-                    if(j[jp] != null){
-                        return j[jp];
-                    }
-                } else if(p.startsWith("Jimp.")){
-                    let jp = p.replace("Jimp.","")
-                    if(j[jp] != null){
-                        return j[jp];
-                    }
-                } else if(p.startsWith("Font.")){
-                    let jp = p.replace("Font.","")
-                    if(j[jp] != null){
-                        return j[jp];
-                    }
-                } else if(p.startsWith("Blend.")){
-                    let jp = p.replace("Blend.","")
-                    if(j[jp] != null){
-                        return j[jp];
-                    }
-                } else if(isJSON(p)){
-                    return JSON.parse(p);
                 }
+                return p;
             }
-            return p;
+
+            if(Array.isArray(p)){
+                for (let index = 0; index < array.length; index++) {
+                    p[index] = normaliseJimpFunctionParameter(j,p[index]);
+                }
+                return p;
+            } else if(isObject(p)){
+                let pNew = {};
+                let keys = Object.keys(p);
+                keys.forEach(key => {
+                    pNew[key] = normaliseJimpFunctionParameter(j,p[key]); 
+                });
+                return pNew;
+            } else {
+                return normaliseJimpFunctionParameterValue(j,p);
+            }
+
         }
           
         node.on('input', function(msg) {
@@ -251,9 +271,11 @@ module.exports = function(RED) {
                                 if(!job.parameters || !Array.isArray(job.parameters)){
                                     job.parameters = [];
                                 }
+                                let normaliseParams = [];
                                 for (let pIndex = 0; pIndex < job.parameters.length; pIndex++) {
-                                    job.parameters[pIndex] = normaliseJimpFunctionParameter(Jimp, job.parameters[pIndex])
+                                    normaliseParams[pIndex] = normaliseJimpFunctionParameter(Jimp, job.parameters[pIndex])                              
                                 }
+                                job.parameters = normaliseParams
                             }
                         }
 
