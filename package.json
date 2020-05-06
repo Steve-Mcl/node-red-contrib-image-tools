@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "A dynamic Image editor node with over 40 functions, a viewer node and a 1D + 2D Barcode Decoder node",
     "keywords": [
         "node-red",
@@ -38,13 +38,13 @@
         "example": "examples"
     },
     "dependencies": {
-        "@jimp/custom": "^0.10.1",
-        "@jimp/plugin-blur": "^0.10.1",
-        "@jimp/plugin-color": "^0.10.1",
-        "@jimp/plugin-resize": "^0.10.1",
-        "@jimp/plugin-threshold": "^0.10.1",
-        "@zxing/library": "^0.16.1",
+        "@jimp/custom": "^0.10.3",
+        "@jimp/plugin-blur": "^0.10.3",
+        "@jimp/plugin-color": "^0.10.3",
+        "@jimp/plugin-resize": "^0.10.3",
+        "@jimp/plugin-threshold": "^0.10.3",
+        "@zxing/library": "^0.16.3",
         "is-base64": "^1.1.0",
-        "jimp": "^0.10.1"
+        "jimp": "^0.10.3"
     }
 }
