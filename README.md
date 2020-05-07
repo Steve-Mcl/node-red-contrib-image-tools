@@ -22,17 +22,11 @@ Alternatively, you can avoid this issue by performing the following steps...
 
 FEATURES
 --------
-* image viewer node
-  * View images in the node-red editor (for preview / debug purposes)
-  * **Full credit** to [rikukissa](https://github.com/rikukissa) and [dceejay](https://github.com/dceejay) for the excellent [node-red-contrib-image-output](https://github.com/rikukissa/node-red-contrib-image-output) on which the "image viewer node" is heavily based. (Copy of MIT license included in src files as requested)
-  * Features include ability to display a jimp image, buffer, file name, base64 string, Data URL, Image URL.
-  * Works in Internet Explorer (IE11 tested)
 
-
-* image node
+* Image node
   * Read image from file, http, base64 string or buffer
   * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`
-  * Print text to an image
+  * Print single or multi line text to an image
   * Over 40 image function built in with many more possible by using [convolution kernels](https://en.wikipedia.org/wiki/Kernel_(image_processing))
   * Perform 1 or multiple (batch) images processes in each node
     * TIP: you can convert a function to batch JSON by clicking the button adjacent to the function dropdown field. Then simply edit the batch JSON into an array `[{...},{...},{...}]` to perform as many operations as needed in one go.
@@ -40,6 +34,11 @@ FEATURES
   * Can output image data as a Jimp image, a buffer or base64 string.
   * All functions and parameters are self documenting - a tip under each item in the node editor helps the user
 
+* Image viewer node
+  * View images in the node-red editor (for preview / debug purposes)
+  * **Full credit** to [rikukissa](https://github.com/rikukissa) and [dceejay](https://github.com/dceejay) for the excellent [node-red-contrib-image-output](https://github.com/rikukissa/node-red-contrib-image-output) on which the "image viewer node" is heavily based. (Copy of MIT license included in src files as requested)
+  * Features include ability to display a jimp image, buffer, file name, base64 string, Data URL, Image URL.
+  * Works in Internet Explorer (IE11 tested)
 
 * Barcode Decode node
   * Ability to decode 1D, QR and Data Matrix barcodes. See [supported formats](https://www.npmjs.com/package/@zxing/library#supported-formats).
@@ -60,6 +59,7 @@ Image processing...<br>
 
 Printing text...<br>
 ![printing_text](https://user-images.githubusercontent.com/44235289/59148604-fcf51a80-8a02-11e9-9a6b-f1578d6ee391.gif)
+![printing_text](https://user-images.githubusercontent.com/44235289/81293532-66433a80-9065-11ea-88e5-3a3893574255.png)
 
 Barcode decoding...<br>
 ![barcode](https://user-images.githubusercontent.com/44235289/79025486-d43b3580-7b7d-11ea-8f42-b7ad6471d00c.gif)
@@ -93,7 +93,7 @@ Or simply copy the folder `node-red-contrib-image-tools` into a folder named `no
 
 NOTES
 -----
-* Tested on Node V 10 only. YMMV
+* Tested on Node V10 & V12 only. YMMV
 * Bugs are likely :)
 
 KNOWN ISSUES

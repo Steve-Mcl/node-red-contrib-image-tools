@@ -332,7 +332,42 @@ module.exports = function(RED) {
                     }
 
                     let theResult;
-                    if(img[job.name]){
+                    if(job.name == "print"){
+                        let text = typeof job.parameters[3] == "object" ? job.parameters[3].text : job.parameters[3];
+                        text = text.replace(/(?:\\r\\n|\\r|\\n|\r\n|\r|\n)/g, '\n');
+                        let lines = text.split("\n");
+                        let thisParams = [...job.parameters];
+                        let lineSpacing = 0; //TODO: better way of handling line spacing
+                        for (let l = 0; l < lines.length; l++) {
+                            const line = lines[l];
+                            if(typeof thisParams[3] == "object"){
+                                thisParams[3].text = line;
+                            } else {
+                                thisParams[3] = line;
+                            }
+                            let newY = 0;
+                            let thisResult = img.print(...thisParams, (err, image, { x, y }) => {
+                                if(err){
+                                    returnValue.success = false;
+                                    throw err;
+                                }
+                                newY = y;
+                            }); 
+                            //console.log(`currentY=${thisParams[2]}, newY=${newY}, text="${line}"`)
+                            if(thisResult instanceof Error){
+                                returnValue.result = thisResult;
+                                returnValue.success = false;
+                                throw thisResult;
+                            }
+                            returnValue.result = thisResult;//save last result TODO: consider better way of handling multiple results for multiple print lines
+                            if(l < lines.length){
+                                thisParams[2] = (newY + lineSpacing); 
+                            } 
+                        }
+                        returnValue.success = true;
+                        
+                        returnValue.image = img;
+                    } else if(img[job.name]){
                         theResult = img[job.name](...job.parameters); //call the image lib function
                         returnValue.result = theResult;
                         if(theResult instanceof Error){
