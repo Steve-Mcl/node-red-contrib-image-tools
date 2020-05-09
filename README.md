@@ -33,6 +33,7 @@ FEATURES
   * All function parameters can be either fixed or passed in by msg/flow/global
   * Can output image data as a Jimp image, a buffer or base64 string.
   * All functions and parameters are self documenting - a tip under each item in the node editor helps the user
+  * Partial (non animated) GIF loading & processing support (experimental)
 
 * Image viewer node
   * View images in the node-red editor (for preview / debug purposes)
