@@ -547,6 +547,17 @@ module.exports = function(RED) {
                     hasMime = data.startsWith("data:");
 					isBase64Image = isBase64(data,{mimeRequired: hasMime});
                 }
+                //hack to support gif. Oddly, Jimp can read a gif but fails if you try to do most operations
+				if (data instanceof Jimp && data._originalMime == "image/gif") {
+					data.getBuffer(Jimp.MIME_PNG,(e,b)=>{
+						if(e){
+							throw e;
+						}
+						gif = true;
+						data = b;
+						isBuffer = true;
+					})
+				}
                 let isfileName = isString && !isBase64Image;
                 if(isString && isBase64Image) {
                     //convert to buffer ready for loading in jimp

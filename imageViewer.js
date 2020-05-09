@@ -80,6 +80,7 @@ module.exports = function (RED) {
                 let isArray = Array.isArray(dataInput);
                 let isString = typeof dataInput === 'string';
 				let hasMime = false, isBase64Image = false;
+				let gif = false;
                 if(isString){
                     hasMime = dataInput.startsWith("data:");
 					isBase64Image = isBase64(dataInput,{mimeRequired: hasMime});
@@ -88,12 +89,24 @@ module.exports = function (RED) {
 						hasMime = true;
 					}
                 }
-                let isfileName = isString && !isBase64Image;
+				let isfileName = isString && !isBase64Image;
+
+				//hack to support gif. Oddly, Jimp can read a gif but fails if you try to do most operations
+				if (dataInput instanceof Jimp && dataInput._originalMime == "image/gif") {
+					dataInput.getBuffer(Jimp.MIME_PNG,(e,b)=>{
+						if(e){
+							throw e;
+						}
+						gif = true;
+						dataInput = b;
+						isBuffer = true;
+					})
+				}
                 if(isString && isBase64Image && hasMime) {				
 					//its already base 64 with mime
 					node.send(msg);//pass it on before displaying
 					RED.comms.publish("image-tools-image-viewer", { id: this.id, data: dataInput });					
-				} else if (dataInput instanceof Jimp) {
+				} else if (dataInput instanceof Jimp && !gif) {
 					dataInput.getBase64(Jimp.AUTO, (err, b64) => {
 						if (err) {
 							nodeStatusError(err, msg, "Error getting base64 image")
