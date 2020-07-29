@@ -73,7 +73,8 @@ module.exports = function (RED) {
 					}
 				});
 				if (!dataInput) {
-					nodeStatusError(err, msg, "Error. Check the Image parameter");
+					nodeStatusError("dataInput is empty (Image parameter)", msg, "Error. Image is null");
+					return null;
 				}
 				
 				let isBuffer = Buffer.isBuffer(dataInput);
