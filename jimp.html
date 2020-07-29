@@ -371,6 +371,8 @@
                 return imageToolsNodeCommon.requiredParameterValidator(this,8,v) ;
             }},
             parameter8Type: { value: "msg" },
+            sendProperty: { value: "payload" },
+            sendPropertyType: { value: "msg" },
             parameterCount: {value: 0},
             jimpFunction: {value: "none"},
             selectedJimpFunction: {value: {}}                     
@@ -529,7 +531,8 @@
             
             setupTypedInput('data', 'msg|flow|global|bin|str|json', 'msg', 'payload', false);
             
-            let $dropdown = $("#node-input-jimpFunction");
+            $('#node-input-sendProperty').typedInput({types:['msg']});
+            $('#node-input-sendProperty').typedInput("value", node.sendProperty || "payload");
             $dropdown.off();
             $dropdown.empty().append('<option value=""></option>')
             for (let key in imageToolsNodeCommon.functions) {
@@ -773,6 +776,15 @@
         </div>    
     </div>
     
+    <div class="form-row jimp-row">
+        <label for="node-input-sendProperty"><i class="fa fa-sign-out"></i> 
+            <span data-i18n="jimp.label.send_property">Output Property</span>
+        </label>
+        <input type="text" id="node-input-sendProperty" style="width: calc(100% - 150px)" placeholder="payload">
+        <br>
+        <label>&nbsp;</label>
+        <div class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px">The msg property in which to send the resulting image.</div>
+    </div>    
     
     <div class="form-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
         <div style="float:left;">

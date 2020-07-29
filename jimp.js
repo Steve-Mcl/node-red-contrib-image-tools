@@ -9,8 +9,22 @@ var fonts = new (function () {
         __fonts[name] = font;
     }
 })()
-
+/**
+ * helper function to dynamically set a nexted property by name
+ * @param {*} obj - the object in which to set a properties value
+ * @param {string} path - the path to the property e.g. payload.value
+ * @param {*} val - the value to set in obj.path
+ */
+function setObjectProperty(obj, path, val){ 
+    const keys = path.split('.');
+    const lastKey = keys.pop();
+    const lastObj = keys.reduce((obj, key) => 
+        obj[key] = obj[key] || {}, 
+        obj); 
+    lastObj[lastKey] = val;
+};
 module.exports = function(RED) {
+    
     function jimpNode(config) {
         RED.nodes.createNode(this,config);
         var Jimp = require('jimp');
@@ -72,6 +86,7 @@ module.exports = function(RED) {
         node.jimpFunction = config.jimpFunction || {};
         node.fn = config.fn || "";
         node.selectedJimpFunction = config.selectedJimpFunction || {};
+        node.sendProperty = config.sendProperty || "payload";
         
         function isEmpty(obj) {
             for(var key in obj) {
@@ -500,7 +515,8 @@ module.exports = function(RED) {
                     //convert image (if required) then send msg
                     switch (node.ret) {
                         case "img":
-                            msg.payload = img;
+                            // msg.payload = img;
+                            setObjectProperty(msg,node.sendProperty,img);
                             msg.performance = performance.getPerformance();
                             node.send(msg);
                             break;
@@ -513,7 +529,8 @@ module.exports = function(RED) {
                                 }
                                 performance.end("jimp_to_buffer");
                                 performance.end("total");
-                                msg.payload = buffer;
+                                // msg.payload = buffer;
+                                setObjectProperty(msg,node.sendProperty,buffer);
                                 msg.performance = performance.getPerformance();
                                 node.send(msg);
                             });
@@ -527,7 +544,8 @@ module.exports = function(RED) {
                                 }
                                 performance.end("jimp_to_base64");
                                 performance.end("total");
-                                msg.payload = b64;
+                                // msg.payload = b64;
+                                setObjectProperty(msg,node.sendProperty,b64);
                                 msg.performance = performance.getPerformance();
                                 node.send(msg);
                             });    
