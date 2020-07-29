@@ -162,7 +162,7 @@
 
 
         "blit" : {"name" : "blit","fn" : "blit", "description" : "blit the image with another Jimp image at x, y, optionally cropped","parameters" : [
-        {"name" : "src", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultType" : "msg", "defaultValue" : "payload" },
+        {"name" : "src", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
         {"name" : "x", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
         {"name" : "y", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
         {"name" : "srcx", "type" : "num", "required" : false, "hint" : "the x position from which to crop the source image" },
@@ -172,7 +172,7 @@
 
 
         "composite" : {"name" : "composite","fn" : "composite", "description" : "composites another Jimp image over this image at x, y","parameters" : [
-        {"name" : "src", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultType" : "msg", "defaultValue" : "payload" },
+        {"name" : "src", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
         {"name" : "x", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
         {"name" : "y", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
         {"name" : "mode", "group" : "options", "type" : "blend", "required" : true, "hint" : "what blend mode to use" },
@@ -182,7 +182,7 @@
 
 
         "mask" : {"name" : "mask","fn" : "mask", "description" : "masks the image with another Jimp image at x, y using average pixel value","parameters" : [
-        {"name" : "src", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultType" : "msg", "defaultValue" : "payload" },
+        {"name" : "src", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
         {"name" : "x", "type" : "num", "required" : true, "hint" : "the horizontal position to blit the image" },
         {"name" : "y", "type" : "num", "required" : true, "hint" : "the vertical position to blit the image" }] },
 
@@ -266,7 +266,7 @@
 
 
         "displace" : {"name" : "displace","fn" : "displace", "description" : "displaces the image pixels based on the provided displacement map. Useful for making stereoscopic 3D images.","parameters" : [
-        {"name" : "map", "type" : "", "required" : true, "hint" : "the source Jimp instance", "defaultValue" : "payload" },
+        {"name" : "map", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultValue" : "payload" },
         {"name" : "offset", "type" : "num", "required" : false, "hint" : "the maximum displacement value" }] },
 
 
@@ -298,7 +298,7 @@
         {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
         {"name" : "text", "type" : "str", "required" : true, "hint" : "text to print" },
         {"name" : "maxWidth", "type" : "num", "required" : false, "hint" : "wrap text at maxWidth" },
-        {"name" : "maxHeight", "type" : "num", "required" : false, "hint" : "" }] },
+        {"name" : "maxHeight", "type" : "num", "required" : false, "hint" : "max height" }] },
         
         "print2" : {"name" : "print aligned","fn" : "print", "description" : "Print text to the image","parameters" : [
         {"name" : "font|str", "type" : "jimpFont", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
@@ -308,9 +308,9 @@
         {"name" : "alignmentX", "group" : "options", "type" : "AlignX", "required" : false, "hint" : "X Alignment" },
         {"name" : "alignmentY", "group" : "options", "type" : "AlignY", "required" : false, "hint" : "Y Alignment" },
         {"name" : "maxWidth", "type" : "auto|num", "required" : false, "hint" : "wrap text at maxWidth" },
-        {"name" : "maxHeight", "type" : "auto|num", "required" : false, "hint" : "" }] }
+        {"name" : "maxHeight", "type" : "auto|num", "required" : false, "hint" : "max height" }] }
 
-    }
+    };
     
     imageToolsNodeCommon.requiredParameterValidator = function(node,paramNo,v){
         var fn = imageToolsNodeCommon.functions[node.jimpFunction];
