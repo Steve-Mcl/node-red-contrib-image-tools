@@ -1,13 +1,30 @@
 
 <style>
-    .input-tip-group{
+    .jimp-form-tip {
+        display: inline-block !important;
+        /* width: 70%; */
+        background: #ffe;
+        border-radius: 2px;
+        border: 1px solid #ddd;
+        margin-top: 2px;
+        width: 70%;
+        overflow: auto;
+        /* max-width: 450px; */
+    }
+    .jimp-ui-container {
+        display: inline-block;
+        width: 70%;
+    }
+    .jimp-row>label {
+        width: 120px !important;
+    }
+    .jimp-row>.input-tip-group{
         display:inline-block; 
-        width: 70%;         
+        width: 70% !important;         
         padding: 2px;  
     }
     .input-tip-group label{
         color: white;
-
     }
     #convertToBatchButton {
         width: 28px;
@@ -318,7 +335,7 @@
         if(paramNo <= parameterCount){
             var p = fn.parameters[paramNo-1];
             var varName = "parameter" + paramNo;
-            let typeVal = node[varName + 'Type'];
+            var typeVal = node[varName + 'Type'];
             if(typeVal == "Jimp.AUTO" || typeVal == "auto" || typeVal == "none"){
                 return true;
             }
@@ -327,7 +344,8 @@
             }
         }
         return true;
-    }
+    };
+
 
     RED.nodes.registerType('jimp-image', {
         category: 'image tools',
@@ -380,15 +398,15 @@
         inputs: 1,
         outputs: 1,
         label: function () {
-            let fname = this.selectedJimpFunction && this.selectedJimpFunction.name ? this.selectedJimpFunction.name : ""; 
+            var fname = this.selectedJimpFunction && this.selectedJimpFunction.name ? this.selectedJimpFunction.name : ""; 
             if(fname == "none") fname = "";
             return this.name || fname || "image";
         },
         oneditsave: function() {
-            let node = this;
-            let $dropdown = $("#node-input-jimpFunction");
-            let choice = $dropdown.val() 
-            let fn = imageToolsNodeCommon.functions[choice];
+            var node = this;
+            var $dropdown = $("#node-input-jimpFunction");
+            var choice = $dropdown.val();
+            var fn = imageToolsNodeCommon.functions[choice];
             node.jimpFunction = choice;
             node.selectedJimpFunction = fn;
             node.parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
@@ -398,52 +416,44 @@
             var isObject = function (val) {
                         if (val === null) { return false;}
                         return (typeof val === 'object');
-            }   
+            };
+            var isNumeric = function(n) {
+                return n !== '' && !isNaN(parseFloat(n)) && isFinite(n);
+            };
             if(!imageToolsNodeCommon.alignModes){
                 imageToolsNodeCommon.alignModes =  [];
-                for (let key in imageToolsNodeCommon.alignMode) {
+                for (var key in imageToolsNodeCommon.alignMode) {
                     if (imageToolsNodeCommon.alignMode.hasOwnProperty(key)) {
                         imageToolsNodeCommon.alignModes.push(key);
                     }
                 }
             }
-            function setupTypedInput(varName, allowableTypes, def, defVal, isOptional) {
-                let varSel = "#node-input-" + varName;
-                let typeSel = varSel + "Type";
-                let currentValue = node[varName];
-                let currentType = node[varName + "Type"];
-                allowableTypes = allowableTypes || "msg|flow|global";
-                let parameterTypes = allowableTypes.split("|");
-                let isStringInArray = function(arr,str){
-                    for (let index = 0; index < arr.length; index++) {
-                        const element = arr[index];
-                        if(element === str){
-                            return true;
-                        }
+            function isTypeInArray(arr, findType){
+                try {
+                    var typeToFind = findType;
+                    if(isObject(findType))
+                        typeToFind = findType.value; 
+                    for (var index = 0; index < arr.length; index++) {
+                        var element = arr[index];
+                        var thisType = isObject(element) ? element.value : element;
+                        if(thisType === typeToFind) return true;
                     }
-                    return false;
-                }
+                } catch (error) {}   
+                return false;             
+            }
+            function generateTypedInputTypes(allowableTypes, isOptional) {
+                allowableTypes = allowableTypes || "msg|flow|global";
+                var parameterTypes = allowableTypes.split("|");
 
                 //if optional but 'none' is not yet an option - added it as first option in typedParameter
                 if(typeof isOptional == "boolean" && isOptional == false){
-                    if(!isStringInArray(parameterTypes,"none") ){
+                    if( !isTypeInArray(parameterTypes,"none") ){
                         parameterTypes.unshift("none");
                     }
                 } 
                 
-
-                //if def type is not in the list of parameter type, change def to 1st item
-                if(!isStringInArray(parameterTypes, def)){
-                    def = parameterTypes[0];
-                }
-
-                //if currently set type is not in the list of parameter types, currentType def to 1st item
-                if(!isStringInArray(parameterTypes, currentType)){
-                    currentType = parameterTypes[0];
-                }
-                
                 //convert any custom types to a typedInput object
-                let types = parameterTypes.map(function(t){
+                var types = parameterTypes.map(function(t){
                     if(t){
                         switch (t) {
                             case "resizeMode":
@@ -451,130 +461,177 @@
                                     value:"resizeMode",
                                     label:"Resize.",
                                     options: imageToolsNodeCommon.resizeModes 
-                                }
+                                };
                             case "jimpFont":
                                 return {
                                     value:"jimpFont",
                                     label:"Font.",
                                     options: imageToolsNodeCommon.jimpFonts 
-                                }
+                                };
                             case "alignMode": 
                                 return {
                                     value:"alignMode",
                                     label:"Align.",
                                     options: imageToolsNodeCommon.alignModes 
-                                }
+                                };
                             case "AlignX": 
                             case "alignModeX": 
                                 return {
                                     value:"AlignX",
                                     label:"AlignX.",
                                     options: imageToolsNodeCommon.alignModesX 
-                                }
+                                };
                             case "AlignY": 
                             case "alignModeY": 
                                 return {
                                     value:"AlignY",
                                     label:"AlignY.",
                                     options: imageToolsNodeCommon.alignModesY 
-                                }
+                                };
                             case "blend": 
                                 return {
                                     value:"Blend",
                                     label:"Blend.",
                                     options: imageToolsNodeCommon.blendModes
-                                }
+                                };
                             case "auto": 
                             case "Jimp.AUTO": 
                                 return {
                                     value:"auto",
                                     label:"Auto",
                                     hasValue: false 
-                                }
+                                };
                             case "none": 
                                 return {
                                     value:"none",
                                     label:"None",
                                     hasValue: false 
-                                }
+                                };
                             default:
                                 return t;
                         }
                     }
                 });
 
+                return types;
+            }            
+            function setupTypedInput(varName, allowableTypes, def, defVal, isOptional, width) {
+                var varSel = "#node-input-" + varName;
+                var typeSel = varSel + "Type";
+                var currentValue = node[varName];
+                var currentType = node[varName + "Type"];  
+                var parameterTypes = generateTypedInputTypes(allowableTypes, isOptional);
+                var defShouldNoValue = false;
+                
+                //if def type is not in the list of parameter type, change def to 1st item
+                if(!isTypeInArray(parameterTypes, def)) {
+                    var _firstType = parameterTypes[0];
+                    if(isObject(_firstType)) {
+                        _firstType = _firstType.value;
+                        defShouldNoValue = _firstType.hasValue == false;
+                    }
+                    def = _firstType;
+                }
 
-                let opts = {
+                //if currently set type is not in the list of parameter types, currentType def to 1st item
+                if(!isTypeInArray(parameterTypes, currentType)) {
+                    currentType = def;
+                }
+
+                //catch all
+                if(!currentType){
+                    currentType = def;
+                }
+
+                
+                var $ti = $(varSel);
+                var alreadyBuilt = $ti.data("built") == true;
+                if(alreadyBuilt) {
+                    //already built? just update types :)
+                    $ti.typedInput("types", parameterTypes); 
+                } else {
+                   var opts = {
                     default: def,
                     typeField: $(typeSel),
-                    types: types
-                };
-                if(isOptional){
-                    opts.default = def || "none";
-                    opts.validate = function(v) { 
-                        return !!v;
-                    }                    
+                    types: parameterTypes
+                    };
+                    if(isOptional){
+                        opts.default = def || "none";
+                        opts.validate = function(v) { 
+                            //todo - handle this when spec changes
+                            return !!v;
+                        };
+                    }
+                    $ti.typedInput(opts); 
                 }
-                let $ti = $(varSel);
-                $ti.typedInput(opts);
-                $ti.typedInput("type", currentType);
+                $ti.data("built", true);
                 
-                if(!currentValue && currentType != "Jimp.AUTO" && currentValue && currentType != "auto" && currentType != "none")
+                if(!currentValue && currentType != "Jimp.AUTO" && currentValue && currentType != "auto" && currentType != "none"){
                     $ti.typedInput("type", def);
-                if(currentValue)
-                    $ti.typedInput("value", currentValue);
-                else if(currentType == "bool" && (currentValue == "true" || currentValue == "false"))
-                    $ti.typedInput("value", currentValue);
-                else if(defVal)
-                    $ti.typedInput("value", defVal);
+                    if(defShouldNoValue) currentValue = "";
+                } else if(currentType == "num" && !isNumeric(currentValue)) {
+                    $ti.typedInput("type", def);
+                    if(defShouldNoValue) currentValue = "";
+                } else {
+                    $ti.typedInput("type", currentType);
+                }
+
+                if(currentType == "bool"){
+                    $ti.typedInput("value", (currentValue === true ||  currentValue === "true") ? "true" : "false" );
+                } else if(currentValue) {
+                    if(currentType == "num" && !isNumeric(currentValue)) {
+                        $ti.typedInput("type", def);
+                        $ti.typedInput("value", defVal || "");
+                    } else {
+                        $ti.typedInput("value", currentValue);
+                    }
+                } else {
+                    $ti.typedInput("value", defVal || "");
+                }
+
+                if(width) $ti.typedInput("width", width);
             }
             
-            setupTypedInput('data', 'msg|flow|global|bin|str|json', 'msg', 'payload', false);
+            //hack - prevent node-red calculating UI panel too large due to long text in the tip
+            node.sizeHack = false;
+            $(".jimp-form-tip").css("max-width","450px");
+            $(".jimp-form-tip").hide();//will get show / hid as required when function type is set
             
+            setupTypedInput('data', 'msg|flow|global|bin|str|json', 'msg', 'payload', false /*"68%"*/);
             $('#node-input-sendProperty').typedInput({types:['msg']});
             $('#node-input-sendProperty').typedInput("value", node.sendProperty || "payload");
+            
+            var $dropdown = $("#node-input-jimpFunction");
             $dropdown.off();
-            $dropdown.empty().append('<option value=""></option>')
-            for (let key in imageToolsNodeCommon.functions) {
-                if (imageToolsNodeCommon.functions.hasOwnProperty(key)) {
-                    const element = imageToolsNodeCommon.functions[key];
-                    if(node.jimpFunction == key){
-                        $dropdown.append($("<option selected />").val(key).text(element.name));
+            $dropdown.empty().append('<option value=""></option>');
+            for (var _key in imageToolsNodeCommon.functions) {
+                if (imageToolsNodeCommon.functions.hasOwnProperty(_key)) {
+                    var element = imageToolsNodeCommon.functions[_key];
+                    if(node.jimpFunction == _key){
+                        $dropdown.append($("<option selected />").val(_key).text(element.name));
                     } else {
-                        $dropdown.append($("<option />").val(key).text(element.name));
+                        $dropdown.append($("<option />").val(_key).text(element.name));
                     }
                 }
             }
-            //let index = 0;
-            // Object.keys(imageToolsNodeCommon.functions).forEach(function(key,index) {
-            //     // key: the name of the object key
-            //     // index: the ordinal position of the key within the object 
-            //     let element = imageToolsNodeCommon.functions[key];
-            //     if(node.jimpFunction == key){
-            //         $dropdown.append($("<option selected />").val(key).text(element.name));
-            //     } else if(index == node.jimpFunction)
-            //         $dropdown.append($("<option selected />").val(key).text(element.name));
-            //     else    
-            //         $dropdown.append($("<option />").val(key).text(element.name));
-            // });
 
-            let $convertToBatchButton = $("#convertToBatchButton");
+            var $convertToBatchButton = $("#convertToBatchButton");
 
             $convertToBatchButton.click(function() {
                 try {
-                    let choice = $dropdown.val(); 
-                    let fn = imageToolsNodeCommon.functions[choice];  
-                    let paramCount = fn && fn.parameters ? fn.parameters.length : 0;
-                    let batchSpec = {
+                    var choice = $dropdown.val(); 
+                    var fn = imageToolsNodeCommon.functions[choice];  
+                    var paramCount = fn && fn.parameters ? fn.parameters.length : 0;
+                    var batchSpec = {
                         name: fn.fn,
                         parameters:[]
-                    }
-                    let inputParameters = [];
-                    for (let i = 0; i < paramCount; i++) {
-                        const param = fn.parameters[i];
-                        let $ti = $('#node-input-parameter' + (i + 1));
-                        let pv = $ti.typedInput('value');
-                        let pt = $ti.typedInput('type');
+                    };
+                    var inputParameters = [];
+                    for (var i = 0; i < paramCount; i++) {
+                        var param = fn.parameters[i];
+                        var $ti = $('#node-input-parameter' + (i + 1));
+                        var pv = $ti.typedInput('value');
+                        var pt = $ti.typedInput('type');
                         if(pt === 'msg' || pt === 'global' || pt === 'flow' || pt == "none"){
                             //batchSpec.push("{{" + pt + "." + pv + "}}"); //future - permit template/mustache in batch mode
                             inputParameters.push(null);
@@ -583,14 +640,11 @@
                         } else if(pt === 'Resize' || pt === 'Jimp' || pt === 'resizeMode'){
                             inputParameters.push( "Jimp." + pv );
                         } else if(pt === 'Align' || pt === 'alignMode'){
-                            let value = imageToolsNodeCommon.alignMode[pv] || 0;
-                            inputParameters.push( value );
+                            inputParameters.push( imageToolsNodeCommon.alignMode[pv] || 0 );
                         } else if(pt === 'AlignX' || pt === 'alignModeX'){
-                            let value = "Jimp." + pv;
-                            inputParameters.push( value );
+                            inputParameters.push( "Jimp." + pv );
                         } else if(pt === 'AlignY' || pt === 'alignModeY'){
-                            let value = "Jimp." + pv;
-                            inputParameters.push( value );
+                            inputParameters.push( "Jimp." + pv );
                         } else if(pt === 'Blend'){
                             inputParameters.push( "Jimp." + pv );
                         } else if(pt === 'Font'){
@@ -605,47 +659,48 @@
                     }
 
                     //const isNotUndefined = v => typeof v !== 'undefined';// && v !== null;
-                    const isNotUndefined = function(v){
-                        return (v !== 'undefined')
-                    }
-                    let finalParams = [];
-                    let fplookup = {};
-                    let fParam = 0;
-                    for (let index = 0; index < fn.parameters.length; index++) {                       
-                        let funcParam = fn.parameters[index];
+                    var isNotUndefined = function(v){
+                        return (v !== 'undefined');
+                    };
+                    var finalParams = [];
+                    var fplookup = {};
+                    var fParam = 0;
+                    for (var index = 0; index < fn.parameters.length; index++) {                       
+                        var funcParam = fn.parameters[index];
                         if(funcParam.group){
-                            let i = fplookup[funcParam.group];
-                            if(!(typeof i == "number")){
-                                i = fParam;
-                                finalParams[i] = {};
-                                fplookup[funcParam.group] = i;
+                            var ifpl = fplookup[funcParam.group];
+                            if(typeof ifpl != "number"){
+                                ifpl = fParam;
+                                finalParams[ifpl] = {};
+                                fplookup[funcParam.group] = ifpl;
                                 fParam++;
                             }
-                            let value = inputParameters[index];
-                            if(isNotUndefined(value)){
-                                finalParams[i][funcParam.name] = inputParameters[index];
+                            var _v1 = inputParameters[index];
+                            if(isNotUndefined(_v1)){
+                                finalParams[i][funcParam.name] = _v1;
                             }
                         } else {
-                            let value = inputParameters[index];
-                            if(isNotUndefined(value)){
-                                finalParams[fParam++] = inputParameters[index];
+                            var _v2 = inputParameters[index];
+                            if(isNotUndefined(_v2)){
+                                finalParams[fParam++] = _v2;
                             }
                         }
                     }  
                     batchSpec.parameters = finalParams;
                     $dropdown.val("batch").change();
-                    let p1NewValue = JSON.stringify(batchSpec);
+                    var p1NewValue = JSON.stringify(batchSpec);
                     $('#node-input-parameter1').typedInput('type', 'json');
                     $('#node-input-parameter1').typedInput('value', p1NewValue);
                     
                 } catch (error) {
                     RED.notify("An error occurred while trying to convert this function to a batch function","error");
                 }
+                RED.tray.resize(); 
             });
 
             $dropdown.change(function() {
-                let choice = $dropdown.val(); 
-                let fn = imageToolsNodeCommon.functions[choice];              
+                var choice = $dropdown.val(); 
+                var fn = imageToolsNodeCommon.functions[choice];              
                 $convertToBatchButton.prop( "disabled", true );
                 $('.jimp-parameter-group').hide();//hide parameters
                 $("#tip-jimpFunction").hide();//hide the tip
@@ -664,116 +719,100 @@
                 }         
 
                 //loop through parameters and setup the typed inputs
-                let paramNo = 1;
+                var paramNo = 1;
 
                 $.each(fn.parameters, function() {
-                    let pname = "parameter" + paramNo;
-                    let lname = "parameter-label" + paramNo;
-                    let paramTipName = "tip-parameter" + paramNo;
+                    var pname = "parameter" + paramNo;
+                    var lname = "parameter-label" + paramNo;
+                    var paramTipName = "tip-parameter" + paramNo;
                     
                     $("#" + lname).text(" " + this.name);
                     $("#" + pname).show();
 
-                    let hint = (this.required ? "(Required)" : "(Optional)");
+                    var hint = (this.required ? "(Required)" : "(Optional)");
                     if(this.hint){
                         hint += " " + this.hint;
                     }
                     $("#" + paramTipName).text(hint);
                     $("#" + paramTipName).show();
-
-                    
-                    
-                    //hack to cause typedInput widget to be destroyed so it can be re-created later
-                    //gotta be a more elegant way but i've seen issues with the widget being recrated with old one still present, input box still hidden etc etc
-                    try {
-                        let $theInput = $('#node-input-' + pname);
-                        $theInput.attr("type","text");
-                        let $typedInput = $('#' + pname + ' > div > div.typed-parameter > div');
-                        $('#' + pname + ' > div.input-tip-group > div.typed-parameter > div > div > input[type="hidden"]').attr("type","text");
-                        try {
-                            $theInput.typedInput("destroy");
-                        } catch (error) {
-                            //console.error(error) 
-                        }
-                        $theInput.removeClass("red-ui-typedInput");
-                        if($typedInput.hasClass("red-ui-typedInput-container") /*&& $typedInput.hasClass("paramtip") == false*/){    
-                            $typedInput.remove();     
-                        }
-                    } catch (error) {
-                        //console.error(error)
-                    }
                    
-                    const alwaysPresentParameterTypedInputs = "msg|flow|global";
-                    const parameterTypesStr = this.type ? this.type + "|" + alwaysPresentParameterTypedInputs : alwaysPresentParameterTypedInputs;
+                    var alwaysPresentParameterTypedInputs = "msg|flow|global";
+                    var parameterTypesStr = this.type ? this.type + "|" + alwaysPresentParameterTypedInputs : alwaysPresentParameterTypedInputs;
                     setupTypedInput(pname, parameterTypesStr, this.defaultType, this.defaultValue, this.required);
-
-                    try {
-                        $('#node-input-parameter' + paramNo).typedInput('width', '98%');//hack to size it to div
-                    } catch (error) {
-                        
-                    }
                     paramNo++;
                 });
+                RED.tray.resize();
             });
             //sfp();
             $('.jimp-parameter-group').hide();//hide parameters
-            $("#tip-jimpFunction").hide();//hide the tip
+            $("#tip-jimpFunction").hide();//hide the tip       
+            RED.tray.resize();
+            node.sizeHack = true;
+        },
+        oneditresize: function(size) {
+            console.log("jimp->oneditresize()");
+            if(this.sizeHack) {
+                setTimeout(function() {
+                    console.log("jimp->oneditresize()->setTimeout() (sizeHack active - now unsetting tip max-width");
+                    $(".jimp-form-tip").css("max-width","unset");//hack - prevent node-red calculating UI panel too large due to long text in the tip
+                    this.sizeHack = false;
+                }, 100);
+            }
 
-            
+            // //HACK for old versions of node-red
+            // if(RED.settings.version && RED.settings.version.split(".")[0] < 1){
+            //     for (let i = 1; i <= 8; i++) {
+            //         const element = $("#node-input-parameter"+i);
+            //         try{
+            //             element.typedInput("width","70%");
+            //         } catch(e) {}                                       
+            //     }
+            // }
         }
     });
 })();     
 </script>
 
 <script type="text/html" data-template-name="jimp-image">
-    <div class="form-row">
+    <div class="form-row jimp-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <input type="text" id="node-input-name" style="width: calc(100% - 150px)" placeholder="Name">
     </div>
 
-    <div class="form-row">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="jimp.label.data">
+    <div class="form-row jimp-row">
+            <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="jimp.label.data">
                 image</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-dataType">
-                <input type="text" id="node-input-data" placeholder="">
-            </div>
-            <div class="form-tips">A string containing a file path, URL or base64 image can be used as an image source. NOTE: Passing in an image object is faster as there is no conversion required before processing.</div>
+            <input type="hidden" id="node-input-dataType">
+            <input type="text" id="node-input-data" style="width: calc(100% - 150px)" placeholder="">
+            <br>
+            <label>&nbsp;</label>
+            <div class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px">A string containing a file path, URL or base64 image can be used as an image source. NOTE: Passing in an image object is faster as there is no conversion required before processing.</div>
         </div>
     </div>
     
-    <div class="form-row" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-jimpFunction"><i class="fa fa-wrench"></i> <span data-i18n="jimp.label.jimpFunction">
-                    Function</span></label>
+    <div class="form-row jimp-row" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-jimpFunction"><i class="fa fa-wrench"></i> <span data-i18n="jimp.label.jimpFunction">
+            Function</span></label>
+        <div class="jimp-ui-container" style="width: calc(100% - 150px)">
+            <select type="text" id="node-input-jimpFunction" style="width: calc(100% - 30px);display:inline-block"></select>
+            <button id="convertToBatchButton" class="editor-button editor-button-small" style="width:28px;display:inline-block;float:right" title="convert to batch function" style="width:100%;"><i class="fa fa-exchange"></i></button>
         </div>
-        <div class="input-tip-group">
-            <div>
-                <span><select type="text" id="node-input-jimpFunction" style="width:90%;"></select></span>
-                <span><button id="convertToBatchButton" class="editor-button editor-button-small" title="convert to batch function"><i
-                            class="fa fa-exchange"></i></button></span>
-            </div>
-            <div class="form-tips" id="tip-jimpFunction" hidden></div>
-        </div>
-    </div>
-    
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-jimpFunction" class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+    </div>    
 
-    <div class="form-row">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-ret"><i class="fa fa-arrow-left"></i> <span data-i18n="jimp.label.return"></span>
-                return</label>
-        </div>
-        <div class="input-tip-group">
-            <select type="text" id="node-input-ret" style="width:100%;">
-                <option value="img" data-i18n="jimp.jimp">image</option>
-                <option value="buf" data-i18n="jimp.buffer">buffer</option>
-                <option value="b64" data-i18n="jimp.base64">base64</option>
-            </select>
-            <div class="form-tips">Returning an image is much faster as there is no additional conversion required.</div>
-        </div>    
+    <div class="form-row jimp-row">
+        <label style="padding-top: 8px" for="node-input-ret"><i class="fa fa-sign-out"></i> <span data-i18n="jimp.label.send">
+            Output</span></label>
+        <select type="text" id="node-input-ret" style="width: calc(100% - 150px)">
+            <option value="img" data-i18n="jimp.jimp">image</option>
+            <option value="buf" data-i18n="jimp.buffer">buffer</option>
+            <option value="b64" data-i18n="jimp.base64">base64</option>
+        </select>
+        <br>
+        <label>&nbsp;</label>
+        <div class="jimp-form-tip" style="width: calc(100% - 150px);  max-width: 450px">Sending an image is much faster as there is no additional conversion required.</div>
     </div>
     
     <div class="form-row jimp-row">
@@ -786,109 +825,77 @@
         <div class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px">The msg property in which to send the resulting image.</div>
     </div>    
     
-    <div class="form-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter1"><i class="fa fa-code"></i><span id="parameter-label1"
-                    data-i18n="jimp.label.parameter1"> parameter1</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter1Type">
-                <input type="text" id="node-input-parameter1" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter1" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter1"><i class="fa fa-code"></i><span id="parameter-label1"
+            data-i18n="jimp.label.parameter1"> parameter1</span></label>
+        <input type="hidden" id="node-input-parameter1Type">
+        <input type="text" id="node-input-parameter1" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter1" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter2" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter2"><i class="fa fa-code"></i><span id="parameter-label2"
-                    data-i18n="jimp.label.parameter2"> parameter2</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter2Type">
-                <input type="text" id="node-input-parameter2" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter2" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter2" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter2"><i class="fa fa-code"></i><span id="parameter-label2"
+            data-i18n="jimp.label.parameter2"> parameter2</span></label>
+        <input type="hidden" id="node-input-parameter2Type">
+        <input type="text" id="node-input-parameter2" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter2" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter3" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter3"><i class="fa fa-code"></i><span id="parameter-label3"
-                    data-i18n="jimp.label.parameter3"> parameter3</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter3Type">
-                <input type="text" id="node-input-parameter3" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter3" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter3" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter3"><i class="fa fa-code"></i><span id="parameter-label3"
+            data-i18n="jimp.label.parameter3"> parameter3</span></label>
+        <input type="hidden" id="node-input-parameter3Type">
+        <input type="text" id="node-input-parameter3" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter3" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter4" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter4"><i class="fa fa-code"></i><span id="parameter-label4"
-                    data-i18n="jimp.label.parameter4"> parameter4</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter4Type">
-                <input type="text" id="node-input-parameter4" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter4" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter4" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter4"><i class="fa fa-code"></i><span id="parameter-label4"
+            data-i18n="jimp.label.parameter4"> parameter4</span></label>
+        <input type="hidden" id="node-input-parameter4Type">
+        <input type="text" id="node-input-parameter4" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter4" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter5" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter5"><i class="fa fa-code"></i><span id="parameter-label5"
-                    data-i18n="jimp.label.parameter5"> parameter5</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter5Type">
-                <input type="text" id="node-input-parameter5" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter5" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter5" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter5"><i class="fa fa-code"></i><span id="parameter-label5"
+            data-i18n="jimp.label.parameter5"> parameter5</span></label>
+        <input type="hidden" id="node-input-parameter5Type">
+        <input type="text" id="node-input-parameter5" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter5" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter6" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter6"><i class="fa fa-code"></i><span id="parameter-label6"
-                    data-i18n="jimp.label.parameter6"> parameter6</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter6Type">
-                <input type="text" id="node-input-parameter6" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter6" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter6" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter6"><i class="fa fa-code"></i><span id="parameter-label6"
+            data-i18n="jimp.label.parameter6"> parameter6</span></label>
+        <input type="hidden" id="node-input-parameter6Type">
+        <input type="text" id="node-input-parameter6" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter6" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter7" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter7"><i class="fa fa-code"></i><span id="parameter-label7"
-                    data-i18n="jimp.label.parameter7"> parameter7</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter7Type">
-                <input type="text" id="node-input-parameter7" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter7" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter7" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter7"><i class="fa fa-code"></i><span id="parameter-label7"
+            data-i18n="jimp.label.parameter7"> parameter7</span></label>
+        <input type="hidden" id="node-input-parameter7Type">
+        <input type="text" id="node-input-parameter7" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter7" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-parameter-group" id="parameter8" style="vertical-align: top;">
-        <div style="float:left;">
-            <label style="padding-top: 8px" for="node-input-parameter8"><i class="fa fa-code"></i><span id="parameter-label8"
-                    data-i18n="jimp.label.parameter8"> parameter8</span></label>
-        </div>
-        <div class="input-tip-group">
-            <div class="typed-parameter">
-                <input type="hidden" id="node-input-parameter8Type">
-                <input type="text" id="node-input-parameter8" placeholder="">
-            </div>
-            <div class="form-tips paramtip" id="tip-parameter8" hidden></div>
-        </div>
+    <div class="form-row jimp-row jimp-parameter-group" id="parameter8" style="vertical-align: top;">
+        <label style="padding-top: 8px" for="node-input-parameter8"><i class="fa fa-code"></i><span id="parameter-label8"
+            data-i18n="jimp.label.parameter8"> parameter8</span></label>
+        <input type="hidden" id="node-input-parameter8Type">
+        <input type="text" id="node-input-parameter8" style="width: calc(100% - 150px)" placeholder="">
+        <br>
+        <label>&nbsp;</label>
+        <div id="tip-parameter8" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
 </script>
 
