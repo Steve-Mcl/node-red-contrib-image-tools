@@ -31,6 +31,7 @@
         "nodes": {
             "jimp": "jimp.js",
             "xzingDecode": "xzingDecode.js",
+            "barcodeWriter": "barcodeWriter.js",
             "imageViewer": "imageViewer.js"
         }
     },
@@ -45,6 +46,7 @@
         "@jimp/plugin-threshold": "^0.14.0",
         "@zxing/library": "^0.17.0",
         "is-base64": "^1.1.0",
-        "jimp": "^0.14.0"
+        "jimp": "^0.14.0",
+        "symbology": "^1.18.0"
     }
 }
