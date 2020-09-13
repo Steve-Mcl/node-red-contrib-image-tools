@@ -39,14 +39,14 @@
         "example": "examples"
     },
     "dependencies": {
-        "@jimp/custom": "^0.14.0",
-        "@jimp/plugin-blur": "^0.14.0",
-        "@jimp/plugin-color": "^0.14.0",
-        "@jimp/plugin-resize": "^0.14.0",
-        "@jimp/plugin-threshold": "^0.14.0",
+        "@jimp/custom": "^0.16.1",
+        "@jimp/plugin-blur": "^0.16.1",
+        "@jimp/plugin-color": "^0.16.1",
+        "@jimp/plugin-resize": "^0.16.1",
+        "@jimp/plugin-threshold": "^0.16.1",
         "@zxing/library": "^0.17.0",
         "is-base64": "^1.1.0",
-        "jimp": "^0.14.0",
+        "jimp": "^0.16.1",
         "symbology": "^1.18.0"
     }
 }
