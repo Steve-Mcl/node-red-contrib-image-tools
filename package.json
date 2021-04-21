@@ -44,9 +44,9 @@
         "@jimp/plugin-color": "^0.16.1",
         "@jimp/plugin-resize": "^0.16.1",
         "@jimp/plugin-threshold": "^0.16.1",
-        "@zxing/library": "^0.17.0",
+        "@zxing/library": "^0.18.5",
         "is-base64": "^1.1.0",
         "jimp": "^0.16.1",
-        "symbology": "^1.18.0"
+        "symbology": "^2.1.5"
     }
 }
