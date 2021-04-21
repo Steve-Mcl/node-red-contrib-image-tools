@@ -2,48 +2,8 @@ module.exports = function(RED) {
     
     function barcodeWriter(config) {
         RED.nodes.createNode(this,config);
-        const Jimp = require('jimp');
-        const performanceLogger = require('node-red-contrib-image-tools/performanceLogger');
+        const performanceLogger = require('./performanceLogger');
         const symbology = require('symbology');
-
-
-        // const bitgener = require('bitgener');
-
-        // const stream = require('stream');
-        // const path = require('path');
-        
-        // const { promisify, inherits } = require('util');
-        // const sharp = require('sharp');
-         
-        // const pipeline = promisify(stream.pipeline);
-
-        // const  Writable = stream.Writable;
-
-        // var memStore = { };
-        // /* Writable memory stream */
-        // function WMStrm(key, options) {
-        //     // allow use without new operator
-        //     if (!(this instanceof WMStrm)) {
-        //     return new WMStrm(key, options);
-        //     }
-        //     Writable.call(this, options); // init super
-        //     this.key = key; // save key
-        //     memStore[key] = new Buffer(''); // empty
-        // }
-        // inherits(WMStrm, Writable);
-        
-        // WMStrm.prototype._write = function (chunk, enc, cb) {
-        //     // our memory store stores things in buffers
-        //     var buffer = (Buffer.isBuffer(chunk)) ?
-        //     chunk :  // already is Buffer use it
-        //     new Buffer(chunk, enc);  // string, convert
-        
-        //     // concat to the buffer already there
-        //     memStore[this.key] = Buffer.concat([memStore[this.key], buffer]);
-        //     cb();
-        // };
-
-
 
         var node = this;
 		node.data = config.data || "payload";//data
@@ -51,8 +11,8 @@ module.exports = function(RED) {
         node.barcode = config.barcode || "QRCODE";
         node.barcodeType = config.barcodeType || "str";
         
-        node.tryHarder = config.tryHarder || false;
-        node.tryHarderType = config.tryHarderType || "bool";
+        node.options = config.options || "payload";
+        node.optionsType = config.optionsType || "msg";
 
         node.DATA_MATRIX = config.DATA_MATRIX;
         node.QR_CODE = config.QR_CODE;
@@ -94,8 +54,12 @@ module.exports = function(RED) {
             }            
             return formats;
         }
+        
+        function isNumber(n) {
+            if (n === "" || n === true || n === false) return false;
+            return !isNaN(parseFloat(n)) && isFinite(n);
+        }
 
-          
         node.on('input', function(msg) {
             var performance = new performanceLogger(node.id);
             performance.start("total");
@@ -121,8 +85,34 @@ module.exports = function(RED) {
                     barcode = value; 
                 }
             }); 
+            var options;
+            RED.util.evaluateNodeProperty(node.options,node.optionsType,node,msg,(err,value) => {
+                if (err) {
+                    node.error("Unable to evaluate options",msg);
+                    node.status({fill:"red",shape:"ring",text:"Unable to evaluate options"});
+                    return;//halt flow!
+                } else {
+                    options = value; 
+                }
+            }); 
+            options = options || {};
+            if(typeof options == "string") {
+                try {
+                    options = JSON.parse(options);
+                } catch (error) {
+                    options = {};
+                }
+            }
+
+            if(!options.symbology) {
+                if(isNumber(barcode)) {
+                    options.symbology = parseInt(barcode);
+                } else {
+                    options.symbology = symbology.Barcode[barcode] || symbology.Barcode["QRCODE"];
+                }
+            }
+
             msg.originalPayload = msg.payload;//store original Payload incase user still wants it
-            let formats = null;
 
             let getDeepVal = function(obj, path, def) {
                 if (typeof obj === "undefined" || obj === null) return def;
@@ -134,7 +124,10 @@ module.exports = function(RED) {
                 }
                 return obj == null ? def : obj;
             }
-            var options = msg.options || {};
+
+
+
+            
             //convert any symbology.xxx.yyy values into real option values
             for(let p in options) {
                 let v = options[p];
@@ -153,121 +146,25 @@ module.exports = function(RED) {
             }
 
             var outputOptions = msg.outputOptions;
-            options.symbology = symbology.Barcode[barcode];
             if(outputOptions) options.outputOptions = outputOptions;
-
+            performance.start("barcode_create");
             symbology
             .createStream(options, data)
             .then((result) => {
-              console.log('Result: ', result)
-              result.buf = new Buffer(result.data, 'base64');
-              msg.payload = result;
-              node.send(msg);
-              return
+                performance.end("barcode_create");
+                performance.end("total");
+                console.log('Result: ', result); 
+                msg.payload = result;
+                msg.performance = performance.getPerformance();
+                node.send(msg);
+                return
             }).catch(e => {
                 node.error(e,msg);
             }) 
 
             return;
-            // try {
-            //     node.msgMem = msg;
-            //     const convert = async function convert({
-            //         buffer,
-            //         density,
-            //         format,
-            //         method,
-            //         filePath,
-            //       } = {}) {
-            //         // sharp it!
-            //         const sharped = sharp(buffer, { density });
-            //         let ret;
-                   
-            //         if (method === 'toFile' || filePath !== undefined) {
-            //           ret = await sharped.toFile(filePath);
-            //           // object returned by sharp: https://sharp.pixelplumbing.com/en/stable/api-output/#tofile
-            //         // } else if (method === 'toBuffer') {
-            //         //   ret = sharped.toFormat(format).toBuffer();
-            //         } else {
-            //           // return a sharp/streamable object
-            //           ret = sharped[format]();
-            //         }
-                   
-            //         return ret;
-            //       };
-        
-                  
-                 
-
-
-            //         // then use it in an async function
-            //         (async () => {
-            //             try {
-            //             // const wstream = createWriteStream(path.join(__dirname, 'sharped.png'));
-            //             var wstream = new WMStrm('foo');
-            //             wstream.on('finish', function () {
-            //                 console.log('finished writing');
-            //                 msg.payload = memStore.foo;
-            //                 node.send(msg)
-            //             });
-            //             const {
-            //                 svg: buffer,
-            //                 density,
-            //             } = await bitgener({
-            //                 data: msg.payload,
-            //                 type: 'codabar',
-            //                 output: 'buffer',
-            //                 encoding: 'utf8',
-            //                 rectangular: true,
-            //                 padding: 0,
-            //                 width: 250,
-            //                 height: 250,
-            //                 original2DSize: false,
-            //                 color: '#000000',
-            //                 opacity: 1,
-            //                 bgColor: '#eeeeee',
-            //                 bgOpacity: 1,
-            //                 hri: {
-            //                 show: true,
-            //                 fontFamily: 'Courier New',
-            //                 fontSize: 15,
-            //                 marginTop: 0,
-            //                 },
-            //             });
-                    
-            //             const rstream = await convert({
-            //                 buffer,
-            //                 density,
-            //                 format: 'png',
-            //                 method: "toBuffer"
-            //             });
-
-            //             // listen to rstream and wstream error events ;)
-                    
-            //             // use pipeline to automatically clean up streams or you're exposing your code to memory leaks
-            //             await pipeline(rstream, wstream);                    
-                        
-
-            //             // ...
-            //         } catch (e) {
-            //             node.error(e,msg);
-            //         }
-            //         })();
-               
-            // } catch (error) {
-            //     //console.error(error);
-            //     if(error.name = "NotFoundException" || error.message == "No MultiFormat Readers were able to detect the code."){
-            //         //do nothing 
-            //         node.status({fill:"yellow",shape:"ring",text:"Not found"});
-            //         return;//halt flow
-            //     } 
-            //     //other errors
-            //     node.error(error,msg);
-            //     node.status({fill:"red",shape:"dot",text:"Error"});
-            //     return;//halt flow
-            // }
-            
            
         });
     }
-    RED.nodes.registerType("Barcode Writer",barcodeWriter);
+    RED.nodes.registerType("Barcode Generator",barcodeWriter);
 }

@@ -55,14 +55,131 @@
   transform: rotate(45deg);
 }
     
-
+input.color-picker {
+	-webkit-appearance: none;
+	border: none;
+	width: 100px;
+}
+input.color-picker::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input.color-picker::-webkit-color-swatch {
+	border: none;
+}
 
 </style>
 <script type="text/javascript">
 (function() {
-    RED.nodes.registerType('Barcode Writer', {
+
+    /** @see {@link https://github.com/jshor/symbology/blob/master/src/enums/barcode.js} */
+    var symbology_barcodes = {
+        CODE11: 1,
+        C25MATRIX: 2,
+        C25INTER: 3,
+        C25IATA: 4,
+        C25LOGIC: 6,
+        C25IND: 7,
+        CODE39: 8,
+        EXCODE39: 9,
+        EANX: 13,
+        EANX_CHK: 14,
+        EAN128: 16,
+        CODABAR: 18,
+        CODE128: 20,
+        DPLEIT: 21,
+        DPIDENT: 22,
+        CODE16K: 23,
+        CODE49: 24,
+        CODE93: 25,
+        FLAT: 28,
+        RSS14: 29,
+        RSS_LTD: 30,
+        RSS_EXP: 31,
+        TELEPEN: 32,
+        UPCA: 34,
+        UPCA_CHK: 35,
+        UPCE: 37,
+        UPCE_CHK: 38,
+        POSTNET: 40,
+        MSI_PLESSEY: 47,
+        FIM: 49,
+        LOGMARS: 50,
+        PHARMA: 51,
+        PZN: 52,
+        PHARMA_TWO: 53,
+        PDF417: 55,
+        PDF417TRUNC: 56,
+        MAXICODE: 57,
+        QRCODE: 58,
+        CODE128B: 60,
+        AUSPOST: 63,
+        AUSREPLY: 66,
+        AUSROUTE: 67,
+        AUSREDIRECT: 68,
+        ISBNX: 69,
+        RM4SCC: 70,
+        DATAMATRIX: 71,
+        EAN14: 72,
+        VIN: 73,
+        CODABLOCKF: 74,
+        NVE18: 75,
+        JAPANPOST: 76,
+        KOREAPOST: 77,
+        RSS14STACK: 79,
+        RSS14STACK_OMNI: 80,
+        RSS_EXPSTACK: 81,
+        PLANET: 82,
+        MICROPDF417: 84,
+        ONECODE: 85,
+        PLESSEY: 86,
+
+        /* Tbarcode: 8 codes */
+        TELEPEN_NUM: 87,
+        ITF14: 89,
+        KIX: 90,
+        AZTEC: 92,
+        DAFT: 93,
+        MICROQR: 97,
+
+        /* Tbarcode: 9 codes */
+        HIBC_128: 98,
+        HIBC_39: 99,
+        HIBC_DM: 102,
+        HIBC_QR: 104,
+        HIBC_PDF: 106,
+        HIBC_MICPDF: 108,
+        HIBC_AZTEC: 112,
+        DOTCODE: 115,
+        HANXIN: 116,
+        MAILMARK: 121,
+
+        /* Zint specific */
+        AZRUNE: 128,
+        CODE32: 129,
+        EANX_CC: 130,
+        EAN128_CC: 131,
+        RSS14_CC: 132,
+        RSS_LTD_CC: 133,
+        RSS_EXP_CC: 134,
+        UPCA_CC: 135,
+        UPCE_CC: 136,
+        RSS14STACK_CC: 137,
+        RSS14_OMNI_CC: 138,
+        RSS_EXPSTACK_CC: 139,
+        CHANNEL: 140,
+        CODEONE: 141,
+        GRIDMATRIX: 142,
+        UPNQR: 143
+    };
+
+    function isNumber(n) {
+        if (n === "" || n === true || n === false) return false;
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
+    RED.nodes.registerType('Barcode Generator', {
         category: 'image tools',
-        paletteLabel: "Barcode Writer",
+        paletteLabel: "Barcode Generator",
         //labelStyle: "node-label-white",
         icon: "font-awesome/fa-barcode",
         color: '#FFAAAA',//'#f24b69',
@@ -71,113 +188,132 @@
             data: { value: "payload", validate: RED.validators.typedInput("dataType") },
             dataType: { value: "msg" },
             barcode: { value: "QRCODE", validate: RED.validators.typedInput("barcodeType") },
-            barcodeType: { value: "str" },
-
+            barcodeType: { value: "barcode" },
+            fgcolor: { value: "#000000" },
+            bgcolor: { value: "#ffffff" },
+            options: { value: {} }
         },
         inputs: 1,
         outputs: 1,
         label: function () {
-            return this.name || "Barcode Decoder";
+            return this.name || "Generator";
         },
         oneditprepare: function () {
+            console.log("Barcode Generator --> oneditprepare()")
             let node = this;
-            function setupTypedInput(varName, types, def) {
-                let varSel = '#node-input-' + varName;
-                let typeSel = varSel + 'Type';
-                let varVal = node[varName];
-                let typeVal = node[varName + 'Type'];
 
-                if (typeVal == null || typeVal === 'none') {
-                    typeVal = def;
-                } else if (typeVal === 'string') {
-                    typeVal = "str";
-                } else if (typeVal === 'number') {
-                    typeVal = "num";
+            var barcodeData = $("#node-input-data");
+            barcodeData.typedInput({
+                default:"msg",
+                typeField: $("#node-input-dataType"),
+                types: ["msg", "flow", "global", "str", "env", "jsonata"]
+            });
+
+            var barcodeChoices = Object.keys(symbology_barcodes).map( e => {
+                return { 
+                    label: e, 
+                    value: symbology_barcodes[e]
                 }
-                $(typeSel).val(typeVal);
-                $(varSel).typedInput({
-                    default: def,
-                    typeField: $(typeSel),
-                    types: types
-                });
-                $(varSel).typedInput('type', typeVal);
+            });
+
+            var barcode = $("#node-input-barcode");
+            barcode.typedInput({
+                default:"barcode",
+                typeField: $("#node-input-barcodeType"),
+                types: [                    
+                    {
+                        value:"barcode",
+                        label:"Barcode", 
+                        title: "Barcode", 
+                        icon:"fa fa-barcode",
+                        showLabel: false,
+                        multiple: false,
+                        options: barcodeChoices
+                    }, "msg", "flow", "global", "str", "env", "jsonata", 
+                ]
+            });
+            var bcNo = isNumber(this.barcode) ? parseInt(this.barcode) : symbology_barcodes.QRCODE;
+            barcode.typedInput("type", this.barcodeType || "barcode");
+            barcode.typedInput("value", bcNo);
+
+
+            var options = $("#node-input-options");
+            options.typedInput({
+                default:"msg",
+                typeField: $("#node-input-optionsType"),
+                types: ["msg", "flow", "global", "json", "env", "jsonata"] 
+            });
+            options.typedInput("type", this.optionsType || "msg");
+            if(this.options) options.typedInput("value", this.options);
+
+            var setColour = function(id, value) {
+                $(id).val(value);
+                $(id).css("background-color", value);
             }
-            setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
-            setupTypedInput('tryharder', ['bool', 'msg', 'flow', 'global'], 'bool');
+            debugger
+            setColour("node-input-bgcolor", this.bgcolor || "#ffffff");
+            setColour("node-input-fgcolor", this.fgcolor || "#000000");
         },
         oneditsave(){
+            debugger
+            this.fgcolor = $("#node-input-fgcolor").val();
+            this.bgcolor = $("#node-input-bgcolor").val();
         }
     });
 })();    
 </script>
 
-<script type="text/html" data-template-name="Barcode Writer">
+<script type="text/html" data-template-name="Barcode Generator">
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-barcode"><i class="fa fa-file-image-o"></i><span data-i18n="xzingDecode.label.barcode"> type</span></label>
-        <input type="hidden" id="node-input-barcodeType">
-        <input style="width: 70%" type="text" id="node-input-barcode" placeholder="image.jpg">
-    </div>
-    <div class="form-row">
-        <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="xzingDecode.label.data"> data</span></label>
+        <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="xzingDecode.label.data"> Property</span></label>
         <input type="hidden" id="node-input-dataType">
         <input style="width: 70%" type="text" id="node-input-data" placeholder="0123456789">
     </div>
+
     <div class="form-row">
-        <label for="node-input-format"><i class="fa fa-barcode"></i><span data-i18n="xzingDecode.label.format"> format</span></label>
+        <label for="node-input-barcode"><i class="fa fa-barcode"></i><span data-i18n="xzingDecode.label.barcode"> Type</span></label>
+        <input type="hidden" id="node-input-barcodeType">
+        <input style="width: 70%" type="text" id="node-input-barcode" placeholder="image.jpg">
+    </div>
+    
+    <div class="form-row">
+        <label for="node-input-bgcolor"><i class="fa fa-paint-brush"></i><span data-i18n="barcode_writer.label.bgcolor"> background</span></label>
+        <input type="color" class="color-picker" id="node-input-bgcolor">
+    </div>
+    <div class="form-row">
+        <label for="node-input-fgcolor"><i class="fa fa-paint-brush"></i><span data-i18n="barcode_writer.label.fgcolor"> foreground</span></label>
+        <input type="color" class="color-picker" id="node-input-fgcolor">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-options"><i class="fa fa-cog"></i><span data-i18n="barcode_writer.label.options"> options</span></label>
         <div class="checklist">
-                <input type="checkbox" id="node-input-DATA_MATRIX" title="DATA_MATRIX" data-value="DATA_MATRIX"> 
-                <label for="node-input-DATA_MATRIX" title="DATA_MATRIX">Datamatrix</label>
-                <input type="checkbox" id="node-input-QR_CODE" title="QR_CODE" data-value="QR_CODE"> 
-                <label for="node-input-QR_CODE" title="QR_CODE">QR</label>
-                <input type="checkbox" id="node-input-PDF_417" title="PDF_417" data-value="PDF_417"> 
-                <label for="node-input-PDF_417" title="PDF_417">PDF 417</label>
-                <input type="checkbox" id="node-input-EAN_8" title="EAN_8" data-value="EAN_8"> 
-                <label for="node-input-EAN_8" title="EAN_8">EAN 8</label>
-                <input type="checkbox" id="node-input-EAN_13" title="EAN_13" data-value="EAN_13"> 
-                <label for="node-input-EAN_13" title="EAN_13">EAN 13</label>
-                <input type="checkbox" id="node-input-CODE_39" title="CODE_39" data-value="CODE_39"> 
-                <label for="node-input-CODE_39" title="CODE_39">Code 39</label>
-                <input type="checkbox" id="node-input-CODE_128" title="CODE_128" data-value="CODE_128"> 
-                <label for="node-input-CODE_128" title="CODE_128">Code 128</label>
-                <input type="checkbox" id="node-input-ITF" title="ITF" data-value="ITF"> 
-                <label for="node-input-ITF" title="ITF">ITF</label>
-                <input type="checkbox" id="node-input-RSS_14" title="RSS_14" data-value="RSS_14"> 
-                <label for="node-input-RSS_14" title="RSS_14">RSS 14</label>
+            <input type="checkbox" id="node-input-show_text" title="show text" data-value="show text"> 
+            <label for="node-input-show_text" title="show text">show text</label>
         </div>
     </div>
     <div class="form-row">
-        <label for="node-input-tryharder"><i class="fa fa-cogs"></i><span data-i18n="xzingDecode.label.tryharder"> try harder</span></label>
-        <input type="hidden" id="node-input-tryharderType">
-        <input style="width: 70%" type="text" id="node-input-tryharder" >
-    </div>
- 
+        <label for="node-input-options"><i class="fa fa-paint-brush"></i><span data-i18n="barcode_writer.label.options"> options</span></label>
+        <input type="hidden" id="node-input-optionsType">
+        <input style="width: 70%" type="text" id="node-input-options" placeholder="">
+    </div> 
 </script>
 
-<script type="text/html" data-help-name="Barcode Writer">
-<p>A barcode decoder node built with zxing and Jimp</p>
+<script type="text/html" data-help-name="Barcode Generator">
+<p>A barcode generator node</p>
 
 <h3>Inputs</h3>
 <dl class="message-properties">
-    <dt>image <span class="property-type">string | base64 | buffer | object</span></dt>
-    <dd> the image (Jimp image / buffer / base64 string / file name / URL) to be decoded. </dd>
-    <dt>format <span class="property-type">JSON</span></dt>
-    <dd> 
-        The barcode formats to use can be overriden by sending an array of strings in <code>msg.barcodeFormats</code>. 
-        Choosing the correct format can reduce processng time and improve accuracy.
-        <p style="padding-left: 2px">
-            <b>Overiding barcode formats by setting <code>msg.barcodeFormats</code>...</b><br>
-            Example to read QR only: <code>["QR_CODE"]</code><br>
-            Example to read Datamatrix only: <code>["DATA_MATRIX"]</code><br>
-            Example to read 3 different types of barcode: <code>["EAN_32", "RSS_14", "ITF"]</code><br>
-            <b>To see all currently supported types, import the example "Barcodes" or refer to <a target="_blank" href="https://github.com/zxing-js/library#supported-formats">supported-formats</a> </b>
-        </p>
-    </dd>
-    <dt>tryharder <span class="property-type">bool</span></dt>
-    <dd> if <code>true</code>, this flag instructs the decoder to try harder when looking for a barcode (slower).</dd>
+    <dt>Property <span class="property-type">string</span></dt>
+    <dd> the data to be encoded in the barcode. </dd>
+    <dt>Type <span class="property-type">number</span></dt>
+    <dd> the barcode type.  <a href="https://symbology.dev/docs/options.html">supported types</a>  </dd>
+    <dt>Options <span class="property-type">object</span></dt>
+    <dd> additional options to format the barcode. <a href="https://symbology.dev/docs/options.html">symbology options</a>  </dd>
 </dl>
 <h3>Output</h3>
 <dl class="message-properties">
