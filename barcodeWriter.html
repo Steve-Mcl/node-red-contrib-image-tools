@@ -318,7 +318,7 @@
                     const typeList = $('<ul/>');
                     for (let index = 0; index < symbologyKeys.length; index++) {
                         const sym = symbology[symbologyKeys[index]];
-                        symList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: ' + sym.text))
+                        typeList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: ' + sym.text))
                     }
                     $typesHelp.append(typeList);
                 } catch (error) { }
