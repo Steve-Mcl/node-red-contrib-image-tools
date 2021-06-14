@@ -1,6 +1,5 @@
 <script type="text/javascript">
     (function () {
-
         RED.nodes.registerType('Barcode Generator', {
             category: 'image tools',
             paletteLabel: "Barcode Generator",
@@ -224,8 +223,8 @@
         }
     })();
     // Update built in help from types/options
-    function update_image_tools_barcode_built_in_help(){
-        if(window.image_tools && $("#image-tools-barcode-options").length && $("#image-tools-barcode-types").length ){
+    function update_image_tools_barcode_built_in_help() {
+        if (window.image_tools && $("#image-tools-barcode-options").length && $("#image-tools-barcode-types").length) {
             const symbology = image_tools.getSymbology();
             const symbologyOptionsList = image_tools.getOptionsList();
             const symbologyOptionsMap = image_tools.getOptionsMap();
@@ -295,41 +294,40 @@
 </script>
 
 <script type="text/html" data-help-name="Barcode Generator">
-<p>A barcode generator node</p>
+    <p>A barcode generator node</p>
 
-<h3>Inputs</h3>
-<dl class="message-properties">
-    <dt>text <span class="property-type">string</span></dt>
-    <dd> the data to be encoded in the barcode. </dd>
-    <dt>type <span class="property-type">string</span></dt>
-    <dd> the barcode type.
-        <details>
-            <summary>allowable types</summary>
-            <p id="image-tools-barcode-types">
-                <button style="background: none!important; border: none; padding: 0!important;  text-decoration: underline; cursor: pointer;" 
-                    onclick="update_image_tools_barcode_built_in_help()">click me to load list</button>
-            </p>
-        </details>
-    </dd>
-    <dt>output property <span class="property-type">string</span></dt>
-    <dd> The msg property where the barcode is returned</dd>
-    <dt>Options <span class="property-type">object</span></dt>
-    <dd> additional options to format the barcode.
-        <details>
-            <summary>allowable options</summary>
-            <p id="image-tools-barcode-options">
-                <button style="background: none!important; border: none; padding: 0!important;  text-decoration: underline; cursor: pointer;" 
-                    onclick="update_image_tools_barcode_built_in_help()">click me to load list</button>
-            </p>
-        </details>
-    </dd>
-</dl>
-<h3>Output</h3>
-<dl class="message-properties">
-    <dt>payload <span class="property-type">Buffer</span></dt>
-    <dd>A PNG barcode. NOTE: The msg property where the barcode is set will depend on the the setting in Output Property</dd>
-    <dt>performance <span class="property-type">object</span></dt>
-    <dd>Performance measurements of the node and barcode creation</dd>
-</dl>
-
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>text <span class="property-type">string</span></dt>
+        <dd> the data to be encoded in the barcode. </dd>
+        <dt>type <span class="property-type">string</span></dt>
+        <dd> the barcode type.
+            <details>
+                <summary>allowable types</summary>
+                <p id="image-tools-barcode-types">
+                    <button style="background: none!important; border: none; padding: 0!important;  text-decoration: underline; cursor: pointer;" 
+                        onclick="update_image_tools_barcode_built_in_help()">click me to load list</button>
+                </p>
+            </details>
+        </dd>
+        <dt>output property <span class="property-type">string</span></dt>
+        <dd> The msg property where the barcode is returned</dd>
+        <dt>Options <span class="property-type">object</span></dt>
+        <dd> additional options to format the barcode.
+            <details>
+                <summary>allowable options</summary>
+                <p id="image-tools-barcode-options">
+                    <button style="background: none!important; border: none; padding: 0!important;  text-decoration: underline; cursor: pointer;" 
+                        onclick="update_image_tools_barcode_built_in_help()">click me to load list</button>
+                </p>
+            </details>
+        </dd>
+    </dl>
+    <h3>Output</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">Buffer</span></dt>
+        <dd>A PNG barcode. NOTE: The msg property where the barcode is set will depend on the the setting in Output Property</dd>
+        <dt>performance <span class="property-type">object</span></dt>
+        <dd>Performance measurements of the node and barcode creation</dd>
+    </dl>
 </script>
