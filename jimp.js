@@ -1,5 +1,5 @@
 
-var fonts = new (function () {
+const _image_tools_fonts = new (function () {
     var __fonts = {}
 
     this.getFont = function (name) {
@@ -10,28 +10,15 @@ var fonts = new (function () {
     }
 })()
 
-module.exports = function(RED) {
-    
+module.exports = function (RED) {
+
     function jimpNode(config) {
-        RED.nodes.createNode(this,config);
+        RED.nodes.createNode(this, config);
         const Jimp = require('jimp');
         const threshold = require('@jimp/plugin-threshold')
         const configure = require('@jimp/custom')
         const isBase64 = require('is-base64');
-        const {setObjectProperty, isEmpty, isJSON, isObject} = require('./common.js');
-		const _prefixURIMap = {
-			"iVBOR": "data:image/png;base64,",
-			"R0lGO": "data:image/gif;base64,",
-			"/9j/4": "data:image/jpeg;base64,",
-			"Qk02U": "data:image/bmp;base64,"
-		}
-		const createDataURI = function(rawImage) {
-			let first5 = rawImage.substr(0, 5)
-			if(_prefixURIMap[first5]){
-				return _prefixURIMap[first5] + rawImage;
-			}
-			return _prefixURIMap["iVBOR"] + rawImage;//default to png
-		}        
+        const { setObjectProperty, isEmpty, isJSON, isObject } = require('./common.js');
         const performanceLogger = require('./performanceLogger.js');
 
         configure({ plugins: [threshold] }, Jimp);
@@ -46,142 +33,142 @@ module.exports = function(RED) {
         }
         const isDef = v => typeof v !== 'undefined' && v !== null;
         const node = this;
-		node.data = config.data || "";//data
-		node.dataType = config.dataType || "msg";
+        node.data = config.data || "";//data
+        node.dataType = config.dataType || "msg";
         node.ret = config.ret || "buf";
 
-		node.parameter1 = config.parameter1 || "";
-		node.parameter1Type = config.parameter1Type;
-		node.parameter2 = config.parameter2 || "";
-		node.parameter2Type = config.parameter2Type;
-		node.parameter3 = config.parameter3 || "";
-		node.parameter3Type = config.parameter3Type;
-		node.parameter4 = config.parameter4 || "";
-		node.parameter4Type = config.parameter4Type;
-		node.parameter5 = config.parameter5 || "";
-		node.parameter5Type = config.parameter5Type;
-		node.parameter6 = config.parameter6 || "";
-		node.parameter6Type = config.parameter6Type;
-		node.parameter7 = config.parameter7 || "";
-		node.parameter7Type = config.parameter7Type;
-		node.parameter8 = config.parameter8 || "";
-		node.parameter8Type = config.parameter8Type;
+        node.parameter1 = config.parameter1 || "";
+        node.parameter1Type = config.parameter1Type;
+        node.parameter2 = config.parameter2 || "";
+        node.parameter2Type = config.parameter2Type;
+        node.parameter3 = config.parameter3 || "";
+        node.parameter3Type = config.parameter3Type;
+        node.parameter4 = config.parameter4 || "";
+        node.parameter4Type = config.parameter4Type;
+        node.parameter5 = config.parameter5 || "";
+        node.parameter5Type = config.parameter5Type;
+        node.parameter6 = config.parameter6 || "";
+        node.parameter6Type = config.parameter6Type;
+        node.parameter7 = config.parameter7 || "";
+        node.parameter7Type = config.parameter7Type;
+        node.parameter8 = config.parameter8 || "";
+        node.parameter8Type = config.parameter8Type;
         node.parameterCount = config.parameterCount;
         node.jimpFunction = config.jimpFunction || {};
         node.fn = config.fn || "";
         node.selectedJimpFunction = config.selectedJimpFunction || {};
         node.sendProperty = config.sendProperty || "payload";
-        
-        
-        function normaliseJimpFunctionParameter(j,p){
-            if(p instanceof Jimp){
+
+
+        function normaliseJimpFunctionParameter(j, p) {
+            if (p instanceof Jimp) {
                 return p;
             }
-            function normaliseJimpFunctionParameterValue(j,p){
-                if(typeof p == "string"){ 
-                    if(p.startsWith("Align.")){
-                        let jp = p.replace("Align.","")
+            function normaliseJimpFunctionParameterValue(j, p) {
+                if (typeof p == "string") {
+                    if (p.startsWith("Align.")) {
+                        let jp = p.replace("Align.", "")
                         let alignMode = {
-                            "Left" : 1,
+                            "Left": 1,
                             "Centre": 2,
-                            "Right" : 4,
-                            "Top" : 8,
+                            "Right": 4,
+                            "Top": 8,
                             "Middle": 16,
                             "Bottom": 32,
-                            "Top Left" : 1 + 8,
-                            "Top Centre" : 2 + 8,
-                            "Top Right" : 4 + 8,
-                            "Middle Left" : 1 + 16,
-                            "Middle Centre" : 2 + 16,                        
-                            "Middle Right" : 4 + 16,                        
-                            "Bottom Left" : 1 + 32,
-                            "Bottom Centre" : 2 + 32,                        
-                            "Bottom Right" : 4 + 32,                        
-                        }   
-                        if(alignMode[jp] != null){
+                            "Top Left": 1 + 8,
+                            "Top Centre": 2 + 8,
+                            "Top Right": 4 + 8,
+                            "Middle Left": 1 + 16,
+                            "Middle Centre": 2 + 16,
+                            "Middle Right": 4 + 16,
+                            "Bottom Left": 1 + 32,
+                            "Bottom Centre": 2 + 32,
+                            "Bottom Right": 4 + 32,
+                        }
+                        if (alignMode[jp] != null) {
                             return alignMode[jp];
                         }
-                    } else if(p.startsWith("AlignX.")){
-                        let jp = p.replace("AlignX.","")
-                        if(j[jp] != null){
+                    } else if (p.startsWith("AlignX.")) {
+                        let jp = p.replace("AlignX.", "")
+                        if (j[jp] != null) {
                             return j[jp];
                         }
-                    } else if(p.startsWith("AlignY.")){
-                        let jp = p.replace("AlignY.","")
-                        if(j[jp] != null){
+                    } else if (p.startsWith("AlignY.")) {
+                        let jp = p.replace("AlignY.", "")
+                        if (j[jp] != null) {
                             return j[jp];
                         }
-                    } else if(p.startsWith("Jimp.")){
-                        let jp = p.replace("Jimp.","")
-                        if(j[jp] != null){
+                    } else if (p.startsWith("Jimp.")) {
+                        let jp = p.replace("Jimp.", "")
+                        if (j[jp] != null) {
                             return j[jp];
                         }
-                    } else if(p.startsWith("Font.")){
-                        let jp = p.replace("Font.","")
-                        if(j[jp] != null){
+                    } else if (p.startsWith("Font.")) {
+                        let jp = p.replace("Font.", "")
+                        if (j[jp] != null) {
                             return j[jp];
                         }
-                    } else if(p.startsWith("Blend.")){
-                        let jp = p.replace("Blend.","")
-                        if(j[jp] != null){
+                    } else if (p.startsWith("Blend.")) {
+                        let jp = p.replace("Blend.", "")
+                        if (j[jp] != null) {
                             return j[jp];
                         }
-                    } else if(isJSON(p)){
+                    } else if (isJSON(p)) {
                         return JSON.parse(p);
                     }
                 }
                 return p;
             }
 
-            if(Array.isArray(p)){
+            if (Array.isArray(p)) {
                 for (let index = 0; index < p.length; index++) {
-                    p[index] = normaliseJimpFunctionParameter(j,p[index]);
+                    p[index] = normaliseJimpFunctionParameter(j, p[index]);
                 }
                 return p;
-            } else if(isObject(p)){
+            } else if (isObject(p)) {
                 let pNew = {};
                 let keys = Object.keys(p);
                 keys.forEach(key => {
-                    pNew[key] = normaliseJimpFunctionParameter(j,p[key]); 
+                    pNew[key] = normaliseJimpFunctionParameter(j, p[key]);
                 });
                 return pNew;
             } else {
-                return normaliseJimpFunctionParameterValue(j,p);
+                return normaliseJimpFunctionParameterValue(j, p);
             }
 
         }
-          
-        node.on('input', function(msg) {
+
+        node.on('input', function (msg) {
 
             const performance = new performanceLogger(node.id);
             performance.start("total");
 
             /* ****************  Node status **************** */
             node.status({});//clear status
-            const nodeStatusError = function(err,msg,statusText){
-                node.error(err,msg);
-                node.status({fill:"red",shape:"dot",text:statusText});
+            const nodeStatusError = function (err, msg, statusText) {
+                node.error(err, msg);
+                node.status({ fill: "red", shape: "dot", text: statusText });
             }
-            const nodeStatusImageProcessError = function(err,msg){
+            const nodeStatusImageProcessError = function (err, msg) {
                 nodeStatusError(err, msg, "Error processing image");
             }
-            const nodeStatusParameterError = function(err, msg, propName){
+            const nodeStatusParameterError = function (err, msg, propName) {
                 nodeStatusError(err, msg, "Unable to evaluate property '" + propName + "' value")
             }
 
             /* ****************  Get Image Data Parameter **************** */
             let data;
-            RED.util.evaluateNodeProperty(node.data,node.dataType,node,msg,(err,value) => {
+            RED.util.evaluateNodeProperty(node.data, node.dataType, node, msg, (err, value) => {
                 if (err) {
-                    nodeStatusParameterError(err,msg,"image");
+                    nodeStatusParameterError(err, msg, "image");
                     return;//halt flow!
                 } else {
-                    data = value; 
+                    data = value;
                 }
-            }); 
+            });
 
-            if(!data){
-                nodeStatusError(new Error("property 'image' is not valid"),msg,"image cannot be empty");
+            if (!data) {
+                nodeStatusError(new Error("property 'image' is not valid"), msg, "image cannot be empty");
                 return;
             }
 
@@ -192,53 +179,53 @@ module.exports = function(RED) {
                 /* ****************  Get Image Process Parameters **************** */
                 let parameterCount = fn && fn.parameters ? Math.min(8, fn.parameters.length) : 0;
                 for (let paramIndex = 0; paramIndex < parameterCount; paramIndex++) {
-                    const paramNo = paramIndex+1;
-                    if(fn.fn == "batch" && paramNo > 1){
+                    const paramNo = paramIndex + 1;
+                    if (fn.fn == "batch" && paramNo > 1) {
                         break;//only parameter1 is used for batch mode
                     }
                     const nodeParam = node["parameter" + paramNo];
                     const nodeParamType = node["parameter" + paramNo + "Type"];
-                    if(nodeParam || nodeParamType == "Jimp.AUTO" || nodeParamType == "auto" || fn.parameters[paramIndex].required) {
-                        if(nodeParamType == "Jimp.AUTO" || nodeParamType == "auto"){
+                    if (nodeParam || nodeParamType == "Jimp.AUTO" || nodeParamType == "auto" || fn.parameters[paramIndex].required) {
+                        if (nodeParamType == "Jimp.AUTO" || nodeParamType == "auto") {
                             inputParameters[paramIndex] = -1;//Jimp.AUTO == -1
                         } else {
-                            RED.util.evaluateNodeProperty(nodeParam,nodeParamType,node,msg,(err,value) => {
+                            RED.util.evaluateNodeProperty(nodeParam, nodeParamType, node, msg, (err, value) => {
                                 if (err) {
-                                    nodeStatusParameterError(err,msg,fn.parameters[paramIndex].name);
+                                    nodeStatusParameterError(err, msg, fn.parameters[paramIndex].name);
                                     return;//halt flow!
                                 } else {
                                     let p = {};
                                     inputParameters[paramIndex] = value;
-                                    if(nodeParamType === 'Jimp' || 
-                                        nodeParamType === 'Align' || 
-                                        nodeParamType === 'AlignX' || 
-                                        nodeParamType === 'AlignY' || 
-                                        nodeParamType === 'Blend' || 
-                                        nodeParamType === 'Font'){
+                                    if (nodeParamType === 'Jimp' ||
+                                        nodeParamType === 'Align' ||
+                                        nodeParamType === 'AlignX' ||
+                                        nodeParamType === 'AlignY' ||
+                                        nodeParamType === 'Blend' ||
+                                        nodeParamType === 'Font') {
                                         inputParameters[paramIndex] = nodeParamType + '.' + value;
                                     }
                                 }
-                            }); 
+                            });
                         }
                     }
                 }
- 
-           
+
+
                 /* **************** Main - Collect & normalise parameters then process image and send result **************** */
 
                 let jobs = [];
-                if(fn && fn.name){
-                    
-                    if(fn.fn === "batch"){
+                if (fn && fn.name) {
+
+                    if (fn.fn === "batch") {
                         let batchInput = inputParameters[0];
                         //check batchInput - is it a JSON string? convert to object if it is.
-                        if(batchInput && isJSON(batchInput)){
+                        if (batchInput && isJSON(batchInput)) {
                             batchInput = JSON.parse(batchInput);
                         }
- 
+
                         //next see if batchInput is an array of "things to do".  
-                        if(!(!batchInput || isEmpty(batchInput))){
-                            if(Array.isArray(batchInput)){
+                        if (!(!batchInput || isEmpty(batchInput))) {
+                            if (Array.isArray(batchInput)) {
                                 jobs = batchInput;
                             } else {
                                 jobs = [batchInput];
@@ -246,18 +233,18 @@ module.exports = function(RED) {
                             //now loop through the spec.parameters & normalise them where needed
                             for (let jIndex = 0; jIndex < jobs.length; jIndex++) {
                                 const job = jobs[jIndex];
-                                if(!job.parameters || !Array.isArray(job.parameters)){
+                                if (!job.parameters || !Array.isArray(job.parameters)) {
                                     job.parameters = [];
                                 }
                                 const normaliseParams = [];
                                 for (let pIndex = 0; pIndex < job.parameters.length; pIndex++) {
-                                    normaliseParams[pIndex] = normaliseJimpFunctionParameter(Jimp, job.parameters[pIndex])                              
+                                    normaliseParams[pIndex] = normaliseJimpFunctionParameter(Jimp, job.parameters[pIndex])
                                 }
                                 job.parameters = normaliseParams
                             }
                         }
 
-                    } else if(fn.fn === "none"){
+                    } else if (fn.fn === "none") {
                         //do nothing
                     } else {
                         const job = {};
@@ -267,48 +254,48 @@ module.exports = function(RED) {
                         const normaliseParams = [];
                         let fplookup = {};
                         let fParam = 0;
-                        for (let index = 0; index < fn.parameters.length; index++) {                       
+                        for (let index = 0; index < fn.parameters.length; index++) {
                             let funcParam = fn.parameters[index];
-                            if(funcParam.group){
+                            if (funcParam.group) {
                                 let i = fplookup[funcParam.group];
-                                if(!(typeof i == "number")){
+                                if (!(typeof i == "number")) {
                                     i = fParam;
                                     normaliseParams[i] = {};
                                     fplookup[funcParam.group] = i;
                                     fParam++;
                                 }
                                 let value = inputParameters[index];
-                                if(isDef(value)){
+                                if (isDef(value)) {
                                     normaliseParams[i][funcParam.name] = normaliseJimpFunctionParameter(Jimp, value);
                                 }
                             } else {
                                 let value = inputParameters[index];
-                                if(isDef(value)){
+                                if (isDef(value)) {
                                     normaliseParams[fParam++] = normaliseJimpFunctionParameter(Jimp, value);
                                 } else {
                                     normaliseParams[fParam++] = undefined;
                                 }
                             }
-                        }  
+                        }
                         job.parameters = normaliseParams;
                         jobs = [job];
                     }
-                } 
+                }
 
 
-                function doProcess(Jimp, img, job){
+                function doProcess(Jimp, img, job) {
                     let returnValue = {
                         success: false,
                         result: null,
                         image: img,
                         takeImage: false,
                     }
-                    if(!job.parameters){
+                    if (!job.parameters) {
                         job.parameters = [];
                     }
 
                     let theResult;
-                    if(job.name == "print"){
+                    if (job.name == "print") {
                         let text = typeof job.parameters[3] == "object" ? job.parameters[3].text : job.parameters[3];
                         text = text.replace(/(?:\\r\\n|\\r|\\n|\r\n|\r|\n)/g, '\n');
                         let lines = text.split("\n");
@@ -316,47 +303,47 @@ module.exports = function(RED) {
                         let lineSpacing = 0; //TODO: better way of handling line spacing
                         for (let l = 0; l < lines.length; l++) {
                             const line = lines[l];
-                            if(typeof thisParams[3] == "object"){
+                            if (typeof thisParams[3] == "object") {
                                 thisParams[3].text = line;
                             } else {
                                 thisParams[3] = line;
                             }
                             let newY = 0;
                             let thisResult = img.print(...thisParams, (err, image, { x, y }) => {
-                                if(err){
+                                if (err) {
                                     returnValue.success = false;
                                     throw err;
                                 }
                                 newY = y;
-                            }); 
+                            });
                             //console.log(`currentY=${thisParams[2]}, newY=${newY}, text="${line}"`)
-                            if(thisResult instanceof Error){
+                            if (thisResult instanceof Error) {
                                 returnValue.result = thisResult;
                                 returnValue.success = false;
                                 throw thisResult;
                             }
                             returnValue.result = thisResult;//save last result TODO: consider better way of handling multiple results for multiple print lines
-                            if(l < lines.length){
-                                thisParams[2] = (newY + lineSpacing); 
-                            } 
+                            if (l < lines.length) {
+                                thisParams[2] = (newY + lineSpacing);
+                            }
                         }
                         returnValue.success = true;
-                        
+
                         returnValue.image = img;
-                    } else if(img[job.name]){
+                    } else if (img[job.name]) {
                         theResult = img[job.name](...job.parameters); //call the image lib function
                         returnValue.result = theResult;
-                        if(theResult instanceof Error){
+                        if (theResult instanceof Error) {
                             returnValue.success = false;
                             throw theResult;
                         }
                         returnValue.success = true;
                         returnValue.image = img;
-                    } else if(Jimp[job.name]) {
+                    } else if (Jimp[job.name]) {
                         //img._debug_tag="orig input img"
-                        theResult = Jimp[job.name](img,...job.parameters);
+                        theResult = Jimp[job.name](img, ...job.parameters);
                         returnValue.takeImage = true;
-                        if(theResult instanceof Jimp){
+                        if (theResult instanceof Jimp) {
                             returnValue.image = theResult;
                         }
                         //theResult.image._debug_tag="diff result"
@@ -383,7 +370,7 @@ module.exports = function(RED) {
                             returnValue.result = theResult;
                             returnValue.image = img;
                             break;
-                    
+
                         default:
                             job.result = true;
                             returnValue.success = true;
@@ -393,67 +380,67 @@ module.exports = function(RED) {
                     }
                     return returnValue;
                 }
-                                
-                async function imageProcessor(Jimp,img,jobs,node,msg,performance){
+
+                async function imageProcessor(Jimp, img, jobs, node, msg, performance) {
                     let doWork = (Array.isArray(jobs) && jobs.length > 0)
-                    if(doWork){
+                    if (doWork) {
                         var jobPerformance = new performanceLogger(node.id);
 
                         //loop through jobs & carry them out
-                        for(let i = 0; i < jobs.length; i++){
+                        for (let i = 0; i < jobs.length; i++) {
                             var processResult = {
                                 image: img
                             };
                             let job = jobs[i];//get the job
                             //check job is valid and has a function name 
-                            if(!job || !job.name || job.name === 'none'){
+                            if (!job || !job.name || job.name === 'none') {
                                 continue;
                             }
                             //see if the function is a preset convolute function
                             //if so, get the kernel and change fn name to "convolute"
                             let convolutionParams = convolutions[job.name];
-                            if(convolutionParams){
+                            if (convolutionParams) {
                                 job.name = "convolute";
                                 job.parameters = [convolutionParams];
                             }
-                            let perfMeasureName = "process" + (i+1) + "_" + job.name;
+                            let perfMeasureName = "process" + (i + 1) + "_" + job.name;
                             jobPerformance.start(perfMeasureName);
-                            
-                            if(job.name == "print"){
-                                
+
+                            if (job.name == "print") {
+
                                 //this is a print request where the text is an object with alignment
                                 //if either of parameters [4] or [5] are maxWidth/maxHeight
                                 //are set to auto (-1) then set them to actual height / width
-                                if(job.parameters[4] == -1){
+                                if (job.parameters[4] == -1) {
                                     job.parameters[4] = img.getWidth()
                                 }
-                                if(job.parameters[5] == -1){
+                                if (job.parameters[5] == -1) {
                                     job.parameters[5] = img.getHeight()
                                 }
                                 let fontFile = job.parameters[0];
                                 let fontName = (fontFile || "FONT_SANS_10_BLACK").toUpperCase();
-                                if(fontName.startsWith("JIMP.FONT_")){
-                                    fontName = fontName.replace("JIMP.","")
+                                if (fontName.startsWith("JIMP.FONT_")) {
+                                    fontName = fontName.replace("JIMP.", "")
                                 }
-                                if(fontName.startsWith("FONT_")){
+                                if (fontName.startsWith("FONT_")) {
                                     fontFile = Jimp[fontFile];
-                                }                                
-                                let font = fonts.getFont(fontFile);
-                                
-                                if(font){
+                                }
+                                let font = _image_tools_fonts.getFont(fontFile);
+
+                                if (font) {
                                     job.parameters[0] = font;
-                                    processResult = doProcess(Jimp,img,job);    
+                                    processResult = doProcess(Jimp, img, job);
                                 } else {
-                                    if(!fontFile) throw new Error(`'Print' error - cannot load font ${fontName}`)
+                                    if (!fontFile) throw new Error(`'Print' error - cannot load font ${fontName}`)
                                     let p = Jimp.loadFont(fontFile);
                                     let f = await p;
-                                    if(!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
-                                    fonts.setFont(fontFile, f)
+                                    if (!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
+                                    _image_tools_fonts.setFont(fontFile, f)
                                     job.parameters[0] = f;
-                                    processResult = doProcess(Jimp,img,job);
+                                    processResult = doProcess(Jimp, img, job);
                                 }
                             } else {
-                                processResult = doProcess(Jimp,img,job);
+                                processResult = doProcess(Jimp, img, job);
                             }
                             img = processResult && processResult.takeImage ? processResult.image : img;
                             jobPerformance.end(perfMeasureName);
@@ -477,41 +464,41 @@ module.exports = function(RED) {
                     switch (node.ret) {
                         case "img":
                             // msg.payload = img;
-                            setObjectProperty(msg,node.sendProperty,img);
+                            setObjectProperty(msg, node.sendProperty, img);
                             msg.performance = performance.getPerformance();
                             node.send(msg);
                             break;
                         case "buf":
                             performance.start("jimp_to_buffer");
-                            img.getBuffer(Jimp.AUTO,(err, buffer) => {
-                                if(err){
-                                    nodeStatusError(err,msg,"Error getting buffer of image")
+                            img.getBuffer(Jimp.AUTO, (err, buffer) => {
+                                if (err) {
+                                    nodeStatusError(err, msg, "Error getting buffer of image")
                                     return;
                                 }
                                 performance.end("jimp_to_buffer");
                                 performance.end("total");
                                 // msg.payload = buffer;
-                                setObjectProperty(msg,node.sendProperty,buffer);
+                                setObjectProperty(msg, node.sendProperty, buffer);
                                 msg.performance = performance.getPerformance();
                                 node.send(msg);
                             });
                             break;
                         case "b64":
                             performance.start("jimp_to_base64");
-                            img.getBase64(Jimp.AUTO,(err, b64) => {
-                                if(err){
-                                    nodeStatusError(err,msg,"Error getting base64 image")
+                            img.getBase64(Jimp.AUTO, (err, b64) => {
+                                if (err) {
+                                    nodeStatusError(err, msg, "Error getting base64 image")
                                     return;
                                 }
                                 performance.end("jimp_to_base64");
                                 performance.end("total");
                                 // msg.payload = b64;
-                                setObjectProperty(msg,node.sendProperty,b64);
+                                setObjectProperty(msg, node.sendProperty, b64);
                                 msg.performance = performance.getPerformance();
                                 node.send(msg);
-                            });    
+                            });
                             break;
-                    
+
                         default:
                             break;
                     }
@@ -522,27 +509,27 @@ module.exports = function(RED) {
                 let isArray = Array.isArray(data);
                 let isString = typeof data === 'string';
                 let hasMime = false, isBase64Image = false
-                if(isString){
+                if (isString) {
                     hasMime = data.startsWith("data:");
-					isBase64Image = isBase64(data,{mimeRequired: hasMime});
+                    isBase64Image = isBase64(data, { mimeRequired: hasMime });
                 }
                 //hack to support gif. Oddly, Jimp can read a gif but fails if you try to do most operations
-				if (data instanceof Jimp && data._originalMime == "image/gif") {
-					data.getBuffer(Jimp.MIME_PNG,(e,b)=>{
-						if(e){
-							throw e;
-						}
-						gif = true;
-						data = b;
-						isBuffer = true;
-					})
-				}
+                if (data instanceof Jimp && data._originalMime == "image/gif") {
+                    data.getBuffer(Jimp.MIME_PNG, (e, b) => {
+                        if (e) {
+                            throw e;
+                        }
+                        gif = true;
+                        data = b;
+                        isBuffer = true;
+                    })
+                }
                 let isfileName = isString && !isBase64Image;
-                if(isString && isBase64Image) {
+                if (isString && isBase64Image) {
                     //convert to buffer ready for loading in jimp
                     performance.start("base64_to_buffer");
                     let b64Data;
-                    if(hasMime){
+                    if (hasMime) {
                         b64Data = data.replace(/^data:image\/\w+;base64,/, "");//get data part only 
                     } else {
                         b64Data = data;
@@ -550,22 +537,22 @@ module.exports = function(RED) {
                     //data = new Buffer(b64Data, 'base64'); depreciated
                     data = Buffer.from(b64Data, 'base64');
                     performance.end("base64_to_buffer");
-                } 
+                }
                 //if data is a Jimp, then crack on with image processing functions
-                if(data instanceof Jimp){
+                if (data instanceof Jimp) {
                     try {
-                        imageProcessor(Jimp,data,jobs,node,msg,performance);
+                        imageProcessor(Jimp, data, jobs, node, msg, performance);
                     } catch (err) {
-                        nodeStatusImageProcessError(err,msg);
-                    }     
-                } else {               
+                        nodeStatusImageProcessError(err, msg);
+                    }
+                } else {
                     //so data was NOT an instance of Jimp - call read/create then do image processing
                     let perfName = "jimp_read";
                     var args = [data];
-                    if(isObject(data) && data.w && data.h){
+                    if (isObject(data) && data.w && data.h) {
                         perfName = "jimp_create"
                         args = [data.w, data.h];
-                        if(data.background || typeof data.background == "number"){
+                        if (data.background || typeof data.background == "number") {
                             args.push(data.background)
                         }
                     }
@@ -574,21 +561,21 @@ module.exports = function(RED) {
                         .then(img => {
                             performance.end(perfName);
                             try {
-                                imageProcessor(Jimp,img,jobs,node,msg,performance);
+                                imageProcessor(Jimp, img, jobs, node, msg, performance);
                             } catch (err) {
-                                nodeStatusImageProcessError(err,msg);
-                            }                            
+                                nodeStatusImageProcessError(err, msg);
+                            }
                         })
                         .catch(err => {
-                            nodeStatusImageProcessError(err,msg);
+                            nodeStatusImageProcessError(err, msg);
                         });
                 }
-                
+
             } catch (err) {
-                nodeStatusImageProcessError(err,msg);
+                nodeStatusImageProcessError(err, msg);
             }
-           
+
         });
     }
-    RED.nodes.registerType("jimp-image",jimpNode);
+    RED.nodes.registerType("jimp-image", jimpNode);
 }
