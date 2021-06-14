@@ -9,28 +9,16 @@ var fonts = new (function () {
         __fonts[name] = font;
     }
 })()
-/**
- * helper function to dynamically set a nexted property by name
- * @param {*} obj - the object in which to set a properties value
- * @param {string} path - the path to the property e.g. payload.value
- * @param {*} val - the value to set in obj.path
- */
-function setObjectProperty(obj, path, val){ 
-    const keys = path.split('.');
-    const lastKey = keys.pop();
-    const lastObj = keys.reduce((obj, key) => 
-        obj[key] = obj[key] || {}, 
-        obj); 
-    lastObj[lastKey] = val;
-};
+
 module.exports = function(RED) {
     
     function jimpNode(config) {
         RED.nodes.createNode(this,config);
-        var Jimp = require('jimp');
+        const Jimp = require('jimp');
         const threshold = require('@jimp/plugin-threshold')
         const configure = require('@jimp/custom')
         const isBase64 = require('is-base64');
+        const {setObjectProperty, isEmpty, isJSON, isObject} = require('./common.js');
 		const _prefixURIMap = {
 			"iVBOR": "data:image/png;base64,",
 			"R0lGO": "data:image/gif;base64,",
@@ -46,10 +34,6 @@ module.exports = function(RED) {
 		}        
         const performanceLogger = require('./performanceLogger.js');
 
-        //const Jimp = JimpBase;
-        //const Jimp = configure({ plugins: [threshold] }, JimpBase);
-
-        //var Jimp = JimpBase
         configure({ plugins: [threshold] }, Jimp);
 
         const convolutions = {
@@ -61,7 +45,7 @@ module.exports = function(RED) {
             convolute_antialise: [[1, 2, 1], [2, 4, 2], [1, 2, 1]]
         }
         const isDef = v => typeof v !== 'undefined' && v !== null;
-        var node = this;
+        const node = this;
 		node.data = config.data || "";//data
 		node.dataType = config.dataType || "msg";
         node.ret = config.ret || "buf";
@@ -88,28 +72,7 @@ module.exports = function(RED) {
         node.selectedJimpFunction = config.selectedJimpFunction || {};
         node.sendProperty = config.sendProperty || "payload";
         
-        function isEmpty(obj) {
-            for(var key in obj) {
-                if(obj.hasOwnProperty(key))
-                    return false;
-            }
-            return true;
-        }
-        function isObject(val) {
-            if (val === null) { return false;}
-                return (typeof val === 'object');
-        }
-        function isJSON(json) {
-            if(isObject(json))
-                return false;
-            try {
-                var obj = JSON.parse(json)
-                if (obj && typeof obj === 'object' && obj !== null) {
-                    return true
-                }
-            } catch (err) { }
-            return false
-        }
+        
         function normaliseJimpFunctionParameter(j,p){
             if(p instanceof Jimp){
                 return p;
@@ -190,26 +153,24 @@ module.exports = function(RED) {
           
         node.on('input', function(msg) {
 
-            var performance = new performanceLogger(node.id);
+            const performance = new performanceLogger(node.id);
             performance.start("total");
 
             /* ****************  Node status **************** */
             node.status({});//clear status
-            var nodeStatusError = function(err,msg,statusText){
+            const nodeStatusError = function(err,msg,statusText){
                 node.error(err,msg);
                 node.status({fill:"red",shape:"dot",text:statusText});
             }
-            var nodeStatusImageProcessError = function(err,msg){
+            const nodeStatusImageProcessError = function(err,msg){
                 nodeStatusError(err, msg, "Error processing image");
             }
-            var nodeStatusParameterError = function(err, msg, propName){
+            const nodeStatusParameterError = function(err, msg, propName){
                 nodeStatusError(err, msg, "Unable to evaluate property '" + propName + "' value")
             }
 
-            
-
             /* ****************  Get Image Data Parameter **************** */
-            var data;
+            let data;
             RED.util.evaluateNodeProperty(node.data,node.dataType,node,msg,(err,value) => {
                 if (err) {
                     nodeStatusParameterError(err,msg,"image");
@@ -288,7 +249,7 @@ module.exports = function(RED) {
                                 if(!job.parameters || !Array.isArray(job.parameters)){
                                     job.parameters = [];
                                 }
-                                let normaliseParams = [];
+                                const normaliseParams = [];
                                 for (let pIndex = 0; pIndex < job.parameters.length; pIndex++) {
                                     normaliseParams[pIndex] = normaliseJimpFunctionParameter(Jimp, job.parameters[pIndex])                              
                                 }
@@ -299,11 +260,11 @@ module.exports = function(RED) {
                     } else if(fn.fn === "none"){
                         //do nothing
                     } else {
-                        let job = {};
+                        const job = {};
                         job.name = fn.fn;
 
                         //now we have collected users input, we need to see if any of the input parameters should be part of an {object} parameter
-                        let normaliseParams = [];
+                        const normaliseParams = [];
                         let fplookup = {};
                         let fParam = 0;
                         for (let index = 0; index < fn.parameters.length; index++) {                       
@@ -626,7 +587,6 @@ module.exports = function(RED) {
             } catch (err) {
                 nodeStatusImageProcessError(err,msg);
             }
-            
            
         });
     }

@@ -1,7 +1,7 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "1.4.0",
-    "description": "A dynamic Image editor node with over 40 functions, a viewer node and a 1D + 2D Barcode Decoder node",
+    "version": "2.0.0",
+    "description": "A dynamic Image editor node with over 40 functions, a viewer node and a 1D + 2D Barcode Generator and Decoder nodes",
     "keywords": [
         "node-red",
         "barcode",
@@ -32,7 +32,8 @@
             "jimp": "jimp.js",
             "xzingDecode": "xzingDecode.js",
             "barcodeWriter": "barcodeWriter.js",
-            "imageViewer": "imageViewer.js"
+            "imageViewer": "imageViewer.js",
+            "app": "app.js"
         }
     },
     "directories": {
@@ -44,9 +45,9 @@
         "@jimp/plugin-color": "^0.16.1",
         "@jimp/plugin-resize": "^0.16.1",
         "@jimp/plugin-threshold": "^0.16.1",
-        "@zxing/library": "^0.18.5",
+        "@zxing/library": "^0.18.6",
+        "bwip-js": "^3.0.0",
         "is-base64": "^1.1.0",
-        "jimp": "^0.16.1",
-        "symbology": "^2.1.5"
+        "jimp": "^0.16.1"
     }
 }

@@ -1,0 +1,25 @@
+
+
+.image-tools-form-tip {
+    display: inline-block !important;
+    /* width: 70%; */
+    background: #ffe;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+    margin-top: 2px;
+    width: calc(100% - 150px);
+    overflow: auto;
+    /* max-width: 450px; */
+}
+.image-tools-ui-container {
+    display: inline-block;
+    width: calc(100% - 150px);
+}
+.image-tools-row>label {
+    width: 120px !important;
+}
+
+#convertToBatchButton {
+    width: 28px;
+    height: 34px;
+} 

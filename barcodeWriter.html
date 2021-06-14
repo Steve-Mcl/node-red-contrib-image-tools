@@ -1,306 +1,267 @@
-<style>
-.node-label-white{
-    color: white;
-}
-    
-.checklist {
-    margin: auto;
-    display: inline-grid;
-}
-
-/*Checkboxes styles*/
-.checklist > input[type="checkbox"] { display: none; }
-
-.checklist > input[type="checkbox"] + label {
-    display: block;
-    position: relative;
-    padding-left: 35px;
-    margin-bottom: 5px;
-    /* font: 14px/20px 'Open Sans', Arial, sans-serif; */
-    /* color: #ddd; */
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    width: 100%;
-}
-
-.checklist > input[type="checkbox"] + label:last-child { margin-bottom: 0; }
-
-.checklist > input[type="checkbox"] + label:before {
-  content: '';
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-width: 1px;
-  border-style: solid;
-  /* border: 1px solid #6cc0e5; */
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: .6;
-  -webkit-transition: all .12s, border-color .08s;
-  transition: all .12s, border-color .08s;
-}
-
-.checklist > input[type="checkbox"]:checked + label:before {
-  width: 10px;
-  top: -5px;
-  left: 5px;
-  border-radius: 0;
-  opacity: 1;
-  border-top-color: transparent;
-  border-left-color: transparent;
-  -webkit-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
-    
-input.color-picker {
-	-webkit-appearance: none;
-	border: none;
-	width: 100px;
-}
-input.color-picker::-webkit-color-swatch-wrapper {
-	padding: 0;
-}
-input.color-picker::-webkit-color-swatch {
-	border: none;
-}
-
-</style>
 <script type="text/javascript">
-(function() {
+    (function () {
 
-    /** @see {@link https://github.com/jshor/symbology/blob/master/src/enums/barcode.js} */
-    var symbology_barcodes = {
-        CODE11: 1,
-        C25MATRIX: 2,
-        C25INTER: 3,
-        C25IATA: 4,
-        C25LOGIC: 6,
-        C25IND: 7,
-        CODE39: 8,
-        EXCODE39: 9,
-        EANX: 13,
-        EANX_CHK: 14,
-        EAN128: 16,
-        CODABAR: 18,
-        CODE128: 20,
-        DPLEIT: 21,
-        DPIDENT: 22,
-        CODE16K: 23,
-        CODE49: 24,
-        CODE93: 25,
-        FLAT: 28,
-        RSS14: 29,
-        RSS_LTD: 30,
-        RSS_EXP: 31,
-        TELEPEN: 32,
-        UPCA: 34,
-        UPCA_CHK: 35,
-        UPCE: 37,
-        UPCE_CHK: 38,
-        POSTNET: 40,
-        MSI_PLESSEY: 47,
-        FIM: 49,
-        LOGMARS: 50,
-        PHARMA: 51,
-        PZN: 52,
-        PHARMA_TWO: 53,
-        PDF417: 55,
-        PDF417TRUNC: 56,
-        MAXICODE: 57,
-        QRCODE: 58,
-        CODE128B: 60,
-        AUSPOST: 63,
-        AUSREPLY: 66,
-        AUSROUTE: 67,
-        AUSREDIRECT: 68,
-        ISBNX: 69,
-        RM4SCC: 70,
-        DATAMATRIX: 71,
-        EAN14: 72,
-        VIN: 73,
-        CODABLOCKF: 74,
-        NVE18: 75,
-        JAPANPOST: 76,
-        KOREAPOST: 77,
-        RSS14STACK: 79,
-        RSS14STACK_OMNI: 80,
-        RSS_EXPSTACK: 81,
-        PLANET: 82,
-        MICROPDF417: 84,
-        ONECODE: 85,
-        PLESSEY: 86,
+        RED.nodes.registerType('Barcode Generator', {
+            category: 'image tools',
+            paletteLabel: "Barcode Generator",
+            icon: "font-awesome/fa-barcode",
+            color: '#FFAAAA',//'#f24b69',
+            defaults: {
+                name: { value: "" },
+                data: { value: "payload", validate: RED.validators.typedInput("dataType") },
+                dataType: { value: "msg" },
+                barcode: { value: "qrcode", validate: RED.validators.typedInput("barcodeType") },
+                barcodeType: { value: "barcode" },
+                options: { value: "" },
+                optionsType: { value: "ui" },
+                sendProperty: { value: "payload" },
+                props: {
+                    value: [{ p: "rotate", v: "N", vt: "str" }, { p: "includetext", v: true, vt: "bool" }, { p: "textxalign", v: "center", vt: "str" }], validate: function (v) {
+                        if (!v || v.length === 0) { return true }
+                        for (var i = 0; i < v.length; i++) {
+                            if (/msg|flow|global/.test(v[i].vt)) {
+                                if (!RED.utils.validatePropertyExpression(v[i].v)) {
+                                    return false;
+                                }
+                            } else if (v[i].vt === "jsonata") {
+                                try { jsonata(v[i].v); } catch (e) { return false; }
+                            } else if ([i].vt === "json") {
+                                try { JSON.parse(v[i].v); } catch (e) { return false; }
+                            }
+                        }
+                        return true;
+                    }
+                },
+            },
+            inputs: 1,
+            outputs: 1,
+            label: function () {
+                return this.name || (this.barcodeType == "barcode" ? this.barcode : "barcode generator");
+            },
+            oneditprepare: function () {
+                const node = this;
+                const symbology = image_tools.getSymbology();
+                const symbologyOptionsList = image_tools.getOptionsList();
+                const symbologyOptionsMap = image_tools.getOptionsMap();
 
-        /* Tbarcode: 8 codes */
-        TELEPEN_NUM: 87,
-        ITF14: 89,
-        KIX: 90,
-        AZTEC: 92,
-        DAFT: 93,
-        MICROQR: 97,
+                $('#node-input-sendProperty').typedInput({
+                    default: "msg",
+                    types: ['msg']
+                });
+                $('#node-input-sendProperty').typedInput("value", node.sendProperty || "payload");
 
-        /* Tbarcode: 9 codes */
-        HIBC_128: 98,
-        HIBC_39: 99,
-        HIBC_DM: 102,
-        HIBC_QR: 104,
-        HIBC_PDF: 106,
-        HIBC_MICPDF: 108,
-        HIBC_AZTEC: 112,
-        DOTCODE: 115,
-        HANXIN: 116,
-        MAILMARK: 121,
+                var barcodeData = $("#node-input-data");
+                barcodeData.typedInput({
+                    default: "msg",
+                    typeField: $("#node-input-dataType"),
+                    types: ["msg", "flow", "global", "str", "env", "jsonata"]
+                });
 
-        /* Zint specific */
-        AZRUNE: 128,
-        CODE32: 129,
-        EANX_CC: 130,
-        EAN128_CC: 131,
-        RSS14_CC: 132,
-        RSS_LTD_CC: 133,
-        RSS_EXP_CC: 134,
-        UPCA_CC: 135,
-        UPCE_CC: 136,
-        RSS14STACK_CC: 137,
-        RSS14_OMNI_CC: 138,
-        RSS_EXPSTACK_CC: 139,
-        CHANNEL: 140,
-        CODEONE: 141,
-        GRIDMATRIX: 142,
-        UPNQR: 143
-    };
+                var barcodeChoices = Object.keys(symbology).map(e => {
+                    return {
+                        label: symbology[e].desc,
+                        value: symbology[e].sym
+                    }
+                });
 
-    function isNumber(n) {
-        if (n === "" || n === true || n === false) return false;
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    }
+                var barcode = $("#node-input-barcode");
+                barcode.typedInput({
+                    default: "barcode",
+                    typeField: $("#node-input-barcodeType"),
+                    types: [
+                        {
+                            value: "barcode",
+                            label: "Barcode",
+                            title: "Barcode",
+                            icon: "fa fa-barcode",
+                            showLabel: false,
+                            multiple: false,
+                            options: barcodeChoices
+                        }, "msg", "flow", "global", "str", "env", "jsonata",
+                    ]
+                });
 
-    RED.nodes.registerType('Barcode Generator', {
-        category: 'image tools',
-        paletteLabel: "Barcode Generator",
-        //labelStyle: "node-label-white",
-        icon: "font-awesome/fa-barcode",
-        color: '#FFAAAA',//'#f24b69',
-        defaults: {
-            name: { value: "" },
-            data: { value: "payload", validate: RED.validators.typedInput("dataType") },
-            dataType: { value: "msg" },
-            barcode: { value: "QRCODE", validate: RED.validators.typedInput("barcodeType") },
-            barcodeType: { value: "barcode" },
-            fgcolor: { value: "#000000" },
-            bgcolor: { value: "#ffffff" },
-            options: { value: {} }
-        },
-        inputs: 1,
-        outputs: 1,
-        label: function () {
-            return this.name || "Generator";
-        },
-        oneditprepare: function () {
-            console.log("Barcode Generator --> oneditprepare()")
-            let node = this;
+                const options = $("#node-input-options");
+                options.typedInput({
+                    default: "ui",
+                    typeField: $("#node-input-optionsType"),
+                    types: [{ label: "Set in UI (below)", value: "ui", hasValue: false }, "msg", "flow", "global", "json", "env", "jsonata"]
+                });
+                options.typedInput("type", this.optionsType || "msg");
+                if (this.optionsType != "ui") options.typedInput("value", this.options);
+                options.on("change", function (el) {
+                    let $this = $(this);
+                    if ($this.typedInput("type") == "ui") {
+                        $("#node-input-property-container-row").show();
+                    } else {
+                        $("#node-input-property-container-row").hide();
+                    }
+                    onResize(node);
+                })
 
-            var barcodeData = $("#node-input-data");
-            barcodeData.typedInput({
-                default:"msg",
-                typeField: $("#node-input-dataType"),
-                types: ["msg", "flow", "global", "str", "env", "jsonata"]
-            });
+                const tiTypes = symbologyOptionsList.map(function (item) {
+                    //name type desc
+                    let type = item.type;
+                    let name = item.name;
+                    let desc = item.desc;
+                    switch (type) {
+                        case "string":
+                            type = "str";
+                            break;
+                        case "boolean":
+                            type = "num";
+                            break;
+                        case "float":
+                            type = "num";
+                            break;
+                        default:
+                            type = "str";
+                            break;
+                    }
+                    return {
+                        label: name,
+                        value: name,
+                        title: desc,
+                        type: type,
+                        hasValue: false
+                    }
+                })
 
-            var barcodeChoices = Object.keys(symbology_barcodes).map( e => {
-                return { 
-                    label: e, 
-                    value: symbology_barcodes[e]
+                const eList = $('#node-input-property-container').css('min-height', '120px').css('min-width', '450px');
+
+                eList.editableList({
+                    addItem: function (container, i, opt) {
+                        var prop = opt;
+                        if (!prop.hasOwnProperty('p')) {
+                            prop = { p: "rotate", v: "N", vt: "str" };
+                        }
+                        container.css({
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap'
+                        });
+                        var row = $('<div/>').appendTo(container);
+
+                        var propertyName = $('<input/>', { class: "node-input-prop-property-name", type: "text" })
+                            .css("width", "30%")
+                            .appendTo(row)
+                            .typedInput({ types: tiTypes });
+
+                        $('<div/>', { style: 'display:inline-block; padding:0px 6px;' })
+                            .text('=')
+                            .appendTo(row);
+
+                        var propertyValue = $('<input/>', { class: "node-input-prop-property-value", type: "text" })
+                            .css("width", "calc(70% - 30px)")
+                            .appendTo(row)
+                            .typedInput({ default: 'str', types: ['msg', 'flow', 'global', 'str', 'num', 'bool', 'json', 'bin', 'date', 'jsonata', 'env'] });
+
+                        propertyName.typedInput('type', prop.p);
+
+                        propertyValue.typedInput('value', prop.v);
+                        propertyValue.typedInput('type', prop.vt);
+                    },
+                    removable: true,
+                    sortable: true
+                });
+
+                for (var i = 0; i < node.props.length; i++) {
+                    const prop = node.props[i];
+                    const newProp = { p: prop.p, v: prop.v, vt: prop.vt };
+                    eList.editableList('addItem', newProp);
+                }
+                options.trigger("change");
+            },
+            oneditsave() {
+                const node = this;
+                /* Gather the properties */
+                const items = $("#node-input-property-container").editableList('items');
+                node.props = getProps(items);
+            },
+            oneditresize() {
+                onResize(this);
+            }
+        });
+
+        /** 
+         * Retrieve editableList items (refactored for re-use in the form inject button) 
+        */
+        function getProps(el) {
+            var props = [];
+            el.each(function (i) {
+                var prop = $(this);
+                var p = {
+                    p: prop.find(".node-input-prop-property-name").typedInput('type')
+                };
+                if (p.p) {
+                    p.v = prop.find(".node-input-prop-property-value").typedInput('value');
+                    p.vt = prop.find(".node-input-prop-property-value").typedInput('type');
+                    props.push(p);
                 }
             });
-
-            var barcode = $("#node-input-barcode");
-            barcode.typedInput({
-                default:"barcode",
-                typeField: $("#node-input-barcodeType"),
-                types: [                    
-                    {
-                        value:"barcode",
-                        label:"Barcode", 
-                        title: "Barcode", 
-                        icon:"fa fa-barcode",
-                        showLabel: false,
-                        multiple: false,
-                        options: barcodeChoices
-                    }, "msg", "flow", "global", "str", "env", "jsonata", 
-                ]
-            });
-            var bcNo = isNumber(this.barcode) ? parseInt(this.barcode) : symbology_barcodes.QRCODE;
-            barcode.typedInput("type", this.barcodeType || "barcode");
-            barcode.typedInput("value", bcNo);
-
-
-            var options = $("#node-input-options");
-            options.typedInput({
-                default:"msg",
-                typeField: $("#node-input-optionsType"),
-                types: ["msg", "flow", "global", "json", "env", "jsonata"] 
-            });
-            options.typedInput("type", this.optionsType || "msg");
-            if(this.options) options.typedInput("value", this.options);
-
-            var setColour = function(id, value) {
-                $(id).val(value);
-                $(id).css("background-color", value);
-            }
-            debugger
-            setColour("node-input-bgcolor", this.bgcolor || "#ffffff");
-            setColour("node-input-fgcolor", this.fgcolor || "#000000");
-        },
-        oneditsave(){
-            debugger
-            this.fgcolor = $("#node-input-fgcolor").val();
-            this.bgcolor = $("#node-input-bgcolor").val();
+            return props;
         }
-    });
-})();    
+
+        function onResize(node) {
+            try {
+                const editorRow = $("#dialog-form>div.node-input-property-container-row");
+                const size = { height: $(".red-ui-tray-content form").height() }
+                const rows = $("#dialog-form>div:not(.node-input-property-container-row):visible");
+                let height = size.height;
+                for (let i = 0; i < rows.length; i++) {
+                    height -= $(rows[i]).outerHeight(true);
+                }
+                height -= (parseInt(editorRow.css("marginTop")) + parseInt(editorRow.css("marginBottom")));
+                height += 16;
+                $("#node-input-property-container").editableList('height', height);
+            } catch (error) { }
+            if (!node._sizeHackTimer) {
+                node._sizeHackTimer = setTimeout(function () {
+                    $(".image-tools-form-tip").css("max-width", "unset");//hack - prevent node-red calculating UI panel too large due to long text in the tip
+                    node._sizeHackTimer = null;
+                }, 250);
+            }
+        }
+    })();
 </script>
 
 <script type="text/html" data-template-name="Barcode Generator">
-    <div class="form-row">
+    <link rel="stylesheet" href="image-tools/static/css/common.css" type="text/css"/>
+    <div class="form-row image-tools-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <input type="text" style="width: calc(100% - 150px);" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-row">
-        <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="xzingDecode.label.data"> Property</span></label>
+    <div class="form-row image-tools-row">
+        <label for="node-input-data"><i class="fa fa-font"></i><span data-i18n="barcode_writer.label.data"> Text</span></label>
         <input type="hidden" id="node-input-dataType">
-        <input style="width: 70%" type="text" id="node-input-data" placeholder="0123456789">
+        <input type="text" id="node-input-data" style="width: calc(100% - 150px)" placeholder="0123456789">
+        <br>
+        <label>&nbsp;</label>
+        <div class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px">The value to encode in the barcode.</div>
     </div>
-
-    <div class="form-row">
-        <label for="node-input-barcode"><i class="fa fa-barcode"></i><span data-i18n="xzingDecode.label.barcode"> Type</span></label>
+    <div class="form-row image-tools-row">
+        <label for="node-input-barcode"><i class="fa fa-barcode"></i><span data-i18n="barcode_writer.label.barcode"> Type</span></label>
         <input type="hidden" id="node-input-barcodeType">
-        <input style="width: 70%" type="text" id="node-input-barcode" placeholder="image.jpg">
-    </div>
-    
-    <div class="form-row">
-        <label for="node-input-bgcolor"><i class="fa fa-paint-brush"></i><span data-i18n="barcode_writer.label.bgcolor"> background</span></label>
-        <input type="color" class="color-picker" id="node-input-bgcolor">
-    </div>
-    <div class="form-row">
-        <label for="node-input-fgcolor"><i class="fa fa-paint-brush"></i><span data-i18n="barcode_writer.label.fgcolor"> foreground</span></label>
-        <input type="color" class="color-picker" id="node-input-fgcolor">
-    </div>
-
-    <div class="form-row">
-        <label for="node-input-options"><i class="fa fa-cog"></i><span data-i18n="barcode_writer.label.options"> options</span></label>
-        <div class="checklist">
-            <input type="checkbox" id="node-input-show_text" title="show text" data-value="show text"> 
-            <label for="node-input-show_text" title="show text">show text</label>
-        </div>
-    </div>
-    <div class="form-row">
-        <label for="node-input-options"><i class="fa fa-paint-brush"></i><span data-i18n="barcode_writer.label.options"> options</span></label>
-        <input type="hidden" id="node-input-optionsType">
-        <input style="width: 70%" type="text" id="node-input-options" placeholder="">
+        <input type="text" id="node-input-barcode" style="width: calc(100% - 150px)" placeholder="image.jpg">
+    </div>    
+    <div class="form-row image-tools-row">
+        <label for="node-input-sendProperty"><i class="fa fa-sign-out"></i> 
+            <span>Property out</span>
+        </label>
+        <input type="text" id="node-input-sendProperty" style="width: calc(100% - 150px)" placeholder="payload">
+        <br>
+        <label>&nbsp;</label>
+        <div class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px">The msg property in which to send the barcode.</div>
     </div> 
+
+    <div class="form-row image-tools-row">
+        <label for="node-input-options"><i class="fa fa-tasks"></i><span data-i18n="barcode_writer.label.options"> Options</span></label>
+        <input type="hidden" id="node-input-optionsType">
+        <input style="width: calc(100% - 150px)" type="text" id="node-input-options" placeholder="">
+    </div> 
+ 
+    <div id="node-input-property-container-row" class="form-row node-input-property-container-row">
+        <ol style="width: calc(100% - 150px)" id="node-input-property-container"></ol>
+    </div>
 </script>
 
 <script type="text/html" data-help-name="Barcode Generator">
@@ -308,28 +269,26 @@ input.color-picker::-webkit-color-swatch {
 
 <h3>Inputs</h3>
 <dl class="message-properties">
-    <dt>Property <span class="property-type">string</span></dt>
+    <dt>text <span class="property-type">string</span></dt>
     <dd> the data to be encoded in the barcode. </dd>
-    <dt>Type <span class="property-type">number</span></dt>
-    <dd> the barcode type.  <a href="https://symbology.dev/docs/options.html">supported types</a>  </dd>
+    <dt>type <span class="property-type">string</span></dt>
+    <dd> the barcode type.
+        <br> TODO - list barcode types
+    </dd>
+    <dt>type <span class="property-type">output property</span></dt>
+    <dd> The msg property where the barcode is returned</dd>
     <dt>Options <span class="property-type">object</span></dt>
-    <dd> additional options to format the barcode. <a href="https://symbology.dev/docs/options.html">symbology options</a>  </dd>
+    <dd> additional options to format the barcode.
+        <br> TODO - list options
+    </dd>
 </dl>
 <h3>Output</h3>
 <dl class="message-properties">
-    <dt>payload <span class="property-type">object</span></dt>
-    <dd>The results.</dd>
+    <dt>payload <span class="property-type">Buffer</span></dt>
+    <dd>A PNG barcode. NOTE: The msg property where the barcode is set will depend on the the setting in Output Property</dd>
     <dt>performance <span class="property-type">object</span></dt>
-    <dd>Performance measurements of the image loading and processing</dd>
-    <h4>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h4>
+    <dd>Performance measurements of the node and barcode creation</dd>
 </dl>
-<!-- <h3>Notes</h3>
-<p>
-    <ul>
-        <li></li>
-        <li></li>
-        <li></li>
-    </ul>
-</p> -->
+
 
 </script>
