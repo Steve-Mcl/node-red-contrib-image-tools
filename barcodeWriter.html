@@ -232,17 +232,17 @@
             try {
                 const $typesHelp = $("#image-tools-barcode-types");
                 $typesHelp.empty();
-                const $typeList = $('<ul style="white-space: pre-line"/>');
+                const $typeList = $('<ul/>');
                 for (let index = 0; index < symbologyKeys.length; index++) {
                     const sym = symbology[symbologyKeys[index]];
-                    $typeList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: ' + sym.text));
+                    $typeList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: <span>' + sym.text + '</span>'));
                 }
                 $typesHelp.append($typeList);
             } catch (error) { }
             try {
                 const $optionsHelp = $("#image-tools-barcode-options");
                 $optionsHelp.empty();
-                const $symList = $('<ul style="white-space: pre-line"/>');
+                const $symList = $('<ul/>');
                 for (let index = 0; index < symbologyOptionsList.length; index++) {
                     const op = symbologyOptionsList[index];
                     $symList.append($("<li/>").html('<code>' + op.name + '</code> (' + op.type + ') - ' + op.desc));

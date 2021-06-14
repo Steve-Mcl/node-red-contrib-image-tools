@@ -23,3 +23,14 @@
     width: 28px;
     height: 34px;
 } 
+
+#image-tools-barcode-types > ul > li {
+    white-space: pre-line;
+}
+
+#image-tools-barcode-types > ul > li > span {
+    font-family: monospace;
+    font-size: smaller;
+    font-style: italic;
+}
+
