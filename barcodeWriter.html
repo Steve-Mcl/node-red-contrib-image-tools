@@ -223,6 +223,35 @@
             }
         }
     })();
+    // Update built in help from types/options
+    function update_image_tools_barcode_built_in_help(){
+        if(window.image_tools && $("#image-tools-barcode-options").length && $("#image-tools-barcode-types").length ){
+            const symbology = image_tools.getSymbology();
+            const symbologyOptionsList = image_tools.getOptionsList();
+            const symbologyOptionsMap = image_tools.getOptionsMap();
+            const symbologyKeys = Object.keys(symbology);
+            try {
+                const $typesHelp = $("#image-tools-barcode-types");
+                $typesHelp.empty();
+                const $typeList = $('<ul/>');
+                for (let index = 0; index < symbologyKeys.length; index++) {
+                    const sym = symbology[symbologyKeys[index]];
+                    $typeList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: ' + sym.text))
+                }
+                $typesHelp.append($typeList);
+            } catch (error) { }
+            try {
+                const $optionsHelp = $("#image-tools-barcode-options");
+                $optionsHelp.empty();
+                const $symList = $('<ul/>');
+                for (let index = 0; index < symbologyOptionsList.length; index++) {
+                    const op = symbologyOptionsList[index];
+                    $symList.append($("<li/>").html('<code>' + op.name + '</code> (' + op.type + ') - ' + op.desc))
+                }
+                $optionsHelp.append($symList);
+            } catch (error) { }
+        }
+    }
 </script>
 
 <script type="text/html" data-template-name="Barcode Generator">
@@ -246,7 +275,7 @@
     </div>    
     <div class="form-row image-tools-row">
         <label for="node-input-sendProperty"><i class="fa fa-sign-out"></i> 
-            <span>Property out</span>
+            <span>Output Property</span>
         </label>
         <input type="text" id="node-input-sendProperty" style="width: calc(100% - 150px)" placeholder="payload">
         <br>
@@ -277,7 +306,8 @@
         <details>
             <summary>allowable types</summary>
             <p id="image-tools-barcode-types">
-
+                <button style="background: none!important; border: none; padding: 0!important;  text-decoration: underline; cursor: pointer;" 
+                    onclick="update_image_tools_barcode_built_in_help()">click me to load list</button>
             </p>
         </details>
     </dd>
@@ -288,7 +318,8 @@
         <details>
             <summary>allowable options</summary>
             <p id="image-tools-barcode-options">
-
+                <button style="background: none!important; border: none; padding: 0!important;  text-decoration: underline; cursor: pointer;" 
+                    onclick="update_image_tools_barcode_built_in_help()">click me to load list</button>
             </p>
         </details>
     </dd>
@@ -301,46 +332,4 @@
     <dd>Performance measurements of the node and barcode creation</dd>
 </dl>
 
-</script>
-
-<script type="text/javascript">
-    // Update built in help from types/options
-    $(document).ready(function () {
-        (function () {
-            function update_image_tools_barcode_built_in_help(params) {
-                const symbology = image_tools.getSymbology();
-                const symbologyOptionsList = image_tools.getOptionsList();
-                const symbologyOptionsMap = image_tools.getOptionsMap();
-                const symbologyKeys = Object.keys(symbology);
-                debugger
-                try {
-                    const $typesHelp = $("#image-tools-barcode-types");
-                    const typeList = $('<ul/>');
-                    for (let index = 0; index < symbologyKeys.length; index++) {
-                        const sym = symbology[symbologyKeys[index]];
-                        typeList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: ' + sym.text))
-                    }
-                    $typesHelp.append(typeList);
-                } catch (error) { }
-                try {
-                    const $optionsHelp = $("#image-tools-barcode-options");
-                    const symList = $('<ul/>');
-                    for (let index = 0; index < symbologyOptionsList.length; index++) {
-                        const op = symbologyOptionsList[index];
-                        symList.append($("<li/>").html('<code>' + op.name + '</code> (' + op.type + ') - ' + op.desc))
-                    }
-                    $optionsHelp.append(symList);
-                } catch (error) { }
-            }
-            function waitFor_image_tools(){
-                if(window.image_tools && $("#image-tools-barcode-options").length && $("#image-tools-barcode-types").length ){
-                    update_image_tools_barcode_built_in_help();
-                }
-                else{
-                    setTimeout(waitFor_image_tools, 500);
-                }
-            }
-            waitFor_image_tools();
-        })();
-    });
 </script>
