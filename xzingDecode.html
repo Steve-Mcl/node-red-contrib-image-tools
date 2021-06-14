@@ -1,125 +1,66 @@
-<style>
-.node-label-white{
-    color: white;
-}
-    
-.checklist {
-    margin: auto;
-    display: inline-grid;
-}
-
-/*Checkboxes styles*/
-.checklist > input[type="checkbox"] { display: none; }
-
-.checklist > input[type="checkbox"] + label {
-    display: block;
-    position: relative;
-    padding-left: 35px;
-    margin-bottom: 5px;
-    /* font: 14px/20px 'Open Sans', Arial, sans-serif; */
-    /* color: #ddd; */
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    width: 100%;
-}
-
-.checklist > input[type="checkbox"] + label:last-child { margin-bottom: 0; }
-
-.checklist > input[type="checkbox"] + label:before {
-  content: '';
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-width: 1px;
-  border-style: solid;
-  /* border: 1px solid #6cc0e5; */
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: .6;
-  -webkit-transition: all .12s, border-color .08s;
-  transition: all .12s, border-color .08s;
-}
-
-.checklist > input[type="checkbox"]:checked + label:before {
-  width: 10px;
-  top: -5px;
-  left: 5px;
-  border-radius: 0;
-  opacity: 1;
-  border-top-color: transparent;
-  border-left-color: transparent;
-  -webkit-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
-    
-
-
-</style>
 <script type="text/javascript">
-(function() {
-    RED.nodes.registerType('Barcode Decoder', {
-        category: 'image tools',
-        paletteLabel: "Barcode Decoder",
-        //labelStyle: "node-label-white",
-        icon: "qrcode.png",
-        color: '#FFAAAA',//'#f24b69',
-        defaults: {
-            name: { value: "" },
-            data: { value: "payload", validate: RED.validators.typedInput("dataType") },
-            dataType: { value: "msg" },
-            tryharder: { value: false, validate: RED.validators.typedInput("tryharderType") },
-            tryharderType: { value: "bool" },
-            QR_CODE : { value: true},
-            DATA_MATRIX : { value: false},
-            PDF_417 : { value: false},
-            EAN_8 : { value: false},
-            EAN_13 : { value: false},
-            CODE_39 : { value: false},
-            CODE_128 : { value: false},
-            ITF : { value: false},
-            RSS_14 : { value: false},
-        },
-        inputs: 1,
-        outputs: 1,
-        label: function () {
-            return this.name || "Barcode Decoder";
-        },
-        oneditprepare: function () {
-            let node = this;
-            function setupTypedInput(varName, types, def) {
-                let varSel = '#node-input-' + varName;
-                let typeSel = varSel + 'Type';
-                let varVal = node[varName];
-                let typeVal = node[varName + 'Type'];
+    (function () {
+        RED.nodes.registerType('Barcode Decoder', {
+            category: 'image tools',
+            paletteLabel: "Barcode Decoder",
+            //labelStyle: "node-label-white",
+            icon: "font-awesome/fa-barcode",
+            color: '#FFAAAA',//'#f24b69',
+            defaults: {
+                name: { value: "" },
+                data: { value: "payload", validate: RED.validators.typedInput("dataType") },
+                dataType: { value: "msg" },
+                tryharder: { value: false, validate: RED.validators.typedInput("tryharderType") },
+                tryharderType: { value: "bool" },
+                QR_CODE: { value: true },
+                DATA_MATRIX: { value: false },
+                PDF_417: { value: false },
+                EAN_8: { value: false },
+                EAN_13: { value: false },
+                CODE_39: { value: false },
+                CODE_128: { value: false },
+                ITF: { value: false },
+                RSS_14: { value: false },
+            },
+            inputs: 1,
+            outputs: 1,
+            label: function () {
+                return this.name || "Barcode Decoder";
+            },
+            oneditprepare: function () {
+                let node = this;
+                function setupTypedInput(varName, types, def) {
+                    let varSel = '#node-input-' + varName;
+                    let typeSel = varSel + 'Type';
+                    let varVal = node[varName];
+                    let typeVal = node[varName + 'Type'];
 
-                if (typeVal == null || typeVal === 'none') {
-                    typeVal = def;
-                } else if (typeVal === 'string') {
-                    typeVal = "str";
-                } else if (typeVal === 'number') {
-                    typeVal = "num";
+                    if (typeVal == null || typeVal === 'none') {
+                        typeVal = def;
+                    } else if (typeVal === 'string') {
+                        typeVal = "str";
+                    } else if (typeVal === 'number') {
+                        typeVal = "num";
+                    }
+                    $(typeSel).val(typeVal);
+                    $(varSel).typedInput({
+                        default: def,
+                        typeField: $(typeSel),
+                        types: types
+                    });
+                    $(varSel).typedInput('type', typeVal);
                 }
-                $(typeSel).val(typeVal);
-                $(varSel).typedInput({
-                    default: def,
-                    typeField: $(typeSel),
-                    types: types
-                });
-                $(varSel).typedInput('type', typeVal);
+                setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
+                setupTypedInput('tryharder', ['bool', 'msg', 'flow', 'global'], 'bool');
+            },
+            oneditsave() {
             }
-            setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
-            setupTypedInput('tryharder', ['bool', 'msg', 'flow', 'global'], 'bool');
-        },
-        oneditsave(){
-        }
-    });
-})();    
+        });
+    })();
 </script>
 
 <script type="text/html" data-template-name="Barcode Decoder">
+    <link rel="stylesheet" href="image-tools/static/css/common.css" type="text/css"/>
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -131,7 +72,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-format"><i class="fa fa-barcode"></i><span data-i18n="xzingDecode.label.format"> format</span></label>
-        <div class="checklist">
+        <div class="image-tools-checklist">
                 <input type="checkbox" id="node-input-DATA_MATRIX" title="DATA_MATRIX" data-value="DATA_MATRIX"> 
                 <label for="node-input-DATA_MATRIX" title="DATA_MATRIX">Datamatrix</label>
                 <input type="checkbox" id="node-input-QR_CODE" title="QR_CODE" data-value="QR_CODE"> 
@@ -161,42 +102,38 @@
 </script>
 
 <script type="text/html" data-help-name="Barcode Decoder">
-<p>A barcode decoder node built with zxing and Jimp</p>
-
-<h3>Inputs</h3>
-<dl class="message-properties">
-    <dt>image <span class="property-type">string | base64 | buffer | object</span></dt>
-    <dd> the image (Jimp image / buffer / base64 string / file name / URL) to be decoded. </dd>
-    <dt>format <span class="property-type">JSON</span></dt>
-    <dd> 
-        The barcode formats to use can be overriden by sending an array of strings in <code>msg.barcodeFormats</code>. 
-        Choosing the correct format can reduce processng time and improve accuracy.
-        <p style="padding-left: 2px">
-            <b>Overiding barcode formats by setting <code>msg.barcodeFormats</code>...</b><br>
-            Example to read QR only: <code>["QR_CODE"]</code><br>
-            Example to read Datamatrix only: <code>["DATA_MATRIX"]</code><br>
-            Example to read 3 different types of barcode: <code>["EAN_32", "RSS_14", "ITF"]</code><br>
-            <b>To see all currently supported types, import the example "Barcodes" or refer to <a target="_blank" href="https://github.com/zxing-js/library#supported-formats">supported-formats</a> </b>
-        </p>
-    </dd>
-    <dt>tryharder <span class="property-type">bool</span></dt>
-    <dd> if <code>true</code>, this flag instructs the decoder to try harder when looking for a barcode (slower).</dd>
-</dl>
-<h3>Output</h3>
-<dl class="message-properties">
-    <dt>payload <span class="property-type">object</span></dt>
-    <dd>The results.</dd>
-    <dt>performance <span class="property-type">object</span></dt>
-    <dd>Performance measurements of the image loading and processing</dd>
-    <h4>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h4>
-</dl>
-<!-- <h3>Notes</h3>
-<p>
-    <ul>
-        <li></li>
-        <li></li>
-        <li></li>
-    </ul>
-</p> -->
-
+    <link rel="stylesheet" href="image-tools/static/css/common.css" type="text/css"/>
+    <p>A barcode decoder node built with zxing and Jimp</p>
+    <h3>Foreword</h3>
+    <dl class="message-properties">
+        Examples have been included to help you do some common tasks. 
+        <a onclick="RED.actions.invoke('core:show-examples-import-dialog')" href="#">Click here</a> to import an example or click the hamburger menu <a class="button" href="#"><i class="fa fa-bars"></i></a> select <b>import</b> then <b>examples</b> or press <kbd>ctrl+i</kbd>
+    </dl> 
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>image <span class="property-type">string | base64 | buffer | object</span></dt>
+        <dd> the image (Jimp image / buffer / base64 string / file name / URL) to be decoded. </dd>
+        <dt>format <span class="property-type">JSON</span></dt>
+        <dd> 
+            The barcode formats to use can be overridden by sending an array of strings in <code>msg.barcodeFormats</code>. 
+            Choosing the correct format can reduce processing time and improve accuracy.
+            <p style="padding-left: 2px">
+                <b>Overriding barcode formats by setting <code>msg.barcodeFormats</code>...</b><br>
+                Example to read QR only: <code>["QR_CODE"]</code><br>
+                Example to read Datamatrix only: <code>["DATA_MATRIX"]</code><br>
+                Example to read 3 different types of barcode: <code>["EAN_32", "RSS_14", "ITF"]</code><br>
+                <b>To see all currently supported types, import the example "Barcodes" or refer to <a target="_blank" href="https://github.com/zxing-js/library#supported-formats">supported-formats</a> </b>
+            </p>
+        </dd>
+        <dt>tryharder <span class="property-type">bool</span></dt>
+        <dd> if <code>true</code>, this flag instructs the decoder to try harder when looking for a barcode (slower).</dd>
+    </dl>
+    <h3>Output</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">object</span></dt>
+        <dd>The results.</dd>
+        <dt>performance <span class="property-type">object</span></dt>
+        <dd>Performance measurements of the image loading and processing</dd>
+        <h4>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</h4>
+    </dl>
 </script>

@@ -1,36 +1,4 @@
 
-<style>
-    .jimp-form-tip {
-        display: inline-block !important;
-        /* width: 70%; */
-        background: #ffe;
-        border-radius: 2px;
-        border: 1px solid #ddd;
-        margin-top: 2px;
-        width: 70%;
-        overflow: auto;
-        /* max-width: 450px; */
-    }
-    .jimp-ui-container {
-        display: inline-block;
-        width: 70%;
-    }
-    .jimp-row>label {
-        width: 120px !important;
-    }
-    .jimp-row>.input-tip-group{
-        display:inline-block; 
-        width: 70% !important;         
-        padding: 2px;  
-    }
-    .input-tip-group label{
-        color: white;
-    }
-    #convertToBatchButton {
-        width: 28px;
-        height: 34px;
-    } 
-</style>
 
 <script type="text/javascript">
 (function() {
@@ -403,21 +371,21 @@
             return this.name || fname || "image";
         },
         oneditsave: function() {
-            var node = this;
-            var $dropdown = $("#node-input-jimpFunction");
-            var choice = $dropdown.val();
-            var fn = imageToolsNodeCommon.functions[choice];
+            const node = this;
+            const $dropdown = $("#node-input-jimpFunction");
+            const choice = $dropdown.val();
+            const fn = imageToolsNodeCommon.functions[choice];
             node.jimpFunction = choice;
             node.selectedJimpFunction = fn;
             node.parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
         },
         oneditprepare: function () {
-            var node = this;
-            var isObject = function (val) {
-                        if (val === null) { return false;}
-                        return (typeof val === 'object');
+            const node = this;
+            const isObject = function (val) {
+                if (val === null) { return false;}
+                return (typeof val === 'object');
             };
-            var isNumeric = function(n) {
+            const isNumeric = function(n) {
                 return n !== '' && !isNaN(parseFloat(n)) && isFinite(n);
             };
             if(!imageToolsNodeCommon.alignModes){
@@ -453,7 +421,7 @@
                 } 
                 
                 //convert any custom types to a typedInput object
-                var types = parameterTypes.map(function(t){
+                const types = parameterTypes.map(function(t){
                     if(t){
                         switch (t) {
                             case "resizeMode":
@@ -594,19 +562,19 @@
             
             //hack - prevent node-red calculating UI panel too large due to long text in the tip
             node.sizeHack = false;
-            $(".jimp-form-tip").css("max-width","450px");
-            $(".jimp-form-tip").hide();//will get show / hid as required when function type is set
+            $(".image-tools-form-tip").css("max-width","450px");
+            $(".image-tools-form-tip").hide();//will get show / hid as required when function type is set
             
             setupTypedInput('data', 'msg|flow|global|bin|str|json', 'msg', 'payload', false /*"68%"*/);
             $('#node-input-sendProperty').typedInput({types:['msg']});
             $('#node-input-sendProperty').typedInput("value", node.sendProperty || "payload");
             
-            var $dropdown = $("#node-input-jimpFunction");
+            const $dropdown = $("#node-input-jimpFunction");
             $dropdown.off();
             $dropdown.empty().append('<option value=""></option>');
-            for (var _key in imageToolsNodeCommon.functions) {
+            for (let _key in imageToolsNodeCommon.functions) {
                 if (imageToolsNodeCommon.functions.hasOwnProperty(_key)) {
-                    var element = imageToolsNodeCommon.functions[_key];
+                    const element = imageToolsNodeCommon.functions[_key];
                     if(node.jimpFunction == _key){
                         $dropdown.append($("<option selected />").val(_key).text(element.name));
                     } else {
@@ -615,18 +583,18 @@
                 }
             }
 
-            var $convertToBatchButton = $("#convertToBatchButton");
+            const $convertToBatchButton = $("#convertToBatchButton");
 
             $convertToBatchButton.click(function() {
                 try {
-                    var choice = $dropdown.val(); 
-                    var fn = imageToolsNodeCommon.functions[choice];  
-                    var paramCount = fn && fn.parameters ? fn.parameters.length : 0;
-                    var batchSpec = {
+                    const choice = $dropdown.val(); 
+                    let fn = imageToolsNodeCommon.functions[choice];  
+                    const paramCount = fn && fn.parameters ? fn.parameters.length : 0;
+                    const batchSpec = {
                         name: fn.fn,
                         parameters:[]
                     };
-                    var inputParameters = [];
+                    const inputParameters = [];
                     for (var i = 0; i < paramCount; i++) {
                         var param = fn.parameters[i];
                         var $ti = $('#node-input-parameter' + (i + 1));
@@ -722,9 +690,9 @@
                 var paramNo = 1;
 
                 $.each(fn.parameters, function() {
-                    var pname = "parameter" + paramNo;
-                    var lname = "parameter-label" + paramNo;
-                    var paramTipName = "tip-parameter" + paramNo;
+                    const pname = "parameter" + paramNo;
+                    const lname = "parameter-label" + paramNo;
+                    const paramTipName = "tip-parameter" + paramNo;
                     
                     $("#" + lname).text(" " + this.name);
                     $("#" + pname).show();
@@ -750,59 +718,48 @@
             node.sizeHack = true;
         },
         oneditresize: function(size) {
-            console.log("jimp->oneditresize()");
-            if(this.sizeHack) {
-                setTimeout(function() {
-                    console.log("jimp->oneditresize()->setTimeout() (sizeHack active - now unsetting tip max-width");
-                    $(".jimp-form-tip").css("max-width","unset");//hack - prevent node-red calculating UI panel too large due to long text in the tip
-                    this.sizeHack = false;
-                }, 100);
+            if (!this._sizeHackTimer) {
+                node._sizeHackTimer = setTimeout(function () {
+                    $(".image-tools-form-tip").css("max-width","unset");//hack - prevent node-red calculating UI panel too large due to long text in the tip
+                    node._sizeHackTimer = null;
+                }, 250);
             }
-
-            // //HACK for old versions of node-red
-            // if(RED.settings.version && RED.settings.version.split(".")[0] < 1){
-            //     for (let i = 1; i <= 8; i++) {
-            //         const element = $("#node-input-parameter"+i);
-            //         try{
-            //             element.typedInput("width","70%");
-            //         } catch(e) {}                                       
-            //     }
-            // }
         }
     });
 })();     
 </script>
 
 <script type="text/html" data-template-name="jimp-image">
-    <div class="form-row jimp-row">
+    <link rel="stylesheet" href="image-tools/static/css/common.css" type="text/css"/>
+    <div class="form-row image-tools-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" style="width: calc(100% - 150px)" placeholder="Name">
     </div>
 
-    <div class="form-row jimp-row">
+    <div class="form-row image-tools-row">
             <label for="node-input-data"><i class="fa fa-file-image-o"></i><span data-i18n="jimp.label.data">
                 image</span></label>
             <input type="hidden" id="node-input-dataType">
             <input type="text" id="node-input-data" style="width: calc(100% - 150px)" placeholder="">
             <br>
             <label>&nbsp;</label>
-            <div class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px">A string containing a file path, URL or base64 image can be used as an image source. NOTE: Passing in an image object is faster as there is no conversion required before processing.</div>
+            <div class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px">A string containing a file path, URL or base64 image can be used as an image source. NOTE: Passing in an image object is faster as there is no conversion required before processing.</div>
         </div>
     </div>
     
-    <div class="form-row jimp-row" style="vertical-align: top;">
+    <div class="form-row image-tools-row" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-jimpFunction"><i class="fa fa-wrench"></i> <span data-i18n="jimp.label.jimpFunction">
             Function</span></label>
-        <div class="jimp-ui-container" style="width: calc(100% - 150px)">
+        <div class="image-tools-ui-container" style="width: calc(100% - 150px)">
             <select type="text" id="node-input-jimpFunction" style="width: calc(100% - 30px);display:inline-block"></select>
             <button id="convertToBatchButton" class="editor-button editor-button-small" style="width:28px;display:inline-block;float:right" title="convert to batch function" style="width:100%;"><i class="fa fa-exchange"></i></button>
         </div>
         <br>
         <label>&nbsp;</label>
-        <div id="tip-jimpFunction" class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-jimpFunction" class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>    
 
-    <div class="form-row jimp-row">
+    <div class="form-row image-tools-row">
         <label style="padding-top: 8px" for="node-input-ret"><i class="fa fa-sign-out"></i> <span data-i18n="jimp.label.send">
             Output</span></label>
         <select type="text" id="node-input-ret" style="width: calc(100% - 150px)">
@@ -812,99 +769,100 @@
         </select>
         <br>
         <label>&nbsp;</label>
-        <div class="jimp-form-tip" style="width: calc(100% - 150px);  max-width: 450px">Sending an image is much faster as there is no additional conversion required.</div>
+        <div class="image-tools-form-tip" style="width: calc(100% - 150px);  max-width: 450px">Sending an image is much faster as there is no additional conversion required.</div>
     </div>
     
-    <div class="form-row jimp-row">
+    <div class="form-row image-tools-row">
         <label for="node-input-sendProperty"><i class="fa fa-sign-out"></i> 
             <span data-i18n="jimp.label.send_property">Output Property</span>
         </label>
         <input type="text" id="node-input-sendProperty" style="width: calc(100% - 150px)" placeholder="payload">
         <br>
         <label>&nbsp;</label>
-        <div class="jimp-form-tip" style="width: calc(100% - 150px); max-width: 450px">The msg property in which to send the resulting image.</div>
+        <div class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px">The msg property in which to send the resulting image.</div>
     </div>    
     
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter1"><i class="fa fa-code"></i><span id="parameter-label1"
             data-i18n="jimp.label.parameter1"> parameter1</span></label>
         <input type="hidden" id="node-input-parameter1Type">
         <input type="text" id="node-input-parameter1" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter1" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter1" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter2" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter2" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter2"><i class="fa fa-code"></i><span id="parameter-label2"
             data-i18n="jimp.label.parameter2"> parameter2</span></label>
         <input type="hidden" id="node-input-parameter2Type">
         <input type="text" id="node-input-parameter2" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter2" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter2" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter3" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter3" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter3"><i class="fa fa-code"></i><span id="parameter-label3"
             data-i18n="jimp.label.parameter3"> parameter3</span></label>
         <input type="hidden" id="node-input-parameter3Type">
         <input type="text" id="node-input-parameter3" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter3" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter3" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter4" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter4" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter4"><i class="fa fa-code"></i><span id="parameter-label4"
             data-i18n="jimp.label.parameter4"> parameter4</span></label>
         <input type="hidden" id="node-input-parameter4Type">
         <input type="text" id="node-input-parameter4" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter4" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter4" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter5" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter5" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter5"><i class="fa fa-code"></i><span id="parameter-label5"
             data-i18n="jimp.label.parameter5"> parameter5</span></label>
         <input type="hidden" id="node-input-parameter5Type">
         <input type="text" id="node-input-parameter5" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter5" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter5" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter6" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter6" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter6"><i class="fa fa-code"></i><span id="parameter-label6"
             data-i18n="jimp.label.parameter6"> parameter6</span></label>
         <input type="hidden" id="node-input-parameter6Type">
         <input type="text" id="node-input-parameter6" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter6" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter6" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter7" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter7" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter7"><i class="fa fa-code"></i><span id="parameter-label7"
             data-i18n="jimp.label.parameter7"> parameter7</span></label>
         <input type="hidden" id="node-input-parameter7Type">
         <input type="text" id="node-input-parameter7" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter7" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter7" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
-    <div class="form-row jimp-row jimp-parameter-group" id="parameter8" style="vertical-align: top;">
+    <div class="form-row image-tools-row jimp-parameter-group" id="parameter8" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter8"><i class="fa fa-code"></i><span id="parameter-label8"
             data-i18n="jimp.label.parameter8"> parameter8</span></label>
         <input type="hidden" id="node-input-parameter8Type">
         <input type="text" id="node-input-parameter8" style="width: calc(100% - 150px)" placeholder="">
         <br>
         <label>&nbsp;</label>
-        <div id="tip-parameter8" class="jimp-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
+        <div id="tip-parameter8" class="image-tools-form-tip paramtip"  style="width: calc(100% - 150px); max-width: 450px" hidden></div>
     </div>
 </script>
 
 <script type="text/html" data-help-name="jimp-image">
 <p>An image manipulation node built using <a href="https://github.com/oliver-moran/jimp/tree/master/packages/jimp">Jimp</a></p>
-<h3>Examples</h3>
+<h3>Foreword</h3>
 <dl class="message-properties">
-    A number of examples have been included to help you do some common tasks. To use the examples, press the hamburger menu <a id="red-ui-header-button-sidemenu" class="button" href="#"><i class="fa fa-bars"></i></a> select <b>import</b> then <b>examples</b>
-</dl>
+    Examples have been included to help you do some common tasks. 
+    <a onclick="RED.actions.invoke('core:show-examples-import-dialog')" href="#">Click here</a> to import an example or click the hamburger menu <a class="button" href="#"><i class="fa fa-bars"></i></a> select <b>import</b> then <b>examples</b> or press <kbd>ctrl+i</kbd>
+</dl> 
 <h3>Inputs</h3>
 <dl class="message-properties">
     <dt>image <span class="property-type">string | base64 | buffer | jimp | object</span></dt>
