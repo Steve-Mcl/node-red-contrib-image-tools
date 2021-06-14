@@ -43,6 +43,7 @@
                 const symbology = image_tools.getSymbology();
                 const symbologyOptionsList = image_tools.getOptionsList();
                 const symbologyOptionsMap = image_tools.getOptionsMap();
+                const symbologyKeys = Object.keys(symbology);
 
                 $('#node-input-sendProperty').typedInput({
                     default: "msg",
@@ -57,7 +58,7 @@
                     types: ["msg", "flow", "global", "str", "env", "jsonata"]
                 });
 
-                var barcodeChoices = Object.keys(symbology).map(e => {
+                var barcodeChoices = symbologyKeys.map(e => {
                     return {
                         label: symbology[e].desc,
                         value: symbology[e].sym
@@ -273,13 +274,23 @@
     <dd> the data to be encoded in the barcode. </dd>
     <dt>type <span class="property-type">string</span></dt>
     <dd> the barcode type.
-        <br> TODO - list barcode types
+        <details>
+            <summary>allowable types</summary>
+            <p id="image-tools-barcode-types">
+
+            </p>
+        </details>
     </dd>
-    <dt>type <span class="property-type">output property</span></dt>
+    <dt>output property <span class="property-type">string</span></dt>
     <dd> The msg property where the barcode is returned</dd>
     <dt>Options <span class="property-type">object</span></dt>
     <dd> additional options to format the barcode.
-        <br> TODO - list options
+        <details>
+            <summary>allowable options</summary>
+            <p id="image-tools-barcode-options">
+
+            </p>
+        </details>
     </dd>
 </dl>
 <h3>Output</h3>
@@ -290,5 +301,46 @@
     <dd>Performance measurements of the node and barcode creation</dd>
 </dl>
 
+</script>
 
+<script type="text/javascript">
+    // Update built in help from types/options
+    $(document).ready(function () {
+        (function () {
+            function update_image_tools_barcode_built_in_help(params) {
+                const symbology = image_tools.getSymbology();
+                const symbologyOptionsList = image_tools.getOptionsList();
+                const symbologyOptionsMap = image_tools.getOptionsMap();
+                const symbologyKeys = Object.keys(symbology);
+                debugger
+                try {
+                    const $typesHelp = $("#image-tools-barcode-types");
+                    const typeList = $('<ul/>');
+                    for (let index = 0; index < symbologyKeys.length; index++) {
+                        const sym = symbology[symbologyKeys[index]];
+                        symList.append($("<li/>").html('<code>' + sym.sym + '</code> - ' + sym.desc + '. Example data: ' + sym.text))
+                    }
+                    $typesHelp.append(typeList);
+                } catch (error) { }
+                try {
+                    const $optionsHelp = $("#image-tools-barcode-options");
+                    const symList = $('<ul/>');
+                    for (let index = 0; index < symbologyOptionsList.length; index++) {
+                        const op = symbologyOptionsList[index];
+                        symList.append($("<li/>").html('<code>' + op.name + '</code> (' + op.type + ') - ' + op.desc))
+                    }
+                    $optionsHelp.append(symList);
+                } catch (error) { }
+            }
+            function waitFor_image_tools(){
+                if(window.image_tools && $("#image-tools-barcode-options").length && $("#image-tools-barcode-types").length ){
+                    update_image_tools_barcode_built_in_help();
+                }
+                else{
+                    setTimeout(waitFor_image_tools, 500);
+                }
+            }
+            waitFor_image_tools();
+        })();
+    });
 </script>
