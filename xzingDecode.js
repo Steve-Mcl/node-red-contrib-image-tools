@@ -4,7 +4,7 @@ module.exports = function (RED) {
         RED.nodes.createNode(this, config);
         const Jimp = require('jimp');
         const performanceLogger = require('./performanceLogger');
-        const { MultiFormatReader, BarcodeFormat, DecodeHintType, RGBLuminanceSource, BinaryBitmap, HybridBinarizer } = require('@zxing/library/esm5');
+        const { MultiFormatReader, BarcodeFormat, DecodeHintType, RGBLuminanceSource, BinaryBitmap, HybridBinarizer } = require('@zxing/library');
         const node = this;
         node.data = config.data || "payload";//data
         node.dataType = config.dataType || "msg";
