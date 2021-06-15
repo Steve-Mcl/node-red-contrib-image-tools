@@ -719,9 +719,9 @@
         },
         oneditresize: function(size) {
             if (!this._sizeHackTimer) {
-                node._sizeHackTimer = setTimeout(function () {
+                this._sizeHackTimer = setTimeout(function () {
                     $(".image-tools-form-tip").css("max-width","unset");//hack - prevent node-red calculating UI panel too large due to long text in the tip
-                    node._sizeHackTimer = null;
+                    this._sizeHackTimer = null;
                 }, 250);
             }
         }
