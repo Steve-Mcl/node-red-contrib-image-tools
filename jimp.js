@@ -316,7 +316,6 @@ module.exports = function (RED) {
                                 }
                                 newY = y;
                             });
-                            //console.log(`currentY=${thisParams[2]}, newY=${newY}, text="${line}"`)
                             if (thisResult instanceof Error) {
                                 returnValue.result = thisResult;
                                 returnValue.success = false;
