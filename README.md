@@ -1,3 +1,4 @@
+
 node-red-contrib-image-tools
 ============================
 
@@ -17,14 +18,17 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
 ![printing_text](https://user-images.githubusercontent.com/44235289/81293532-66433a80-9065-11ea-88e5-3a3893574255.png)
 
 ### Barcode decoding...
-![barcode](https://user-images.githubusercontent.com/44235289/79025486-d43b3580-7b7d-11ea-8f42-b7ad6471d00c.gif)
+![barcode-decoding](https://user-images.githubusercontent.com/44235289/122010221-cd780600-cdb2-11eb-9ced-b61699808d5c.gif)
 
 ### Barcode generating...
-TODO: screenshot
+![barcode-generating](https://user-images.githubusercontent.com/44235289/122010342-f13b4c00-cdb2-11eb-8358-82bc79dce4e8.gif)
+
 
 
 ## FEATURES
 
+* Built in demos.  
+  * **In Node-RED, look under the hamburger menu → import → examples → node-red-contrib-image-tools**
 
 * Image node
   * Read image from file, http, base64 string or buffer
@@ -157,9 +161,6 @@ TODO: screenshot
     * upcecomposite • UPC-E Composite
 
 
-* Other...
-  * Built in examples.  
-    * **In node-red, look under the hamburger menu >> import >> examples >> image tools**
 
 
 ## IMPORTANT - Breaking changes in V1
@@ -184,27 +185,33 @@ None!
 
 ## Install
 
-Run the following command in the root directory of your Node-RED install.
-(Usually this is `~/.node-red` or `%userprofile%\.node-red`).
+### Simple
+The easiest wat to install is to use the Pallet Manager in node-red. 
 
-Install from GIT
+
+### Install from GIT
+Run the following command in the directory of your Node-RED install.
+(Usually this is `~/.node-red` or `%userprofile%\.node-red`).
 
     npm install Steve-Mcl/node-red-contrib-image-tools
 
-Install from NPM 
+
+### Install from NPM 
+Run the following command in the directory of your Node-RED install.
+(Usually this is `~/.node-red` or `%userprofile%\.node-red`).
 
     npm install node-red-contrib-image-tools 
 
-Alternatively, install from a folder
+
+### Install from local directory
+Run the following command in the root directory of your Node-RED install.
+(Usually this is `~/.node-red` or `%userprofile%\.node-red`).
 
     npm install c:/tempfolder/node-red-contrib-image-tools
 
-Or simply copy the folder `node-red-contrib-image-tools` into a folder named `nodes` inside your node-red folder then `cd` into `nodes/node-red-contrib-image-tools` and execute `npm install`
 
 ## NOTES
-* Tested on Node V10 & V12 only. YMMV
-* Bugs are likely :)
+* Tested on Node V10, V12, V14 only. YMMV
+* Bugs are quite possible :)
 
-## KNOWN ISSUES
-Clicking the preview image in IE doesn't dismiss it (works in chrome)
 
