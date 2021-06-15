@@ -150,7 +150,6 @@ SOFTWARE.
         }
 
         function render(id, data, node) {
-            console.log("render image viewer")
             let i = new Image();
             i.src = data;
             let $img = document.getElementById('image-tools-viewer-img-' + id);
@@ -171,7 +170,6 @@ SOFTWARE.
                 img.setAttribute('width', node.width || DEFAULT_WIDTH);
                 // img.setAttribute('onclick', "function(){remove('" + id + "');}");
                 $(img).on("click", function r(el) {
-                    console.log("img clicked")
                     _remove(id)
                 })
                 $container.insertBefore(img, $container.lastChild.nextSibling);
