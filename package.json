@@ -1,7 +1,7 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "2.0.0",
-    "description": "A dynamic Image editor node with over 40 functions, a viewer node and a 1D + 2D Barcode Generator and Decoder nodes",
+    "version": "2.0.1",
+    "description": "A dynamic image editor, image viewer, 1D/2D Barcode Generator and 1D/2D Barcode Decoder nodes",
     "keywords": [
         "node-red",
         "barcode",
