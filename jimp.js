@@ -138,7 +138,7 @@ module.exports = function (RED) {
 
         }
 
-        node.on('input', function (msg) {
+         node.on('input', async function (msg) {
 
             const performance = new performanceLogger(node.id);
             performance.start("total");
@@ -540,7 +540,7 @@ module.exports = function (RED) {
                 //if data is a Jimp, then crack on with image processing functions
                 if (data instanceof Jimp) {
                     try {
-                        imageProcessor(Jimp, data, jobs, node, msg, performance);
+                        await imageProcessor(Jimp, data, jobs, node, msg, performance);
                     } catch (err) {
                         nodeStatusImageProcessError(err, msg);
                     }
