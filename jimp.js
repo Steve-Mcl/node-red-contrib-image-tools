@@ -440,12 +440,25 @@ module.exports = function (RED) {
                                         processResult = doProcess(Jimp, img, job);
                                     } else {
                                         if (!fontFile) throw new Error(`'Print' error - cannot load font ${fontName}`)
-                                        let p = Jimp.loadFont(fontFile);
-                                        let f = await p;
-                                        if (!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
-                                        _image_tools_fonts.setFont(fontFile, f)
-                                        job.parameters[0] = f;
-                                        processResult = doProcess(Jimp, img, job);
+                                        try {
+                                            // let p = Jimp.loadFont(fontFile);
+                                            let f = await Jimp.loadFont(fontFile);
+                                            if (!f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`)
+                                            _image_tools_fonts.setFont(fontFile, f)
+                                            job.parameters[0] = f;
+                                            processResult = doProcess(Jimp, img, job);
+
+                                            // Jimp.loadFont(fontFile, function(err, f) {
+                                            //     if (err || !f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`);
+                                            //     _image_tools_fonts.setFont(fontFile, f);
+                                            //     job.parameters[0] = f;
+                                            //     processResult = doProcess(Jimp, img, job);
+                                            // })
+
+                                        } catch (err) {
+                                            debugger
+                                            throw err;
+                                        }
                                     }
                                 } else {
                                     processResult = doProcess(Jimp, img, job);
@@ -566,17 +579,13 @@ module.exports = function (RED) {
                         }
                         performance.start(perfName);
                         Jimp.read(...args)
-                            .then(img => {
+                            try {
+                                const img = await Jimp.read(...args)
                                 performance.end(perfName);
-                                try {
-                                    imageProcessor(Jimp, img, jobs, node, msg, performance);
-                                } catch (err) {
-                                    nodeStatusImageProcessError(err, msg);
-                                }
-                            })
-                            .catch(err => {
+                                await imageProcessor(Jimp, img, jobs, node, msg, performance);
+                            } catch (err) {
                                 nodeStatusImageProcessError(err, msg);
-                            });
+                            }
                     }
 
                 } catch (err) {
