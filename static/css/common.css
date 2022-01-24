@@ -3,9 +3,9 @@
 .image-tools-form-tip {
     display: inline-block !important;
     /* width: 70%; */
-    background: #ffe;
+    background: var(--red-ui-form-tips-background, #ffe);
     border-radius: 2px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--red-ui-secondary-border-color, #ddd);
     margin-top: 2px;
     width: calc(100% - 150px);
     overflow: auto;
