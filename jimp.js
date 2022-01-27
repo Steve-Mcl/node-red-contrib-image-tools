@@ -578,14 +578,13 @@ module.exports = function (RED) {
                             }
                         }
                         performance.start(perfName);
-                        Jimp.read(...args)
-                            try {
-                                const img = await Jimp.read(...args)
-                                performance.end(perfName);
-                                await imageProcessor(Jimp, img, jobs, node, msg, performance);
-                            } catch (err) {
-                                nodeStatusImageProcessError(err, msg);
-                            }
+                        try {
+                            const img = await Jimp.read(...args)
+                            performance.end(perfName);
+                            await imageProcessor(Jimp, img, jobs, node, msg, performance);
+                        } catch (err) {
+                            nodeStatusImageProcessError(err, msg);
+                        }
                     }
 
                 } catch (err) {
