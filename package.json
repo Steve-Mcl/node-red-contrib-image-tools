@@ -41,17 +41,22 @@
         "example": "examples"
     },
     "dependencies": {
-        "@jimp/custom": "^0.16.1",
-        "@jimp/plugin-blur": "^0.16.1",
-        "@jimp/plugin-color": "^0.16.1",
-        "@jimp/plugin-resize": "^0.16.1",
-        "@jimp/plugin-threshold": "^0.16.1",
-        "@zxing/library": "^0.19.1",
-        "bwip-js": "^3.0.4",
+        "@jimp/custom": "^0.22.12",
+        "@jimp/plugin-blur": "^0.22.12",
+        "@jimp/plugin-color": "^0.22.12",
+        "@jimp/plugin-resize": "^0.22.12",
+        "@jimp/plugin-threshold": "^0.22.12",
+        "@zxing/library": "^0.20.0",
+        "bwip-js": "^4.20",
         "is-base64": "^1.1.0",
-        "jimp": "^0.16.1"
+        "jimp": "^0.22.12"
+    },
+    "overrides": {
+        "jimp": {
+            "jpeg-js": "^0.4.4"
+        }
     },
     "engines": {
-        "node" : ">=8.0.0"
+        "node" : ">=14.0.0"
     }
 }
