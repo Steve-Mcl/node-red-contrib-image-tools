@@ -12,6 +12,8 @@
                 dataType: { value: "msg" },
                 tryharder: { value: false, validate: RED.validators.typedInput("tryharderType") },
                 tryharderType: { value: "bool" },
+                charEncoding: { value: false, validate: RED.validators.typedInput("charEncodingType") },
+                charEncodingType: { value: "bool" },
                 QR_CODE: { value: true },
                 DATA_MATRIX: { value: false },
                 PDF_417: { value: false },
@@ -50,8 +52,19 @@
                     });
                     $(varSel).typedInput('type', typeVal);
                 }
+
+                const knownEncodings = ["Auto Detect", "Cp437", "ISO8859_1", "ISO8859_2", "ISO8859_3", "ISO8859_4", "ISO8859_5", "ISO8859_6", "ISO8859_7", "ISO8859_8", "ISO8859_9", "ISO8859_10", "ISO8859_11", "ISO8859_13", "ISO8859_14", "ISO8859_15", "ISO8859_16", "SJIS", "Cp1250", "Cp1251", "Cp1252", "Cp1256", "UnicodeBigUnmarked", "UTF8", "ASCII", "Big5", "GB18030", "EUC_KR"]
+
                 setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
                 setupTypedInput('tryharder', ['bool', 'msg', 'flow', 'global'], 'bool');
+                setupTypedInput('charEncoding', [
+                    {
+                        type: 'enc',
+                        options: knownEncodings.map(function (enc) {
+                            return { value: enc, label: enc }
+                        }),
+                        icon: 'fa fa-globe'
+                    }, 'str', 'msg', 'flow', 'global'], 'bool');
             },
             oneditsave() {
             }
@@ -97,6 +110,11 @@
         <label for="node-input-tryharder"><i class="fa fa-cogs"></i><span data-i18n="xzingDecode.label.tryharder"> try harder</span></label>
         <input type="hidden" id="node-input-tryharderType">
         <input style="width: 70%" type="text" id="node-input-tryharder" >
+    </div>
+    <div class="form-row">
+        <label for="node-input-charEncoding"><i class="fa fa-globe"></i><span data-i18n="xzingDecode.label.charEncoding"> char encoding</span></label>
+        <input type="hidden" id="node-input-charEncodingType">
+        <input style="width: 70%" type="text" id="node-input-charEncoding" >
     </div>
  
 </script>
