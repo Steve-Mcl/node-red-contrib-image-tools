@@ -447,16 +447,8 @@ module.exports = function (RED) {
                                             _image_tools_fonts.setFont(fontFile, f)
                                             job.parameters[0] = f;
                                             processResult = doProcess(Jimp, img, job);
-
-                                            // Jimp.loadFont(fontFile, function(err, f) {
-                                            //     if (err || !f) throw new Error(`'Print' error - cannot load font ${fontName}, problem loading file ${fontFile}`);
-                                            //     _image_tools_fonts.setFont(fontFile, f);
-                                            //     job.parameters[0] = f;
-                                            //     processResult = doProcess(Jimp, img, job);
-                                            // })
-
                                         } catch (err) {
-                                            debugger
+                                            // debugger
                                             throw err;
                                         }
                                     }
