@@ -278,7 +278,7 @@
         {"name" : "threshold", "type" : "num", "required" : false, "hint" : "threshold ranges 0-1 (default: 0.1)" }] },
 
         "print" : {"name" : "print","fn" : "print", "description" : "Print text to the image","parameters" : [
-        {"name" : "font|str", "type" : "jimpFont", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+        {"name" : "font", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
         {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
         {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
         {"name" : "text", "type" : "str", "required" : true, "hint" : "text to print" },
@@ -286,7 +286,7 @@
         {"name" : "maxHeight", "type" : "num", "required" : false, "hint" : "max height" }] },
         
         "print2" : {"name" : "print aligned","fn" : "print", "description" : "Print text to the image","parameters" : [
-        {"name" : "font|str", "type" : "jimpFont", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+        {"name" : "font", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
         {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
         {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
         {"name" : "text", "group" : "options", "type" : "str", "required" : true, "hint" : "text to print" },
