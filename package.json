@@ -28,7 +28,7 @@
         "url": "https://github.com/Steve-Mcl/node-red-contrib-image-tools.git"
     },
     "node-red": {
-        "version": ">=0.20.0",
+        "version": ">=1.0.0",
         "nodes": {
             "jimp": "jimp.js",
             "xzingDecode": "xzingDecode.js",
