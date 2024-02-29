@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-image-tools",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "A dynamic image editor, image viewer, 1D/2D Barcode Generator and 1D/2D Barcode Decoder nodes",
     "keywords": [
         "node-red",
@@ -47,7 +47,7 @@
         "@jimp/plugin-resize": "^0.22.12",
         "@jimp/plugin-threshold": "^0.22.12",
         "@zxing/library": "^0.20.0",
-        "bwip-js": "^4.20",
+        "bwip-js": "^4.2.0",
         "is-base64": "^1.1.0",
         "jimp": "^0.22.12"
     },
