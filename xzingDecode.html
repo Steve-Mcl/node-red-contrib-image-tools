@@ -12,8 +12,8 @@
                 dataType: { value: "msg" },
                 tryharder: { value: false, validate: RED.validators.typedInput("tryharderType") },
                 tryharderType: { value: "bool" },
-                charEncoding: { value: false, validate: RED.validators.typedInput("charEncodingType") },
-                charEncodingType: { value: "bool" },
+                charEncoding: { value: 'Auto Detect' },
+                charEncodingType: { value: "enc" },
                 QR_CODE: { value: true },
                 DATA_MATRIX: { value: false },
                 PDF_417: { value: false },
@@ -53,20 +53,37 @@
                     $(varSel).typedInput('type', typeVal);
                 }
 
-                const knownEncodings = ["Auto Detect", "Cp437", "ISO8859_1", "ISO8859_2", "ISO8859_3", "ISO8859_4", "ISO8859_5", "ISO8859_6", "ISO8859_7", "ISO8859_8", "ISO8859_9", "ISO8859_10", "ISO8859_11", "ISO8859_13", "ISO8859_14", "ISO8859_15", "ISO8859_16", "SJIS", "Cp1250", "Cp1251", "Cp1252", "Cp1256", "UnicodeBigUnmarked", "UTF8", "ASCII", "Big5", "GB18030", "EUC_KR"]
+                const knownEncodings = ["Auto Detect", 'ascii', 'utf-8', 'ibm866', 'iso-8859-2', 'iso-8859-3', 'iso-8859-4', 'iso-8859-5', 'iso-8859-6', 'iso-8859-7', 'iso-8859-8', 'iso-8859-8-i', 'iso-8859-10', 'iso-8859-13', 'iso-8859-14', 'iso-8859-15', 'koi8-r', 'koi8-u', 'macintosh', 'windows-874', 'windows-1250', 'windows-1251', 'windows-1252', 'windows-1253', 'windows-1254', 'windows-1255', 'windows-1256', 'windows-1257', 'windows-1258', 'x-mac-cyrillic', 'gbk', 'gb18030', 'big5', 'euc-jp', 'iso-2022-jp', 'shift_jis', 'euc-kr', 'utf-16le', 'utf-16be']
 
                 setupTypedInput('data', ['msg', 'flow', 'global', 'bin', 'str'], 'str');
                 setupTypedInput('tryharder', ['bool', 'msg', 'flow', 'global'], 'bool');
-                setupTypedInput('charEncoding', [
+                debugger
+                node._charEncUnset = (typeof node.charEncoding === 'undefined' && typeof node.charEncodingType === 'undefined');
+                $('#node-input-charEncoding').typedInput({
+                    types: [
                     {
                         type: 'enc',
                         options: knownEncodings.map(function (enc) {
                             return { value: enc, label: enc }
                         }),
-                        icon: 'fa fa-globe'
-                    }, 'str', 'msg', 'flow', 'global'], 'bool');
+                        icon: 'fa fa-globe',
+                        label: 'encoding',
+                    },
+                    'str', 'msg', 'flow', 'global']
+                })
+                $('#node-input-charEncoding').typedInput('type', node.charEncodingType || 'enc');
+                $('#node-input-charEncoding').typedInput('value', node.charEncoding || 'Auto Detect');
             },
             oneditsave() {
+                const node = this;
+                const charEncoding = $('#node-input-charEncoding').typedInput('value') || 'Auto Detect'
+                const charEncodingType = $('#node-input-charEncoding').typedInput('type') || 'enc'
+                if (node._charEncUnset && charEncodingType === 'enc' && charEncoding === 'Auto Detect') {
+                    // skip setting default values to avoid unnecessary dirty state
+                } else {
+                    node.charEncoding = charEncoding;
+                    node.charEncodingType = charEncodingType;
+                }
             }
         });
     })();
@@ -112,7 +129,7 @@
         <input style="width: 70%" type="text" id="node-input-tryharder" >
     </div>
     <div class="form-row">
-        <label for="node-input-charEncoding"><i class="fa fa-globe"></i><span data-i18n="xzingDecode.label.charEncoding"> char encoding</span></label>
+        <label for="node-input-charEncoding"><i class="fa fa-globe"></i><span data-i18n="xzingDecode.label.charEncoding"> encoding</span></label>
         <input type="hidden" id="node-input-charEncodingType">
         <input style="width: 70%" type="text" id="node-input-charEncoding" >
     </div>
@@ -145,6 +162,8 @@
         </dd>
         <dt>tryharder <span class="property-type">bool</span></dt>
         <dd> if <code>true</code>, this flag instructs the decoder to try harder when looking for a barcode (slower).</dd>
+        <dt>encoding <span class="property-type">string</span></dt>
+        <dd> if <code>Auto Detect</code> is selected, this flag instructs the text decoder to guess the encoding. In tests, it is not great when there are accented characters in the string. Selecting <code>ascii</code>, <code>iso-8859-x</code> or <code>utf-8</code> works better in these cases</dd>
     </dl>
     <h3>Output</h3>
     <dl class="message-properties">
