@@ -8,8 +8,10 @@ module.exports = function (RED) {
         const node = this;
         node.data = config.data || "payload";//data
         node.dataType = config.dataType || "msg";
-        node.tryHarder = config.tryHarder || false;
-        node.tryHarderType = config.tryHarderType || "bool";
+        node.tryHarder = config.tryharder || false;
+        node.tryHarderType = config.tryharderType || "bool";
+        node.charEncoding = config.charEncoding || "Auto Detect";
+        node.charEncodingType = config.charEncodingType || "str";
         node.DATA_MATRIX = config.DATA_MATRIX;
         node.QR_CODE = config.QR_CODE;
         node.PDF_417 = config.PDF_417;
@@ -51,7 +53,7 @@ module.exports = function (RED) {
             return formats;
         }
 
-        function decodeBarcode(img, formats, tryHarder) {
+        function decodeBarcode(img, formats, {tryHarder, charEncoding}) {
             if (!img || !img.bitmap) {
                 throw new Error("Image is not valid. Expected an object with a bitmap property.")
             }
@@ -66,6 +68,10 @@ module.exports = function (RED) {
 
             if (tryHarder)
                 hints.set(DecodeHintType.TRY_HARDER, true);
+
+            if(charEncoding) {
+                hints.set(DecodeHintType.CHARACTER_SET, charEncoding);
+            }
 
             reader.setHints(hints);
             for (let i = 0; i < len; i++) {
@@ -102,6 +108,18 @@ module.exports = function (RED) {
                     tryHarder = value;
                 }
             });
+            let charEncoding = "Auto Detect";
+            RED.util.evaluateNodeProperty(node.charEncoding, node.charEncodingType, node, msg, (err, value) => {
+                if (err) {
+                    node.error("Unable to evaluate charEncoding", msg);
+                    node.status({ fill: "red", shape: "ring", text: "Unable to evaluate charEncoding" });
+                    return;//halt flow!
+                }
+                charEncoding = value;
+            });
+            if (charEncoding === "Auto Detect") {
+                charEncoding = null // use default
+            }
             msg.originalPayload = msg.payload;//store original Payload in case user still wants it
             let formats = null;
 
@@ -113,9 +131,9 @@ module.exports = function (RED) {
                     formats = node.formats;
                 }
 
-                function _decode(img, formats, tryHarder) {
+                function _decode(img, formats, {tryHarder, charEncoding}) {
                     performance.start("decode");
-                    let decoded = decodeBarcode(img, formats, tryHarder);
+                    let decoded = decodeBarcode(img, formats, {tryHarder, charEncoding});
                     performance.end("decode");
                     performance.end("total");
                     node.msgMem.performance = performance.getPerformance();
@@ -131,13 +149,13 @@ module.exports = function (RED) {
                     performance.end("base64_to_buffer");
                 }
                 if (data instanceof Jimp) {
-                    _decode(data, formats, tryHarder);
+                    _decode(data, formats, {tryHarder, charEncoding});
                 } else {
                     performance.start("jimp_read");
                     Jimp.read(data)
                         .then(img => {
                             performance.end("jimp_read");
-                            _decode(img, formats, tryHarder);
+                            _decode(img, formats, {tryHarder, charEncoding});
                         })
                         .catch(err => {
                             node.error(err, msg);

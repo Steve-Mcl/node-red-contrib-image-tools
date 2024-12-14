@@ -50,6 +50,8 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
 
 * Barcode Decode node
   * Ability to decode 1D, QR and Data Matrix barcodes. See [supported formats](https://www.npmjs.com/package/@zxing/library#supported-formats).
+  * Ability to select the text encoding (ascii, UTF-8, ISO-8859-15, Shift_JIS, etc) (New in V2.2.0)
+    * TIP: If you are getting errors or strange characters in your decoded text, try changing the encoding to `ascii` or `ISO-8859-15` or `utf-8`.
 
 * Barcode Generator node
   * Ability to create over 100 types of barcodes...
