@@ -2,7 +2,7 @@ module.exports = function (RED) {
 
     function xzingDecode(config) {
         RED.nodes.createNode(this, config);
-        const Jimp = require('jimp');
+        const { Jimp } = require('jimp');
         const performanceLogger = require('./performanceLogger');
         const { MultiFormatReader, BarcodeFormat, DecodeHintType, RGBLuminanceSource, BinaryBitmap, HybridBinarizer } = require('@zxing/library');
         const node = this;
@@ -53,6 +53,13 @@ module.exports = function (RED) {
             return formats;
         }
 
+        /**
+         * Decode the barcode from the image
+         * @param {import('jimp').JimpInstance} img 
+         * @param {*} formats 
+         * @param {*} param2 
+         * @returns 
+         */
         function decodeBarcode(img, formats, {tryHarder, charEncoding}) {
             if (!img || !img.bitmap) {
                 throw new Error("Image is not valid. Expected an object with a bitmap property.")
@@ -131,6 +138,12 @@ module.exports = function (RED) {
                     formats = node.formats;
                 }
 
+                /**
+                 * Internal function to decode the barcode
+                 * @param {import('jimp').JimpInstance} img 
+                 * @param {*} formats 
+                 * @param {*} param2 
+                 */
                 function _decode(img, formats, {tryHarder, charEncoding}) {
                     performance.start("decode");
                     let decoded = decodeBarcode(img, formats, {tryHarder, charEncoding});
@@ -145,7 +158,7 @@ module.exports = function (RED) {
                 if (typeof data == 'string' && data.substr(0, 30).indexOf('base64') != -1 && data.substr(0, 4).indexOf('data') == 0) {
                     performance.start("base64_to_buffer");
                     let url = data.replace(/^data:image\/\w+;base64,/, "");
-                    data = new Buffer(url, 'base64');
+                    data = Buffer.from(url, 'base64');
                     performance.end("base64_to_buffer");
                 }
                 if (data instanceof Jimp) {

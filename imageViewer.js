@@ -51,7 +51,7 @@ module.exports = function (RED) {
         node.dataType = config.dataType || "msg";
         this.active = config.active;
 
-        node.on("input", function (msg) {
+        node.on("input", async function (msg) {
 
             //first clear any error status
             node.status({});
@@ -67,96 +67,79 @@ module.exports = function (RED) {
                 node.status({ fill: "red", shape: "dot", text: statusText });
             }
 
-            var data;
             try {
                 /* ****************  Get Image Data Parameter **************** */
-                var dataInput;
+                let payload;
                 RED.util.evaluateNodeProperty(node.data, node.dataType, node, msg, (err, value) => {
                     if (err) {
                         nodeStatusError(err, msg, "Error getting Image Data parameter");
                         return;//halt flow!
                     } else {
-                        dataInput = value;
+                        payload = value;
                     }
                 });
-                if (!dataInput) {
-                    nodeStatusError("dataInput is empty (Image parameter)", msg, "Error. Image is null");
+                if (!payload) {
+                    nodeStatusError("payload is empty (Image parameter)", msg, "Error. Image is null");
                     return null;
                 }
 
-                let isBuffer = Buffer.isBuffer(dataInput);
-                let isArray = Array.isArray(dataInput);
-                let isString = typeof dataInput === 'string';
+                let isString = typeof payload === 'string';
                 let hasMime = false, isBase64Image = false;
                 let gif = false;
                 if (isString) {
-                    hasMime = dataInput.startsWith("data:");
-                    isBase64Image = isBase64(dataInput, { mimeRequired: hasMime });
+                    hasMime = payload.startsWith("data:");
+                    isBase64Image = isBase64(payload, { mimeRequired: hasMime });
                     if (isBase64Image && !hasMime) {
-                        dataInput = createDataURI(dataInput);
+                        payload = createDataURI(payload);
                         hasMime = true;
                     }
                 }
                 let isfileName = isString && !isBase64Image;
-
                 //hack to support gif. Oddly, Jimp can read a gif but fails if you try to do most operations
-                if (dataInput instanceof Jimp && dataInput._originalMime == "image/gif") {
-                    dataInput.getBuffer(Jimp.MIME_PNG, (e, b) => {
-                        if (e) {
-                            throw e;
-                        }
+                if (payload instanceof Jimp.Jimp && payload._originalMime == "image/gif") {
+                    try {
+                        payload = await payload.getBuffer(Jimp.JimpMime.gif)
                         gif = true;
-                        dataInput = b;
-                        isBuffer = true;
-                    })
+                    } catch (error) {
+                        nodeStatusError(e, msg, "Error getting image buffer")
+                    }
                 }
                 if (isString && isBase64Image && hasMime) {
                     //its already base 64 with mime
                     node.send(msg);//pass it on before displaying
-                    RED.comms.publish("image-tools-image-viewer", { id: this.id, data: dataInput });
-                } else if (dataInput instanceof Jimp && !gif) {
-                    dataInput.getBase64(Jimp.AUTO, (err, b64) => {
-                        if (err) {
-                            nodeStatusError(err, msg, "Error getting base64 image")
-                            return;
-                        }
+                    RED.comms.publish("image-tools-image-viewer", { id: this.id, data: payload });
+                } else if (payload instanceof Jimp.Jimp && !gif) {
+                    try {
+                        payload = await payload.getBase64(payload._originalMime || payload.mime || Jimp.JimpMime.png)
                         node.send(msg);//pass it on before displaying
-                        RED.comms.publish("image-tools-image-viewer", { id: this.id, data: b64 });
-                    });
+                        RED.comms.publish("image-tools-image-viewer", { id: this.id, data: payload })
+                    } catch (err) {
+                        nodeStatusError(err, msg, "Error getting base64 image")
+                    }
                 } else {
                     var imageData;
                     if (isString && isBase64Image && !hasMime) {
-                        imageData = Buffer.from(dataInput, 'base64')
-                    } else if (Buffer.isBuffer(dataInput)) {
+                        imageData = Buffer.from(payload, 'base64')
+                    } else if (Buffer.isBuffer(payload)) {
                         //make a copy of the buffer before sending it on
-                        imageData = new Buffer.alloc(dataInput.length);
-                        dataInput.copy(imageData);
+                        imageData = new Buffer.alloc(payload.length)
+                        payload.copy(imageData)
                     } else {
-                        imageData = dataInput;
+                        imageData = payload
                     }
 
-                    node.send(msg);//we have a copy of the data - pass ont the msg now
+                    node.send(msg) //we have a copy of the data - pass ont the msg now
 
                     //now generate an image from the buffer/url/path
-                    Jimp.read(imageData)
+                    Jimp.Jimp.read(imageData)
                         .then(img => {
-                            try {
-                                img.getBase64(Jimp.AUTO, (err, b64) => {
-                                    if (err) {
-                                        nodeStatusError(err, msg, "Error getting base64 image")
-                                        return;
-                                    }
-                                    RED.comms.publish("image-tools-image-viewer", { id: this.id, data: b64 });
-                                });
-
-                            } catch (err) {
-                                nodeStatusError(err, msg, "Error getting base64 image")
-                            }
-                        })
-                        .catch(err => {
+                            console.log("image loaded", img.mime)
+                            return img.getBase64(img.mime || Jimp.JimpMime.png)
+                        }).then(data => {
+                            RED.comms.publish("image-tools-image-viewer", { id: this.id, data })
+                        }).catch(err => {
                             nodeStatusError(err, msg, "Error reading image")
-                        });
-
+                        })
                 }
             }
             catch (e) {
