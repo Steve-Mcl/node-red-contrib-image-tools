@@ -272,6 +272,233 @@
     exports.getOptionsMap = function(){
          return optmap;
     };
+    exports.getJimpFunctions = function() {
+        return {
+
+          "none" : {"name" : "none","fn" : "none", "description" : "Just loads the image.","parameters" : [] },
+
+          //FUTURE: possible way of simplifying calling any function via msg.payload
+          //but how to handle varying amount of variables is problematic 
+          //For now, user will have to use batch option and send function+parameters via parameter1
+          // "custom" : {"name" : "custom","fn" : "", "description" : "Send function name from msg/flow/global. NOTE: Consider using batch mode and sending a batch object via payload (see side panel info for info)","parameters" : [
+          // {"name" : "Function", "type" : "str", "required" : true, "hint" : "Name of the Jimp function to execute", "defaultType" : "str" },
+          // {"name" : "Parameter1", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 1", "defaultType" : "none" },
+          // {"name" : "Parameter2", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 2", "defaultType" : "none" },
+          // {"name" : "Parameter3", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 3", "defaultType" : "none" },
+          // {"name" : "Parameter4", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 4", "defaultType" : "none" },
+          // {"name" : "Parameter5", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 5", "defaultType" : "none" },
+          // {"name" : "Parameter6", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 6", "defaultType" : "none" },
+          // {"name" : "Parameter7", "type" : "none|str|num|buf|json", "required" : false, "hint" : "Parameter 7", "defaultType" : "none" }] },
+
+
+          "write" : {"name" : "write","fn" : "write", "description" : "Write to file. NOTE: You can specify an alternative file extension type to change the type. Currently support types are jpg, png, bmp.","parameters" : [
+          {"name" : "filename", "type" : "str", "required" : true, "hint" : "Name of the file", "defaultType" : "str" }] },
+
+            // TODO: quality is no longer a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1/#encoding-and-decoding-options
+          "quality" : {"name" : "quality","fn" : "quality", "description" : "Set the quality of the image. Useful for reducing size of image before calling the write function.","parameters" : [
+          {"name" : "quality", "type" : "num", "required" : true, "hint" : "Quality value 1 ~ 100" }] },
+
+
+          "contain" : {"name" : "contain","fn" : "contain", "description" : "scale the image to the given width and height, some parts of the image may be letter boxed","parameters" : [
+          {"name" : "w", "group" : "options", "type" : "num", "required" : true, "hint" : "the width to resize the image to" },
+          {"name" : "h", "group" : "options", "type" : "num", "required" : true, "hint" : "the height to resize the image to" },
+          {"name" : "alignBits", "group" : "options", "type" : "alignMode", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;" },
+          {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "A scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
+
+
+          "cover" : {"name" : "cover","fn" : "cover", "description" : "scale the image to the given width and height, some parts of the image may be clipped","parameters" : [
+          {"name" : "w", "group" : "options", "type" : "num", "required" : true, "hint" : "the width to resize the image to" },
+          {"name" : "h", "group" : "options", "type" : "num", "required" : true, "hint" : "the height to resize the image to" },
+          {"name" : "alignBits", "group" : "options", "type" : "alignMode|str", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;" },
+          {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
+
+
+          "resize" : {"name" : "resize","fn" : "resize", "description" : "resize the image. One of the w or h parameters can be set to automatic (\"Jimp.AUTO\" or -1).","parameters" : [
+          {"name" : "w", "group" : "options", "type" : "num|auto", "required" : true, "hint" : "the width to resize the image to (or \"Jimp.AUTO\" or -1)" },
+          {"name" : "h", "group" : "options", "type" : "num|auto", "required" : true, "hint" : "the height to resize the image to (or \"Jimp.AUTO\" or -1)" },
+          {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
+
+
+          "scale" : {"name" : "scale","fn" : "scale", "description" : "scale the image by the factor f","parameters" : [
+          {"name" : "f", "group" : "options", "type" : "num", "required" : true, "hint" : "f the factor to scale the image by" },
+          {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
+
+
+          "scaleToFit" : {"name" : "scaleToFit","fn" : "scaleToFit", "description" : "scale the image to the largest size that fits inside the given width and height. One of the w or h parameters can be set to automatic (\"Jimp.AUTO\" or -1).","parameters" : [
+          {"name" : "w", "group" : "options", "type" : "num|auto", "required" : true, "hint" : "the width to resize the image to (or \"Jimp.AUTO\" or -1)" },
+          {"name" : "h", "group" : "options", "type" : "num|auto", "required" : true, "hint" : "the height to resize the image to (or \"Jimp.AUTO\" or -1)" },
+          {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
+
+
+          "autocrop1" : {"name" : "autocrop","fn" : "autocrop", "description" : "automatically crop same-color borders from image (if any), frames must be a Boolean","parameters" : [
+          {"name" : "tolerance", "type" : "num", "required" : false, "hint" : "a percent value of tolerance for pixels color difference (default: 0.0002%)" }] },
+
+
+          "autocrop2" : {"name" : "autocrop","fn" : "autocrop", "description" : "automatically crop same-color borders from image (if any), options may contain tolerance, cropOnlyFrames, cropSymmetric, leaveBorder","parameters" : [
+          {"name" : "options", "type" : "json", "required" : false, "hint" : "options may contain tolerance, cropOnlyFrames, cropSymmetric, leaveBorder, ignoreSides" }] },
+
+
+
+          "crop" : {"name" : "crop","fn" : "crop", "description" : "crop to the given region","parameters" : [
+          {"name" : "x", "group" : "options", "type" : "num", "required" : true, "hint" : "the x coordinate to crop form" },
+          {"name" : "y", "group" : "options", "type" : "num", "required" : true, "hint" : "the y coordinate to crop form" },
+          {"name" : "w", "group" : "options", "type" : "num", "required" : true, "hint" : "the width of the crop region" },
+          {"name" : "h", "group" : "options", "type" : "num", "required" : true, "hint" : "the height of the crop region" }] },
+
+
+          "blit" : {"name" : "blit","fn" : "blit", "description" : "blit the image with another Jimp image at x, y, optionally cropped","parameters" : [
+          {"name" : "src", "group" : "options", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
+          {"name" : "x", "group" : "options", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
+          {"name" : "y", "group" : "options", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
+          {"name" : "srcx", "group" : "options", "type" : "num", "required" : false, "hint" : "the x position from which to crop the source image" },
+          {"name" : "srcy", "group" : "options", "type" : "num", "required" : false, "hint" : "the y position from which to crop the source image" },
+          {"name" : "srcw", "group" : "options", "type" : "num", "required" : false, "hint" : "the width to which to crop the source image" },
+          {"name" : "srch", "group" : "options", "type" : "num", "required" : false, "hint" : "the height to which to crop the source image" }] },
+
+
+          "composite" : {"name" : "composite","fn" : "composite", "description" : "composites another Jimp image over this image at x, y","parameters" : [
+          {"name" : "src", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
+          {"name" : "x", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
+          {"name" : "y", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
+          {"name" : "mode", "group" : "options", "type" : "blend", "required" : true, "hint" : "what blend mode to use" },
+          {"name" : "opacitySource", "group" : "options", "type" : "num", "required" : true, "hint" : "opacity of src image 0.0 to 1.0" },
+          {"name" : "opacityDest", "group" : "options", "type" : "num", "required" : true, "hint" : "opacity of src image 0.0 to 1.0" }] },
+
+
+
+          "mask" : {"name" : "mask","fn" : "mask", "description" : "masks the image with another Jimp image at x, y using average pixel value","parameters" : [
+          {"name" : "src", "group" : "options", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
+          {"name" : "x", "group" : "options", "type" : "num", "required" : true, "hint" : "the horizontal position to blit the image" },
+          {"name" : "y", "group" : "options", "type" : "num", "required" : true, "hint" : "the vertical position to blit the image" }] },
+
+
+
+          "flip" : {"name" : "flip","fn" : "flip", "description" : "flip the image horizontally or vertically","parameters" : [
+          {"name" : "horizontal", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
+          {"name" : "vertical", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
+
+            // TODO: Mirror is not a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1/#flipping-and-rotating
+        //   "mirror" : {"name" : "mirror","fn" : "mirror", "description" : "an alias for flip","parameters" : [
+        //   {"name" : "horz", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
+        //   {"name" : "vert", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
+
+
+          "rotate" : {"name" : "rotate","fn" : "rotate", "description" : "rotate the image clockwise by a number of degrees. Optionally, a resize mode can be passed. If `false` is passed as the second parameter, the image width and height will not be resized.","parameters" : [
+          {"name" : "deg", "group" : "options", "type" : "num", "required" : true, "hint" : "the number of degrees to rotate the image by" },
+          {"name" : "mode", "group" : "options", "type" : "resizeMode|bool", "required" : false, "hint" : "resize mode or a boolean, if false then the width and height of the image will not be changed" }] },
+
+
+
+          "brightness" : {"name" : "brightness","fn" : "brightness", "description" : "adjust the brightness", "parameters" : [
+          {"name" : "val", "type" : "num", "required" : true, "hint" : "adjust the brightness by a value -1.0 to 1.0" }] },
+
+
+          "contrast" : {"name" : "contrast","fn" : "contrast", "description" : "adjust the contrast", "parameters" : [
+          {"name" : "val", "type" : "num", "required" : true, "hint" : "adjust the contrast by a value -1.0 to 1.0" }] },
+
+          "fisheye" : {"name" : "fisheye","fn" : "fisheye", "description" : "apply a fisheye effect to the image","parameters" : [
+          {"name" : "radius", "group" : "options", "type" : "num", "required" : false, "hint" : "the pixel radius of the effect" }] },
+
+          "dither" : {"name" : "dither565","fn" : "dither", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
+
+
+          "greyscale" : {"name" : "greyscale","fn" : "greyscale", "description" : "remove colour from the image","parameters" : [] },
+
+
+          "invert" : {"name" : "invert","fn" : "invert", "description" : "invert the image colours","parameters" : [] },
+
+
+          "normalize" : {"name" : "normalize","fn" : "normalize", "description" : "normalize the channels in an image","parameters" : [] },
+
+          "fade" : {"name" : "fade","fn" : "fade", "description" : "an alternative to opacity, fades the image by a factor 0 - 1. 0 will haven no effect.","parameters" : [
+          {"name" : "f", "type" : "num", "required" : true, "hint" : "A number from 0 to 1. 0 will haven no effect. 1 will turn the image completely transparent." }] },
+
+
+          "opacity" : {"name" : "opacity","fn" : "opacity", "description" : "multiply the alpha channel by each pixel by the factor f, 0 - 1","parameters" : [
+          {"name" : "f", "type" : "num", "required" : true, "hint" : "A number, the factor by which to multiply the opacity of each pixel" }] },
+
+          "opaque" : {"name" : "opaque","fn" : "opaque", "description" : "set the alpha channel on every pixel to fully opaque","parameters" : [] },
+
+          "gaussian" : {"name" : "gaussian","fn" : "gaussian", "description" : "Gaussian blur the image by r pixels (VERY slow)","parameters" : [
+          {"name" : "r", "type" : "num", "required" : true, "hint" : "the pixel radius of the blur" }] },
+
+
+          "blur" : {"name" : "blur","fn" : "blur", "description" : "fast blur the image by r pixels","parameters" : [
+          {"name" : "r", "type" : "num", "required" : true, "hint" : "the pixel radius of the blur" }] },
+
+          "convolute" : {"name" : "convolute","fn" : "convolute", "description" : "applies a convolution kernel matrix to the image or a region","parameters" : [
+          {"name" : "kernel", "type" : "json", "required" : true, "hint" : "a kernel matrix.  e.g. emboss [[-2, -1, 0], [-1, 1, 1], [0, 1, 2]]", "defaultValue" : "[[-2, -1, 0], [-1, 1, 1], [0, 1, 2]]" }] },
+
+          "convolute_antialise" : {"name" : "antialise*","fn" : "convolute_antialise", "description" : "antialise image (*uses convolute([[1, 2, 1], [2, 4, 2], [1, 2, 1]])","parameters" : [] },
+          "convolute_edgedetect" : {"name" : "edgedetect*","fn" : "convolute_edgedetect", "description" : "edge detect image (*uses convolute([[0, 1, 0], [1, -4, 1], [0, 1, 0]])","parameters" : [] },
+          "convolute_edgeenhance" : {"name" : "edgeenhance*","fn" : "convolute_edgeenhance", "description" : "edge enhance image (*uses convolute([[0, 0, 0], [-1, 1, 0], [0, 0, 0]])","parameters" : [] },
+          "convolute_emboss" : {"name" : "emboss*","fn" : "convolute_emboss", "description" : "emboss image (*uses convolute([[-2, -1, 0], [-1, 1, 1], [0, 1, 2]])","parameters" : [] },
+          "convolute_sharpen" : {"name" : "sharpen*","fn" : "convolute_sharpen", "description" : "sharpen image (*uses convolute([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])","parameters" : [] },
+          "convolute_strongsharpen" : {"name" : "strong sharpen*","fn" : "convolute_strongsharpen","description" : "sharpen image (*uses convolute([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])","parameters" : [] },
+
+          
+          "posterize" : {"name" : "posterize","fn" : "posterize", "description" : "apply a posterization effect with n level","parameters" : [
+          {"name" : "n", "type" : "num", "required" : true, "hint" : "the amount to adjust the contrast, minimum threshold is two" }] },
+
+
+          "sepia" : {"name" : "sepia","fn" : "sepia", "description" : "apply a sepia wash to the image","parameters" : [] },
+
+
+          "pixelate" : {"name" : "pixelate","fn" : "pixelate", "description" : "apply a pixelation effect to the image or a region","parameters" : [
+          {"name" : "size", "group" : "options", "type" : "num", "required" : true, "hint" : "the size of the pixels" },
+          {"name" : "x", "group" : "options", "type" : "num", "required" : false, "hint" : "the x position of the region to pixelate" },
+          {"name" : "y", "group" : "options", "type" : "num", "required" : false, "hint" : "the y position of the region to pixelate" },
+          {"name" : "w", "group" : "options", "type" : "num", "required" : false, "hint" : "the width of the region to pixelate" },
+          {"name" : "h", "group" : "options", "type" : "num", "required" : false, "hint" : "the height of the region to pixelate" }] },
+
+
+          "displace" : {"name" : "displace","fn" : "displace", "description" : "displaces the image pixels based on the provided displacement map. Useful for making stereoscopic 3D images.","parameters" : [
+          {"name" : "map", "group" : "options", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultValue" : "payload" },
+          {"name" : "offset", "group" : "options", "type" : "num", "required" : false, "hint" : "the maximum displacement value" }] },
+
+            // TODO: background is not a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1
+        //   "background" : {"name" : "background","fn" : "background", "description" : "set the default new pixel colour (e.g. 0xFFFFFFFF or 0x00000000) useful for by some operations e.g. contain or rotate","parameters" : [
+        //   {"name" : "hex", "type" : "num", "required" : true, "hint" : "hexadecimal rgba value (must be entered as a decimal e.g. 0xFFFFFFFF = 4294967295)", "defaultValue" : "4294967295" }] },
+
+          "threshold" : {"name" : "threshold","fn" : "threshold", "description" : "apply one or more functions","parameters" : [
+          {"name" : "max", "group" : "options", "type" : "num", "required" : true, "hint" : "max value of byte 0 ~ 255" },
+          {"name" : "replace", "group" : "options", "type" : "num", "required" : false, "hint" : "replace with byte 0 ~ 255. Default is 255" },
+          {"name" : "autoGreyscale", "group" : "options", "type" : "bool", "required" : false, "hint" : "default is true" }] },
+
+          "batch" : {"name" : "batch","fn" : "batch", "description" : "apply one or more functions","parameters" : [
+          {"name" : "options", "type" : "json", "required" : true, "hint" : "an object or an array of objects containing {\"name\" : \"function_name\", \"parameters\" : [x,y,z]}.  Refer to info on side panel}" }] },
+
+          "clone" : {"name" : "clone","fn" : "clone", "description" : "returns a clone of the image","parameters" : [] },
+          
+  //not ready        "histogram" : {"name" : "histogram","fn" : "histogram", "description" : "Generate a histogram of the image. The histogram data will be returned in msg.jobs[x].result, msg.jobs[x].g[], msg.jobs[x].b[].","parameters" : [] },
+
+          "distance" : {"name" : "distance","fn" : "distance", "description" : "calculate the hamming distance between two Jimp images based on their perceptual hash. msg.jobs[x].result will contain a number 0-1, where 0 means the two images are perceived to be identical","parameters" : [
+          {"name" : "image2", "type" : "", "required" : true, "hint" : "image to compare to" }] },
+
+          "diff" : {"name" : "diff","fn" : "diff", "description" : "Using a mix of hamming distance and pixel diffing to compare images. Returns an image showing differences and msg.jobs[x].result will contain the proportion of different pixels (0-1), where 0 means the images are pixel identical","parameters" : [
+          {"name" : "image2", "type" : "", "required" : true, "hint" : "image to compare to" },
+          {"name" : "threshold", "type" : "num", "required" : false, "hint" : "threshold ranges 0-1 (default: 0.1)" }] },
+
+          "print" : {"name" : "print","fn" : "print", "description" : "Print text to the image","parameters" : [
+          {"name" : "font", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+          {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
+          {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
+          {"name" : "text", "type" : "str", "required" : true, "hint" : "text to print" },
+          {"name" : "maxWidth", "type" : "num", "required" : false, "hint" : "wrap text at maxWidth" },
+          {"name" : "maxHeight", "type" : "num", "required" : false, "hint" : "max height" }] },
+          
+          "print2" : {"name" : "print aligned","fn" : "print", "description" : "Print text to the image","parameters" : [
+          {"name" : "font", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+          {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
+          {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
+          {"name" : "text", "group" : "options", "type" : "str", "required" : true, "hint" : "text to print" },
+          {"name" : "alignmentX", "group" : "options", "type" : "AlignX", "required" : false, "hint" : "X Alignment" },
+          {"name" : "alignmentY", "group" : "options", "type" : "AlignY", "required" : false, "hint" : "Y Alignment" },
+          {"name" : "maxWidth", "type" : "auto|num", "required" : false, "hint" : "wrap text at maxWidth" },
+          {"name" : "maxHeight", "type" : "auto|num", "required" : false, "hint" : "max height" }] }
+
+        }
+    }
   
 }(typeof exports === 'undefined' ? this.image_tools = {} : exports));
 

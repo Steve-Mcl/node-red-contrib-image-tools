@@ -42,19 +42,17 @@
     },
     "dependencies": {
         "@jimp/custom": "^0.22.12",
-        "@jimp/plugin-blur": "^0.22.12",
-        "@jimp/plugin-color": "^0.22.12",
-        "@jimp/plugin-resize": "^0.22.12",
-        "@jimp/plugin-threshold": "^0.22.12",
-        "@zxing/library": "^0.20.0",
+        "@jimp/plugin-blur": "^1.6.0",
+        "@jimp/plugin-color": "^1.6.0",
+        "@jimp/plugin-resize": "^1.6.0",
+        "@jimp/plugin-threshold": "^1.6.0",
+        "@zxing/library": "^0.21.3",
         "bwip-js": "^4.5.1",
         "is-base64": "^1.1.0",
-        "jimp": "^0.22.12"
+        "jimp": "^1.6.0"
     },
     "overrides": {
-        "jimp": {
-            "jpeg-js": "^0.4.4"
-        }
+        "simple-xml-to-json": "1.2.2"
     },
     "engines": {
         "node" : ">=14.0.0"

@@ -11,17 +11,25 @@ const _image_tools_fonts = new (function () {
 })()
 
 module.exports = function (RED) {
-
+    const image_tools = require("./static/js/image_tools");
+    const functions = image_tools.getJimpFunctions();
+    
     function jimpNode(config) {
         RED.nodes.createNode(this, config);
-        const Jimp = require('jimp');
-        const threshold = require('@jimp/plugin-threshold')
-        const configure = require('@jimp/custom')
+        const { Jimp, JimpMime} = require('jimp');
         const isBase64 = require('is-base64');
         const { setObjectProperty, isEmpty, isJSON, isObject } = require('./common.js');
         const performanceLogger = require('./performanceLogger.js');
 
-        configure({ plugins: [threshold] }, Jimp);
+        // const { createJimp } = require('@jimp/core')
+        // const { defaultFormats, defaultPlugins, JimpMime } = require("jimp")
+        // const threshold = require('@jimp/plugin-threshold')
+        // const configure = require('@jimp/custom').default
+        // const webp = require('@jimp/plugin-webp');
+        // const Jimp = createJimp({
+        //     formats: [...defaultFormats, webp],
+        //     plugins: [...defaultPlugins, threshold],
+        // })
 
         const convolutions = {
             convolute_sharpen: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]],
@@ -56,7 +64,6 @@ module.exports = function (RED) {
         node.parameterCount = config.parameterCount;
         node.jimpFunction = config.jimpFunction || {};
         node.fn = config.fn || "";
-        node.selectedJimpFunction = config.selectedJimpFunction || {};
         node.sendProperty = config.sendProperty || "payload";
 
 
@@ -113,6 +120,21 @@ module.exports = function (RED) {
                         if (j[jp] != null) {
                             return j[jp];
                         }
+                    }  else if (p.startsWith("RESIZE_")) {
+                        switch (p) {
+                            case "RESIZE_NEAREST_NEIGHBOR":
+                                return 'nearestNeighbor';
+                            case "RESIZE_BILINEAR":
+                                return 'bilinearInterpolation';
+                            case "RESIZE_BICUBIC":
+                                return 'bicubicInterpolation';
+                            case "RESIZE_HERMITE":
+                                return 'hermiteInterpolation';
+                            case "RESIZE_BEZIER":
+                                return 'bezierInterpolation';
+                            default:
+                                return 'nearestNeighbor';
+                        }
                     } else if (isJSON(p)) {
                         return JSON.parse(p);
                     }
@@ -139,7 +161,7 @@ module.exports = function (RED) {
         }
 
          node.on('input', async function (msg) {
-
+            console.log("jimp-image.js: node.on('input', async function (msg) {");
             const nodeStatusError = function (err, msg, statusText) {
                 node.error(err, msg);
                 node.status({ fill: "red", shape: "dot", text: statusText });
@@ -181,8 +203,8 @@ module.exports = function (RED) {
                     return;
                 }
 
-                let inputParameters = [];
-                let fn = node.selectedJimpFunction;
+                let inputParameters = []
+                const fn = functions[node.jimpFunction || ''] // get definition from functions object;
                 try {
 
                     /* ****************  Get Image Process Parameters **************** */
@@ -196,7 +218,7 @@ module.exports = function (RED) {
                         const nodeParamType = node["parameter" + paramNo + "Type"];
                         if (nodeParam || nodeParamType == "Jimp.AUTO" || nodeParamType == "auto" || fn.parameters[paramIndex].required) {
                             if (nodeParamType == "Jimp.AUTO" || nodeParamType == "auto") {
-                                inputParameters[paramIndex] = -1;//Jimp.AUTO == -1
+                                inputParameters[paramIndex] = undefined //-1;//Jimp.AUTO == -1
                             } else {
                                 RED.util.evaluateNodeProperty(nodeParam, nodeParamType, node, msg, (err, value) => {
                                     if (err) {
@@ -242,14 +264,17 @@ module.exports = function (RED) {
                                 //now loop through the spec.parameters & normalise them where needed
                                 for (let jIndex = 0; jIndex < jobs.length; jIndex++) {
                                     const job = jobs[jIndex];
-                                    if (!job.parameters || !Array.isArray(job.parameters)) {
-                                        job.parameters = [];
+                                    if (job.name == "grayscale") {
+                                        job.name = "greyscale"; // Flow Compatibility
                                     }
-                                    const normaliseParams = [];
-                                    for (let pIndex = 0; pIndex < job.parameters.length; pIndex++) {
-                                        normaliseParams[pIndex] = normaliseJimpFunctionParameter(Jimp, job.parameters[pIndex])
+                                    const batchFn = functions[job.name]
+                                    if (!batchFn) {
+                                        throw new Error(`Function '${job.name}' is not supported`)
                                     }
-                                    job.parameters = normaliseParams
+                                    job.parameters = job.parameters || []
+                                    if (batchFn && Array.isArray(batchFn.parameters) && batchFn.parameters.length) {
+                                        job.parameters = normaliseJimpFunctionParameters(batchFn, job.parameters)
+                                    }
                                 }
                             }
 
@@ -258,37 +283,42 @@ module.exports = function (RED) {
                         } else {
                             const job = {};
                             job.name = fn.fn;
-
-                            //now we have collected users input, we need to see if any of the input parameters should be part of an {object} parameter
-                            const normaliseParams = [];
-                            let fplookup = {};
-                            let fParam = 0;
-                            for (let index = 0; index < fn.parameters.length; index++) {
-                                let funcParam = fn.parameters[index];
-                                if (funcParam.group) {
-                                    let i = fplookup[funcParam.group];
-                                    if (!(typeof i == "number")) {
-                                        i = fParam;
-                                        normaliseParams[i] = {};
-                                        fplookup[funcParam.group] = i;
-                                        fParam++;
-                                    }
-                                    let value = inputParameters[index];
-                                    if (isDef(value)) {
-                                        normaliseParams[i][funcParam.name] = normaliseJimpFunctionParameter(Jimp, value);
-                                    }
-                                } else {
-                                    let value = inputParameters[index];
-                                    if (isDef(value)) {
-                                        normaliseParams[fParam++] = normaliseJimpFunctionParameter(Jimp, value);
-                                    } else {
-                                        normaliseParams[fParam++] = undefined;
-                                    }
-                                }
-                            }
-                            job.parameters = normaliseParams;
+                            job.parameters = normaliseJimpFunctionParameters(fn, inputParameters);
                             jobs = [job];
                         }
+                    }
+
+                    // TODO: Consider when a batch passes an object instead of individual indexed params!
+                    // Option 1: enforce batch params to be single values (i.e. not objects)
+                    // Option 2: allow batch to pass object and map them into correct function parameters
+                    function normaliseJimpFunctionParameters(fn, parameters) {
+                        const normaliseParams = []
+                        let fpLookup = {}
+                        let fParam = 0
+                        for (let index = 0; index < fn.parameters.length; index++) {
+                            let funcParam = fn.parameters[index]
+                            if (funcParam.group) {
+                                let i = fpLookup[funcParam.group]
+                                if (!(typeof i == "number")) {
+                                    i = fParam
+                                    normaliseParams[i] = {}
+                                    fpLookup[funcParam.group] = i
+                                    fParam++
+                                }
+                                let value = parameters[index]
+                                if (isDef(value)) {
+                                    normaliseParams[i][funcParam.name] = normaliseJimpFunctionParameter(Jimp, value)
+                                }
+                            } else {
+                                let value = parameters[index]
+                                if (isDef(value)) {
+                                    normaliseParams[fParam++] = normaliseJimpFunctionParameter(Jimp, value)
+                                } else {
+                                    normaliseParams[fParam++] = undefined
+                                }
+                            }
+                        }
+                        return normaliseParams
                     }
 
 
@@ -299,12 +329,17 @@ module.exports = function (RED) {
                             image: img,
                             takeImage: false,
                         }
-                        if (!job.parameters) {
-                            job.parameters = [];
+                        if (!job.parameters || !Array.isArray(job.parameters)) {
+                            job.parameters = []
                         }
 
                         let theResult;
+                        if (job.name == "grayscale") {
+                            job.name = "greyscale"; // Flow Compatibility
+                        }
                         if (job.name == "print") {
+
+                            // TODO
                             let text = typeof job.parameters[3] == "object" ? job.parameters[3].text : job.parameters[3];
                             text = text.replace(/(?:\\r\\n|\\r|\\n|\r\n|\r|\n)/g, '\n');
                             let lines = text.split("\n");
@@ -409,13 +444,14 @@ module.exports = function (RED) {
                                 let convolutionParams = convolutions[job.name];
                                 if (convolutionParams) {
                                     job.name = "convolute";
+                                    // TODO
                                     job.parameters = [convolutionParams];
                                 }
                                 let perfMeasureName = "process" + (i + 1) + "_" + job.name;
                                 jobPerformance.start(perfMeasureName);
 
                                 if (job.name == "print") {
-
+// TODO
                                     //this is a print request where the text is an object with alignment
                                     //if either of parameters [4] or [5] are maxWidth/maxHeight
                                     //are set to auto (-1) then set them to actual height / width
@@ -467,10 +503,10 @@ module.exports = function (RED) {
                         //gather useful image info to send in msg.imageInfo
                         msg.imageInfo = {
                             hasAlpha: img.hasAlpha(),
-                            MIME: img.getMIME(),
+                            MIME: img.mime,
                             quality: img._quality,
-                            width: img.getWidth(),
-                            height: img.getHeight()
+                            width: img.width,
+                            height: img.height
                         }
 
                         //convert image (if required) then send msg
