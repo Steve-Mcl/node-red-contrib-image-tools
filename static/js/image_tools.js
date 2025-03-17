@@ -294,7 +294,8 @@
           "write" : {"name" : "write","fn" : "write", "description" : "Write to file. NOTE: You can specify an alternative file extension type to change the type. Currently support types are jpg, png, bmp.","parameters" : [
           {"name" : "filename", "type" : "str", "required" : true, "hint" : "Name of the file", "defaultType" : "str" }] },
 
-            // TODO: quality is no longer a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1/#encoding-and-decoding-options
+          // TODO: quality is no longer a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1/#encoding-and-decoding-options
+          // Internally, I have remapped this to use the quality function in the getBuffer function
           "quality" : {"name" : "quality","fn" : "quality", "description" : "Set the quality of the image. Useful for reducing size of image before calling the write function.","parameters" : [
           {"name" : "quality", "type" : "num", "defaultType": "num", "required" : true, "hint" : "Quality value 1 ~ 100" }] },
 
