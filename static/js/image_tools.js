@@ -111,7 +111,7 @@
     };
     // adapted from https://github.com/metafloor/bwip-js/blob/6dac9f9ec1e24ffadd96f98fac5aa1d8eef2e04e/bin/bwip-js.js#L56
     const optlist = [
-        // { name: 'help', type: 'boolean', 
+        // { name: 'help', type: 'boolean',
         //   desc: 'Displays this help message.' },
         // { name: 'version', type: 'boolean',
         //   desc: 'Displays the bwip-js and BWIPP version strings.' },
@@ -123,7 +123,7 @@
         //           '  --loadfont=font-name,size-mult,path-to-font-file\n' +
         //           '  --loadfont=font-name,path-to-font-file\n\n' +
         //         'For example:  --loadfont=Courier,100,120,c:\\windows\\fonts\\cour.ttf' },
-    
+
         // // bwipjs options
         // { name: 'bcid', type: 'string',
         //   desc: 'Barcode symbol name/type. Required.' },
@@ -164,7 +164,7 @@
     //	{ name: 'monochrome', type: 'boolean',
     //	  desc: 'Sets the human-readable text to render in monochrome.\n'
     //			'Default is false which renders 256-level gray-scale anti-aliased text.' },
-    
+
         // bwipp options
         { name: 'alttext', type: 'string',
           desc: 'The human-readable text to use instead of the encoded text.' },
@@ -262,7 +262,7 @@
         { name: 'guardrightypos', type: 'int',
           desc: 'Vertical position of the guard symbols on the right, in points.' },
     ];
-    const optmap = optlist.reduce(function(map, elt) { map[elt.name] = elt; return map; }, {}); 
+    const optmap = optlist.reduce(function(map, elt) { map[elt.name] = elt; return map; }, {});
     exports.getSymbology = function(){
          return symbology;
     };
@@ -278,7 +278,7 @@
           "none" : {"name" : "none","fn" : "none", "description" : "Just loads the image.","parameters" : [] },
 
           //FUTURE: possible way of simplifying calling any function via msg.payload
-          //but how to handle varying amount of variables is problematic 
+          //but how to handle varying amount of variables is problematic
           //For now, user will have to use batch option and send function+parameters via parameter1
           // "custom" : {"name" : "custom","fn" : "", "description" : "Send function name from msg/flow/global. NOTE: Consider using batch mode and sending a batch object via payload (see side panel info for info)","parameters" : [
           // {"name" : "Function", "type" : "str", "required" : true, "hint" : "Name of the Jimp function to execute", "defaultType" : "str" },
@@ -350,10 +350,10 @@
           {"name" : "src", "group" : "options", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultType" : "msg", "defaultValue" : "payload" },
           {"name" : "x", "group" : "options", "type" : "num", "required" : true, "hint" : "the x position to blit the image" },
           {"name" : "y", "group" : "options", "type" : "num", "required" : true, "hint" : "the y position to blit the image" },
-          {"name" : "srcx", "group" : "options", "type" : "num", "required" : false, "hint" : "the x position from which to crop the source image" },
-          {"name" : "srcy", "group" : "options", "type" : "num", "required" : false, "hint" : "the y position from which to crop the source image" },
-          {"name" : "srcw", "group" : "options", "type" : "num", "required" : false, "hint" : "the width to which to crop the source image" },
-          {"name" : "srch", "group" : "options", "type" : "num", "required" : false, "hint" : "the height to which to crop the source image" }] },
+          {"name" : "srcX", "group" : "options", "type" : "num", "required" : false, "hint" : "the x position from which to crop the source image" },
+          {"name" : "srcY", "group" : "options", "type" : "num", "required" : false, "hint" : "the y position from which to crop the source image" },
+          {"name" : "srcW", "group" : "options", "type" : "num", "required" : false, "hint" : "the width to which to crop the source image" },
+          {"name" : "srcH", "group" : "options", "type" : "num", "required" : false, "hint" : "the height to which to crop the source image" }] },
 
 
           "composite" : {"name" : "composite","fn" : "composite", "description" : "composites another Jimp image over this image at x, y","parameters" : [
@@ -374,23 +374,21 @@
 
 
           "flip" : {"name" : "flip","fn" : "flip", "description" : "flip the image horizontally or vertically","parameters" : [
-          {"name" : "horizontal", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
-          {"name" : "vertical", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
+          {"name" : "horizontal", "group" : "options", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
+          {"name" : "vertical", "group" : "options", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
 
-            // TODO: Mirror is not a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1/#flipping-and-rotating
-        //   "mirror" : {"name" : "mirror","fn" : "mirror", "description" : "an alias for flip","parameters" : [
-        //   {"name" : "horz", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
-        //   {"name" : "vert", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
-
+          // Mirror is not a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1/#flipping-and-rotating
+          // maintained as an alias for flip for backwards compatibility with 2.x of image-tools
+          "mirror" : {"name" : "mirror","fn" : "flip", "description" : "DEPRECIATED: This is an alias for flip. Please use flip instead","parameters" : [
+          {"name" : "horizontal", "group" : "options", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped horizontally" },
+          {"name" : "vertical", "group" : "options", "type" : "bool", "required" : true, "hint" : "if true the image will be flipped vertically" }] },
 
           "rotate" : {"name" : "rotate","fn" : "rotate", "description" : "rotate the image clockwise by a number of degrees. Optionally, a resize mode can be passed. If `false` is passed as the second parameter, the image width and height will not be resized.","parameters" : [
           {"name" : "deg", "group" : "options", "type" : "num", "required" : true, "hint" : "the number of degrees to rotate the image by" },
           {"name" : "mode", "group" : "options", "type" : "resizeMode|bool", "required" : false, "hint" : "resize mode or a boolean, if false then the width and height of the image will not be changed" }] },
 
-
-
           "brightness" : {"name" : "brightness","fn" : "brightness", "description" : "adjust the brightness", "parameters" : [
-          {"name" : "val", "type" : "num", "required" : true, "hint" : "adjust the brightness by a value -1.0 to 1.0" }] },
+          {"name" : "val", "type" : "num", "required" : true, "hint" : "adjust the brightness by a value 0 (fully dark), 0.5 (50%), 1 (100%), 1.5 (150%), etc" }] },
 
 
           "contrast" : {"name" : "contrast","fn" : "contrast", "description" : "adjust the contrast", "parameters" : [
@@ -436,7 +434,6 @@
           "convolute_sharpen" : {"name" : "sharpen*","fn" : "convolute_sharpen", "description" : "sharpen image (*uses convolute([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])","parameters" : [] },
           "convolute_strongsharpen" : {"name" : "strong sharpen*","fn" : "convolute_strongsharpen","description" : "sharpen image (*uses convolute([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])","parameters" : [] },
 
-          
           "posterize" : {"name" : "posterize","fn" : "posterize", "description" : "apply a posterization effect with n level","parameters" : [
           {"name" : "n", "type" : "num", "required" : true, "hint" : "the amount to adjust the contrast, minimum threshold is two" }] },
 
@@ -469,7 +466,7 @@
           {"name" : "options", "type" : "json", "required" : true, "hint" : "an object or an array of objects containing {\"name\" : \"function_name\", \"parameters\" : [x,y,z]}.  Refer to info on side panel}" }] },
 
           "clone" : {"name" : "clone","fn" : "clone", "description" : "returns a clone of the image","parameters" : [] },
-          
+
   //not ready        "histogram" : {"name" : "histogram","fn" : "histogram", "description" : "Generate a histogram of the image. The histogram data will be returned in msg.jobs[x].result, msg.jobs[x].g[], msg.jobs[x].b[].","parameters" : [] },
 
           "distance" : {"name" : "distance","fn" : "distance", "description" : "calculate the hamming distance between two Jimp images based on their perceptual hash. msg.jobs[x].result will contain a number 0-1, where 0 means the two images are perceived to be identical","parameters" : [
@@ -480,26 +477,68 @@
           {"name" : "threshold", "type" : "num", "required" : false, "hint" : "threshold ranges 0-1 (default: 0.1)" }] },
 
           "print" : {"name" : "print","fn" : "print", "description" : "Print text to the image","parameters" : [
-          {"name" : "font", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
-          {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
-          {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
-          {"name" : "text", "type" : "str", "required" : true, "hint" : "text to print" },
-          {"name" : "maxWidth", "type" : "num", "required" : false, "hint" : "wrap text at maxWidth" },
-          {"name" : "maxHeight", "type" : "num", "required" : false, "hint" : "max height" }] },
-          
+          {"name" : "font", "group": "options", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+          {"name" : "x", "group": "options", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
+          {"name" : "y", "group": "options", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
+          {"name" : "text", "group": "options", "type" : "str", "required" : true, "hint" : "text to print" },
+          {"name" : "maxWidth", "group": "options", "type" : "num", "required" : false, "hint" : "wrap text at maxWidth" },
+          {"name" : "maxHeight", "group": "options", "type" : "num", "required" : false, "hint" : "max height" }] },
+
           "print2" : {"name" : "print aligned","fn" : "print", "description" : "Print text to the image","parameters" : [
-          {"name" : "font", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
-          {"name" : "x", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
-          {"name" : "y", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
-          {"name" : "text", "group" : "options", "type" : "str", "required" : true, "hint" : "text to print" },
-          {"name" : "alignmentX", "group" : "options", "type" : "AlignX", "required" : false, "hint" : "X Alignment" },
-          {"name" : "alignmentY", "group" : "options", "type" : "AlignY", "required" : false, "hint" : "Y Alignment" },
-          {"name" : "maxWidth", "type" : "auto|num", "required" : false, "hint" : "wrap text at maxWidth" },
-          {"name" : "maxHeight", "type" : "auto|num", "required" : false, "hint" : "max height" }] }
+          {"name" : "font", "group": "options", "type" : "jimpFont|str", "required" : true, "hint" : "font to print. NOTE: This can be one of the presets or the path to a fnt file" },
+          {"name" : "x", "group": "options", "type" : "num", "required" : true, "hint" : "x coordinate to print text" },
+          {"name" : "y", "group": "options", "type" : "num", "required" : true, "hint" : "y coordinate to print text" },
+          {"name" : "text", "group" : "options.text", "type" : "str", "required" : true, "hint" : "text to print" },
+          {"name" : "alignmentX", "group" : "options.text", "type" : "AlignX", "required" : false, "hint" : "X Alignment" },
+          {"name" : "alignmentY", "group" : "options.text", "type" : "AlignY", "required" : false, "hint" : "Y Alignment" },
+          {"name" : "maxWidth", "group": "options", "type" : "auto|num", "required" : false, "hint" : "wrap text at maxWidth" },
+          {"name" : "maxHeight", "group": "options", "type" : "auto|num", "required" : false, "hint" : "max height" }] }
 
         }
     }
-  
+
+    exports.JIMP_FONTS = [
+        'FONT_SANS_8_BLACK',
+        'FONT_SANS_10_BLACK',
+        'FONT_SANS_12_BLACK',
+        'FONT_SANS_14_BLACK',
+        'FONT_SANS_16_BLACK',
+        'FONT_SANS_32_BLACK',
+        'FONT_SANS_64_BLACK',
+        'FONT_SANS_128_BLACK',
+        'FONT_SANS_8_WHITE',
+        'FONT_SANS_16_WHITE',
+        'FONT_SANS_32_WHITE',
+        'FONT_SANS_64_WHITE',
+        'FONT_SANS_128_WHITE'
+    ]
+
+    exports.JIMP_BLEND_MODES = [
+      "BLEND_SOURCE_OVER",
+      "BLEND_DESTINATION_OVER",
+      "BLEND_MULTIPLY",
+      "BLEND_SCREEN",
+      "BLEND_OVERLAY",
+      "BLEND_DARKEN",
+      "BLEND_LIGHTEN",
+      "BLEND_HARDLIGHT",
+      "BLEND_DIFFERENCE",
+      "BLEND_EXCLUSION",
+  ];
+
+  exports.JIMP_BLEND_MODES_V1 = {
+      "BLEND_SOURCE_OVER": "SRC_OVER",
+      "BLEND_DESTINATION_OVER":"DST_OVER",
+      "BLEND_MULTIPLY": "MULTIPLY",
+      "BLEND_SCREEN": "SCREEN",
+      "BLEND_OVERLAY": "OVERLAY",
+      "BLEND_DARKEN": "DARKEN",
+      "BLEND_LIGHTEN": "LIGHTEN",
+      "BLEND_HARDLIGHT": "HARD_LIGHT",
+      "BLEND_DIFFERENCE": "DIFFERENCE",
+      "BLEND_EXCLUSION": "EXCLUSION",
+  };
+
 }(typeof exports === 'undefined' ? this.image_tools = {} : exports));
 
 
