@@ -116,7 +116,7 @@
         outputs: 1,
         label: function () {
             const fn = imageToolsNodeCommon.functions[this.jimpFunction];
-            var fname = fn && fn.name ? fn.name : ""; 
+            var fname = fn && fn.name ? fn.name : "";
             if(fname == "none") fname = "";
             return this.name || fname || "image";
         },
@@ -126,7 +126,7 @@
             const choice = $dropdown.val();
             const fn = imageToolsNodeCommon.functions[choice];
             node.jimpFunction = choice;
-            node.selectedJimpFunction = null // <= 2.x version prop no longer needed 
+            node.selectedJimpFunction = null // <= 2.x version prop no longer needed
             node.parameterCount = fn && fn.parameters ? fn.parameters.length : 0;
         },
         oneditprepare: function () {
@@ -150,7 +150,7 @@
                 try {
                     var typeToFind = findType;
                     if(isObject(findType))
-                        typeToFind = findType.value; 
+                        typeToFind = findType.value;
                     for (var index = 0; index < arr.length; index++) {
                         var element = arr[index];
                         var thisType = isObject(element) ? element.value : element;
@@ -168,8 +168,8 @@
                     if( !isTypeInArray(parameterTypes,"none") ){
                         parameterTypes.unshift("none");
                     }
-                } 
-                
+                }
+
                 //convert any custom types to a typedInput object
                 const types = parameterTypes.map(function(t){
                     if(t){
@@ -178,52 +178,52 @@
                                 return {
                                     value:"resizeMode",
                                     label:"Resize.",
-                                    options: imageToolsNodeCommon.resizeModes 
+                                    options: imageToolsNodeCommon.resizeModes
                                 };
                             case "jimpFont":
                                 return {
                                     value:"jimpFont",
                                     label:"Font.",
-                                    options: imageToolsNodeCommon.jimpFonts 
+                                    options: imageToolsNodeCommon.jimpFonts
                                 };
-                            case "alignMode": 
+                            case "alignMode":
                                 return {
                                     value:"alignMode",
                                     label:"Align.",
-                                    options: imageToolsNodeCommon.alignModes 
+                                    options: imageToolsNodeCommon.alignModes
                                 };
-                            case "AlignX": 
-                            case "alignModeX": 
+                            case "AlignX":
+                            case "alignModeX":
                                 return {
                                     value:"AlignX",
                                     label:"AlignX.",
-                                    options: imageToolsNodeCommon.alignModesX 
+                                    options: imageToolsNodeCommon.alignModesX
                                 };
-                            case "AlignY": 
-                            case "alignModeY": 
+                            case "AlignY":
+                            case "alignModeY":
                                 return {
                                     value:"AlignY",
                                     label:"AlignY.",
-                                    options: imageToolsNodeCommon.alignModesY 
+                                    options: imageToolsNodeCommon.alignModesY
                                 };
-                            case "blend": 
+                            case "blend":
                                 return {
                                     value:"Blend",
                                     label:"Blend.",
                                     options: imageToolsNodeCommon.blendModes
                                 };
-                            case "auto": 
-                            case "Jimp.AUTO": 
+                            case "auto":
+                            case "Jimp.AUTO":
                                 return {
                                     value:"auto",
                                     label:"Auto",
-                                    hasValue: false 
+                                    hasValue: false
                                 };
-                            case "none": 
+                            case "none":
                                 return {
                                     value:"none",
                                     label:"None",
-                                    hasValue: false 
+                                    hasValue: false
                                 };
                             default:
                                 return t;
@@ -232,15 +232,15 @@
                 });
 
                 return types;
-            }            
+            }
             function setupTypedInput(varName, allowableTypes, def, defVal, isOptional, width) {
                 var varSel = "#node-input-" + varName;
                 var typeSel = varSel + "Type";
                 var currentValue = node[varName];
-                var currentType = node[varName + "Type"];  
+                var currentType = node[varName + "Type"];
                 var parameterTypes = generateTypedInputTypes(allowableTypes, isOptional);
                 var defShouldNoValue = false;
-                
+
                 //if def type is not in the list of parameter type, change def to 1st item
                 if(!isTypeInArray(parameterTypes, def)) {
                     var _firstType = parameterTypes[0];
@@ -261,12 +261,12 @@
                     currentType = def;
                 }
 
-                
+
                 var $ti = $(varSel);
                 var alreadyBuilt = $ti.data("built") == true;
                 if(alreadyBuilt) {
                     //already built? just update types :)
-                    $ti.typedInput("types", parameterTypes); 
+                    $ti.typedInput("types", parameterTypes);
                 } else {
                    var opts = {
                     default: def,
@@ -275,16 +275,16 @@
                     };
                     if(isOptional){
                         opts.default = def || "none";
-                        opts.validate = function(v) { 
+                        opts.validate = function(v) {
                             //todo - handle this when spec changes
                             return !!v;
                         };
                     }
-                    $ti.typedInput(opts); 
+                    $ti.typedInput(opts);
                 }
                 $ti.data("built", true);
-                
-                if(!currentValue && currentType != "Jimp.AUTO" && currentValue && currentType != "auto" && currentType != "none"){
+
+                if(!currentValue && currentType != "Jimp.AUTO" && currentType != "auto" && currentType != "none"){
                     $ti.typedInput("type", def);
                     if(defShouldNoValue) currentValue = "";
                 } else if(currentType == "num" && !isNumeric(currentValue)) {
@@ -309,16 +309,16 @@
 
                 if(width) $ti.typedInput("width", width);
             }
-            
+
             //hack - prevent node-red calculating UI panel too large due to long text in the tip
             node.sizeHack = false;
             $(".image-tools-form-tip").css("max-width","450px");
             $(".image-tools-form-tip").hide();//will get show / hid as required when function type is set
-            
+
             setupTypedInput('data', 'msg|flow|global|bin|str|json', 'msg', 'payload', false /*"68%"*/);
             $('#node-input-sendProperty').typedInput({types:['msg']});
             $('#node-input-sendProperty').typedInput("value", node.sendProperty || "payload");
-            
+
             const $dropdown = $("#node-input-jimpFunction");
             $dropdown.off();
             $dropdown.empty().append('<option value=""></option>');
@@ -337,8 +337,8 @@
 
             $convertToBatchButton.click(function() {
                 try {
-                    const choice = $dropdown.val(); 
-                    let fn = imageToolsNodeCommon.functions[choice];  
+                    const choice = $dropdown.val();
+                    let fn = imageToolsNodeCommon.functions[choice];
                     const paramCount = fn && fn.parameters ? fn.parameters.length : 0;
                     const batchSpec = {
                         name: fn.fn,
@@ -376,49 +376,34 @@
                         }
                     }
 
-                    //const isNotUndefined = v => typeof v !== 'undefined';// && v !== null;
-                    var isNotUndefined = function(v){
+                    const isNotUndefined = function(v){
                         return (v !== 'undefined');
                     };
-                    var finalParams = [];
-                    var fplookup = {};
-                    var fParam = 0;
-                    for (var index = 0; index < fn.parameters.length; index++) {                       
-                        var funcParam = fn.parameters[index];
-                        if(funcParam.group){
-                            var ifpl = fplookup[funcParam.group];
-                            if(typeof ifpl != "number"){
-                                ifpl = fParam;
-                                finalParams[ifpl] = {};
-                                fplookup[funcParam.group] = ifpl;
-                                fParam++;
-                            }
-                            var _v1 = inputParameters[index];
-                            if(isNotUndefined(_v1)){
-                                finalParams[fParam][funcParam.name] = _v1;
-                            }
-                        } else {
-                            var _v2 = inputParameters[index];
-                            if(isNotUndefined(_v2)){
-                                finalParams[fParam++] = _v2;
-                            }
+                    const finalParams = [];
+                    const fplookup = {};
+                    let fParam = 0;
+                    for (let index = 0; index < fn.parameters.length; index++) {
+                        const funcParam = fn.parameters[index];
+                        const _v2 = inputParameters[index];
+                        if(isNotUndefined(_v2)){
+                            finalParams[fParam++] = _v2;
                         }
-                    }  
+                    }
                     batchSpec.parameters = finalParams;
                     $dropdown.val("batch").change();
-                    var p1NewValue = JSON.stringify(batchSpec);
+                    const p1NewValue = JSON.stringify(batchSpec);
                     $('#node-input-parameter1').typedInput('type', 'json');
                     $('#node-input-parameter1').typedInput('value', p1NewValue);
-                    
+
                 } catch (error) {
                     RED.notify("An error occurred while trying to convert this function to a batch function","error");
                 }
-                RED.tray.resize(); 
+                RED.tray.resize();
             });
 
             $dropdown.change(function() {
-                var choice = $dropdown.val(); 
-                var fn = imageToolsNodeCommon.functions[choice];              
+                var choice = $dropdown.val();
+                var fn = imageToolsNodeCommon.functions[choice];
                 $convertToBatchButton.prop( "disabled", true );
                 $('.jimp-parameter-group').hide();//hide parameters
                 $("#tip-jimpFunction").hide();//hide the tip
@@ -434,7 +419,7 @@
                 if(fn.description){
                     $("#tip-jimpFunction").text(fn.description);
                     $("#tip-jimpFunction").show();
-                }         
+                }
 
                 //loop through parameters and setup the typed inputs
                 var paramNo = 1;
@@ -443,7 +428,7 @@
                     const pname = "parameter" + paramNo;
                     const lname = "parameter-label" + paramNo;
                     const paramTipName = "tip-parameter" + paramNo;
-                    
+
                     $("#" + lname).text(" " + this.name);
                     $("#" + pname).show();
 
@@ -453,7 +438,7 @@
                     }
                     $("#" + paramTipName).text(hint);
                     $("#" + paramTipName).show();
-                   
+
                     var alwaysPresentParameterTypedInputs = "msg|flow|global";
                     var parameterTypesStr = this.type ? this.type + "|" + alwaysPresentParameterTypedInputs : alwaysPresentParameterTypedInputs;
                     setupTypedInput(pname, parameterTypesStr, this.defaultType, this.defaultValue, this.required);
@@ -461,9 +446,9 @@
                 });
                 RED.tray.resize();
             });
-            //sfp();
+
             $('.jimp-parameter-group').hide();//hide parameters
-            $("#tip-jimpFunction").hide();//hide the tip       
+            $("#tip-jimpFunction").hide();//hide the tip
             RED.tray.resize();
             node.sizeHack = true;
         },
@@ -476,7 +461,7 @@
             }
         }
     });
-})();     
+})();
 </script>
 
 <script type="text/html" data-template-name="jimp-image">
@@ -496,7 +481,7 @@
             <div class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px">A string containing a file path, URL or base64 image can be used as an image source. NOTE: Passing in an image object is faster as there is no conversion required before processing.</div>
         </div>
     </div>
-    
+
     <div class="form-row image-tools-row" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-jimpFunction"><i class="fa fa-wrench"></i> <span data-i18n="jimp.label.jimpFunction">
             Function</span></label>
@@ -507,7 +492,7 @@
         <br>
         <label>&nbsp;</label>
         <div id="tip-jimpFunction" class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px" hidden></div>
-    </div>    
+    </div>
 
     <div class="form-row image-tools-row">
         <label style="padding-top: 8px" for="node-input-ret"><i class="fa fa-sign-out"></i> <span data-i18n="jimp.label.send">
@@ -521,17 +506,17 @@
         <label>&nbsp;</label>
         <div class="image-tools-form-tip" style="width: calc(100% - 150px);  max-width: 450px">Sending an image is much faster as there is no additional conversion required.</div>
     </div>
-    
+
     <div class="form-row image-tools-row">
-        <label for="node-input-sendProperty"><i class="fa fa-sign-out"></i> 
+        <label for="node-input-sendProperty"><i class="fa fa-sign-out"></i>
             <span data-i18n="jimp.label.send_property">Output Property</span>
         </label>
         <input type="text" id="node-input-sendProperty" style="width: calc(100% - 150px)" placeholder="payload">
         <br>
         <label>&nbsp;</label>
         <div class="image-tools-form-tip" style="width: calc(100% - 150px); max-width: 450px">The msg property in which to send the resulting image.</div>
-    </div>    
-    
+    </div>
+
     <div class="form-row image-tools-row jimp-parameter-group" id="parameter1" style="vertical-align: top;">
         <label style="padding-top: 8px" for="node-input-parameter1"><i class="fa fa-code"></i><span id="parameter-label1"
             data-i18n="jimp.label.parameter1"> parameter1</span></label>
@@ -610,13 +595,13 @@
 <p>An image manipulation node built using <a href="https://github.com/oliver-moran/jimp/tree/master/packages/jimp">Jimp</a></p>
 <h3>Foreword</h3>
 <dl class="message-properties">
-    Examples have been included to help you do some common tasks. 
+    Examples have been included to help you do some common tasks.
     <a onclick="RED.actions.invoke('core:show-examples-import-dialog')" href="#">Click here</a> to import an example or click the hamburger menu <a class="button" href="#"><i class="fa fa-bars"></i></a> select <b>import</b> then <b>examples</b> or press <kbd>ctrl+i</kbd>
-</dl> 
+</dl>
 <h3>Inputs</h3>
 <dl class="message-properties">
     <dt>image <span class="property-type">string | base64 | buffer | jimp | object</span></dt>
-    <dd> the image (jimp object, buffer, file/URL/base64 string) to be processed. 
+    <dd> the image (jimp object, buffer, file/URL/base64 string) to be processed.
     <p>NOTE: To create a blank image pass an object <code>{w: number, h: number, background?: number | string}</code> where background is the colour as an integer or #RGB(A)</p>
     </dd>
     <dt>parameters <span class="property-type">any</span></dt>
