@@ -25,8 +25,15 @@ function isEmpty(obj) {
     return true;
 }
 function isObject(val) {
-    if (val === null) { return false;}
-        return (typeof val === 'object');
+    if (val === null) { return false }
+    return (typeof val === 'object')
+}
+function tryParseJSON(json) {
+    try {
+        return [null, JSON.parse(json)]
+    } catch (e) {
+        return [e, null]
+    }
 }
 function isJSON(json) {
     if (!json || typeof json !== 'string') {
@@ -49,3 +56,4 @@ module.exports.isNumber = isNumber;
 module.exports.isEmpty = isEmpty;
 module.exports.isObject = isObject;
 module.exports.isJSON = isJSON;
+module.exports.tryParseJSON = tryParseJSON;
