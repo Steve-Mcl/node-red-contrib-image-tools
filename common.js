@@ -29,10 +29,14 @@ function isObject(val) {
         return (typeof val === 'object');
 }
 function isJSON(json) {
-    if(isObject(json))
+    if (!json || typeof json !== 'string') {
+        return false
+    }
+    if(isObject(json)) {
         return false;
+    }
     try {
-        var obj = JSON.parse(json)
+        const obj = JSON.parse(json)
         if (obj && typeof obj === 'object' && obj !== null) {
             return true
         }
