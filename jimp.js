@@ -36,16 +36,16 @@ module.exports = function (RED) {
         const JIMP = require('jimp')
         const { Jimp, JimpMime } = JIMP
         const FONTS = require('jimp/fonts')
-
         const isBase64 = require('is-base64');
         const { setObjectProperty, isEmpty, tryParseJSON, isObject } = require('./common.js');
         const performanceLogger = require('./performanceLogger.js');
 
         // const { createJimp } = require('@jimp/core')
         // const { defaultFormats, defaultPlugins, JimpMime } = require("jimp")
-        // const threshold = require('@jimp/plugin-threshold')
-        // const configure = require('@jimp/custom').default
-        // const webp = require('@jimp/plugin-webp');
+        // const webp = require('@jimp/wasm-webp')
+        // // const threshold = require('@jimp/plugin-threshold')
+        // // const configure = require('@jimp/custom').default
+        // const webp2 = require('@jimp/plugin-webp');
         // const Jimp = createJimp({
         //     formats: [...defaultFormats, webp],
         //     plugins: [...defaultPlugins, threshold],
