@@ -46,8 +46,9 @@
         "@jimp/plugin-color": "^1.6.0",
         "@jimp/plugin-resize": "^1.6.0",
         "@jimp/plugin-threshold": "^1.6.0",
+        "@jimp/wasm-webp": "^1.6.0",
         "@zxing/library": "^0.21.3",
-        "bwip-js": "^4.5.1",
+        "bwip-js": "^4.7.0",
         "is-base64": "^1.1.0",
         "jimp": "^1.6.0"
     },
@@ -55,6 +56,6 @@
         "simple-xml-to-json": "1.2.2"
     },
     "engines": {
-        "node" : ">=14.0.0"
+        "node": ">=14.0.0"
     }
 }
