@@ -40,6 +40,9 @@
     "directories": {
         "example": "examples"
     },
+    "scripts": {
+        "test": "node --test \"test/*.test.js\""
+    },
     "dependencies": {
         "@jimp/custom": "^0.22.12",
         "@jimp/plugin-blur": "^0.22.12",
