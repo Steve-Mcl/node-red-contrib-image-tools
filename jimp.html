@@ -621,6 +621,7 @@
     <h6>
     <p>NOTES...</p>
     <p>If several functions are to be applied to an image, outputting a jimp object to the next jimp node will be faster than passing a buffer or base64 string </p>
+    <p><b>Large images:</b> keep the flow in a single line and avoid branching (wiring one output to more than one node). Node-RED copies the whole message, image included, for each extra wire, which costs a lot of memory and time for a large image (a 4K image is about 33 MB uncompressed, per copy). For example <code>crop &#8594; view &#8594; write</code> rather than a crop node with separate wires to the viewer and the write node. The image viewer passes the message on, so it can sit in the middle of a line. To apply several functions to an image, use batch mode (below) or chain the nodes outputting a jimp object, and only convert to a buffer or base64 string at the end.</p>
     <p>Additional useful properties are available in the <code>msg</code> object. Use a debug node to inspect them</p>
     </h6>
 </dl>

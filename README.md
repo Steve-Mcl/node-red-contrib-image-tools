@@ -181,6 +181,15 @@ Alternatively, you can avoid this issue by performing the following steps...
 1. Save and close your flow file
 1. Start node-red
 
+## Tips for large images
+
+Images are decoded into memory as raw pixels (width x height x 4 bytes), so a 4K image (3840 x 2160) is about 33 MB while it is being processed, regardless of its file size.
+
+* **Keep the flow in a single line and avoid branching.** When a node output is wired to more than one node, Node-RED copies the whole message, image included, for each extra wire. Do `crop → view → write`, not a crop node with separate wires to a viewer and a write node. The image viewer passes the message on, so it can sit in the middle of a line.
+* **Pass a jimp image between nodes** (set the image node output to a jimp object) rather than a buffer or base64 string. The image is not converted and decoded again for every node. Only output a buffer or base64 string in the last node.
+* **Use batch mode** to apply several functions in one node. The image is loaded once.
+* If you do need to branch, resize the image first so each copy is smaller.
+
 ## Pre-requisites
 
 None!
