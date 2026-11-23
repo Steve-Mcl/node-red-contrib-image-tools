@@ -46,6 +46,7 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
   * View images in the node-red editor (for preview / debug purposes)
   * **Full credit** to [rikukissa](https://github.com/rikukissa) and [dceejay](https://github.com/dceejay) for the excellent [node-red-contrib-image-output](https://github.com/rikukissa/node-red-contrib-image-output) on which the "image viewer node" is heavily based. (Copy of MIT license included in src files as requested)
   * Features include ability to display a jimp image, buffer, file name, base64 string, Data URL, Image URL.
+  * Removes the image when the payload is undefined, null or empty, or when `msg.reset` is `true`
   * Works in Internet Explorer (IE11 tested)
 
 * Barcode Decode node

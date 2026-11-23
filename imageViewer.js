@@ -68,6 +68,12 @@ module.exports = function (RED) {
             }
 
             try {
+                if (msg.reset === true) {
+                    // msg.reset === true removes the image, whatever the payload is
+                    RED.comms.publish("image-tools-image-viewer", { id: this.id })
+                    node.send(msg)
+                    return null;
+                }
                 /* ****************  Get Image Data Parameter **************** */
                 let payload;
                 RED.util.evaluateNodeProperty(node.data, node.dataType, node, msg, (err, value) => {
