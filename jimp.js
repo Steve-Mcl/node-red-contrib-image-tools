@@ -37,8 +37,9 @@ module.exports = function (RED) {
     // const JIMP_ALIGN_MODES = image_tools.JIMP_ALIGN_MODES
     function jimpNode(config) {
         RED.nodes.createNode(this, config);
-        const JIMP = require('jimp')
-        const { Jimp, JimpMime } = JIMP
+        const { getJimp, isJimpImage } = require('./jimp-factory')
+        // jimp is loaded on the first message. It is extended with webp support, which is loaded asynchronously
+        let JIMP, Jimp, JimpMime
         const FONTS = require('jimp/fonts')
         const isBase64 = require('is-base64');
         const { setObjectProperty, isEmpty, tryParseJSON, isObject } = require('./common.js');
@@ -135,12 +136,30 @@ module.exports = function (RED) {
             }
         }
 
-        const FORMAT_ALIASES = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", bmp: "image/bmp", tif: "image/tiff", tiff: "image/tiff" }
-        /** Convert "png", "image/jpeg", "jpg" etc to a mime type that jimp can write */
+        /**
+         * jimp checks that images passed to functions like composite are instances of its own class. An image made by a
+         * different jimp (e.g. by another package) is copied into the jimp used by this node. Our own images are returned as is.
+         */
+        function adoptImage (image) {
+            if (image instanceof Jimp) {
+                return image
+            }
+            const adopted = new Jimp({ width: image.bitmap.width, height: image.bitmap.height, data: Buffer.from(image.bitmap.data) })
+            if (image.mime) {
+                adopted.mime = image.mime
+            }
+            return adopted
+        }
+
+        const FORMAT_ALIASES = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", bmp: "image/bmp", tif: "image/tiff", tiff: "image/tiff", webp: "image/webp" }
+        /** Convert "webp", "image/webp", "jpg" etc to a mime type that jimp can write */
         function formatToMime (format) {
             const mime = FORMAT_ALIASES[String(format || "").toLowerCase().replace(/^image\//, "")]
             if (!mime) {
                 throw new Error(`Unsupported image format '${format}'`)
+            }
+            if (mime === "image/webp" && !JIMP.webp) {
+                throw new Error("webp is not available: " + (JIMP.webpError && JIMP.webpError.message))
             }
             return mime
         }
@@ -169,8 +188,8 @@ module.exports = function (RED) {
             "resize.w": undefined,
         }
         function normaliseJimpFunctionParameter(fn, fnParam, p) {
-            if (p instanceof Jimp) {
-                return p;
+            if (isJimpImage(p)) {
+                return adoptImage(p);
             }
             function normaliseJimpFunctionParameterValue(fn, fnParam, p) {
                 if (typeof p == "string") {
@@ -296,6 +315,11 @@ module.exports = function (RED) {
 
                 const performance = new performanceLogger(node.id);
                 performance.start("total");
+                if (!JIMP) {
+                    JIMP = await getJimp()
+                    Jimp = JIMP.Jimp
+                    JimpMime = JIMP.JimpMime
+                }
 
                 /* ****************  Node status **************** */
                 node.status({ fill: undefined, shape: undefined, text: '' });
@@ -524,6 +548,12 @@ module.exports = function (RED) {
                             theResult = img
                             returnValue.success = true
                             returnValue.image = img
+                        } else if (job.name === "convert") {
+                            // the image is encoded in this format when it is output
+                            img.mime = formatToMime(job.parameters[0])
+                            theResult = img
+                            returnValue.success = true
+                            returnValue.image = img
                         } else if (job.name === "distance" || job.name === "diff") {
                             // in jimp v1 these are standalone functions (they were static methods of Jimp in v0.x)
                             theResult = JIMP[job.name](img, ...job.parameters);
@@ -544,7 +574,7 @@ module.exports = function (RED) {
                             //img._debug_tag="orig input img"
                             theResult = Jimp[job.name](img, ...job.parameters);
                             returnValue.takeImage = true;
-                            if (theResult instanceof Jimp) {
+                            if (isJimpImage(theResult)) {
                                 returnValue.image = theResult;
                             }
                             //theResult.image._debug_tag="diff result"
@@ -557,7 +587,7 @@ module.exports = function (RED) {
                                 returnValue.result = theResult.percent;
                                 returnValue.takeImage = true;
                                 returnValue.image = theResult && theResult.image;
-                                returnValue.success = returnValue && (returnValue.image instanceof Jimp);
+                                returnValue.success = returnValue && (isJimpImage(returnValue.image));
                                 break;
                             case "distance":
                                 job.result = theResult;
@@ -769,8 +799,9 @@ module.exports = function (RED) {
                         performance.end("base64_to_buffer");
                     }
                     //if data is a Jimp, then crack on with image processing functions
-                    if (data instanceof Jimp) {
+                    if (isJimpImage(data)) {
                         try {
+                            data = adoptImage(data)
                             await imageProcessor(Jimp, data, jobs, node, msg, performance);
                         } catch (err) {
                             nodeStatusImageProcessError(err, msg);

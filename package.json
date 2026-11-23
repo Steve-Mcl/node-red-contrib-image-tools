@@ -44,6 +44,8 @@
         "test": "node --test \"test/*.test.js\""
     },
     "dependencies": {
+        "@jimp/core": "^1.7.0",
+        "@jsquash/webp": "^1.5.0",
         "@zxing/library": "^0.21.3",
         "bwip-js": "^4.11.4",
         "is-base64": "^1.1.0",

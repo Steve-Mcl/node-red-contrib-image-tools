@@ -300,6 +300,9 @@
           {"name" : "quality", "type" : "num", "defaultType": "num", "required" : true, "hint" : "Quality value 1 ~ 100" }] },
 
 
+          "convert" : {"name" : "convert format","fn" : "convert", "description" : "change the format the image is output in, e.g. from png to webp. Use the quality function afterwards to set the quality of a lossy format (jpeg, webp).","parameters" : [
+          {"name" : "format", "type" : "str", "required" : true, "hint" : "png, jpeg, bmp, tiff or webp (or the mime type e.g. image/webp)" }] },
+
           "contain" : {"name" : "contain","fn" : "contain", "description" : "scale the image to the given width and height, some parts of the image may be letter boxed","parameters" : [
           {"name" : "w", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the width to resize the image to" },
           {"name" : "h", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the height to resize the image to" },
@@ -402,7 +405,7 @@
           "fisheye" : {"name" : "fisheye","fn" : "fisheye", "description" : "apply a fisheye effect to the image","parameters" : [
           {"name" : "radius", "group" : "options", "type" : "num", "defaultType": "num", "required" : false, "hint" : "the pixel radius of the effect" }] },
 
-          "dither" : {"name" : "dither565","fn" : "dither", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
+          "dither" : {"name" : "dither (RGB565)","fn" : "dither", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
 
 
           "greyscale" : {"name" : "greyscale","fn" : "greyscale", "description" : "remove colour from the image","parameters" : [] },
