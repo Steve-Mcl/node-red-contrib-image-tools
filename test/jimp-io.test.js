@@ -123,7 +123,7 @@ describe('jimp-image: input / output', () => {
         })
         it('img: Jimp image', async () => {
             const r = await runJimp(jimpConfig('none', [], { ret: 'img' }), { payload: testPng() })
-            assert.ok(r.msg.payload instanceof Jimp)
+            assert.ok(r.msg.payload.bitmap && typeof r.msg.payload.getBuffer === 'function', 'a jimp image')
             assert.deepEqual(dims(r.msg.payload), [40, 20])
         })
         it('jpeg in, jpeg out', async () => {

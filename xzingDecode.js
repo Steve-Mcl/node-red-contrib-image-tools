@@ -2,7 +2,7 @@ module.exports = function (RED) {
 
     function xzingDecode(config) {
         RED.nodes.createNode(this, config);
-        const { Jimp } = require('jimp');
+        const { getJimp, isJimpImage } = require('./jimp-factory');
         const performanceLogger = require('./performanceLogger');
         const { MultiFormatReader, BarcodeFormat, DecodeHintType, RGBLuminanceSource, BinaryBitmap, HybridBinarizer } = require('@zxing/library');
         const node = this;
@@ -161,11 +161,11 @@ module.exports = function (RED) {
                     data = Buffer.from(url, 'base64');
                     performance.end("base64_to_buffer");
                 }
-                if (data instanceof Jimp) {
+                if (isJimpImage(data)) {
                     _decode(data, formats, {tryHarder, charEncoding});
                 } else {
                     performance.start("jimp_read");
-                    Jimp.read(data)
+                    getJimp().then(({ Jimp }) => Jimp.read(data))
                         .then(img => {
                             performance.end("jimp_read");
                             _decode(img, formats, {tryHarder, charEncoding});

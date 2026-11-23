@@ -30,13 +30,14 @@ SOFTWARE.
 
 module.exports = function (RED) {
     function imageViewer(config) {
-        var Jimp = require('jimp');
+        const { getJimp, isJimpImage } = require('./jimp-factory');
         const isBase64 = require('is-base64');
         const _prefixURIMap = {
             "iVBOR": "data:image/png;base64,",
             "R0lGO": "data:image/gif;base64,",
             "/9j/4": "data:image/jpeg;base64,",
-            "Qk02U": "data:image/bmp;base64,"
+            "Qk02U": "data:image/bmp;base64,",
+            "UklGR": "data:image/webp;base64,"
         }
         const createDataURI = function (rawImage) {
             let first5 = rawImage.substr(0, 5)
@@ -69,6 +70,7 @@ module.exports = function (RED) {
 
             try {
                 /* ****************  Get Image Data Parameter **************** */
+                const Jimp = await getJimp()
                 let payload;
                 RED.util.evaluateNodeProperty(node.data, node.dataType, node, msg, (err, value) => {
                     if (err) {
@@ -96,7 +98,7 @@ module.exports = function (RED) {
                 }
                 let isfileName = isString && !isBase64Image;
                 //hack to support gif. Oddly, Jimp can read a gif but fails if you try to do most operations
-                if (payload instanceof Jimp.Jimp && payload._originalMime == "image/gif") {
+                if (isJimpImage(payload) && payload._originalMime == "image/gif") {
                     try {
                         payload = await payload.getBuffer(Jimp.JimpMime.gif)
                         gif = true;
@@ -108,7 +110,7 @@ module.exports = function (RED) {
                     //its already base 64 with mime
                     node.send(msg);//pass it on before displaying
                     RED.comms.publish("image-tools-image-viewer", { id: this.id, data: payload });
-                } else if (payload instanceof Jimp.Jimp && !gif) {
+                } else if (isJimpImage(payload) && !gif) {
                     try {
                         payload = await payload.getBase64(payload._originalMime || payload.mime || Jimp.JimpMime.png)
                         node.send(msg);//pass it on before displaying
