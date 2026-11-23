@@ -461,9 +461,9 @@
           {"name" : "map", "group" : "options", "type" : "", "required" : true, "hint" : "the source image (a Jimp instance)", "defaultValue" : "payload" },
           {"name" : "offset", "group" : "options", "type" : "num", "defaultType": "num", "required" : false, "hint" : "the maximum displacement value" }] },
 
-            // TODO: background is not a function in Jimp 1.x see: https://jimp-dev.github.io/jimp/guides/migrate-to-v1
-        //   "background" : {"name" : "background","fn" : "background", "description" : "set the default new pixel colour (e.g. 0xFFFFFFFF or 0x00000000) useful for by some operations e.g. contain or rotate","parameters" : [
-        //   {"name" : "hex", "type" : "num", "required" : true, "hint" : "hexadecimal rgba value (must be entered as a decimal e.g. 0xFFFFFFFF = 4294967295)", "defaultValue" : "4294967295" }] },
+          // background is not a function in Jimp 1.x, it is provided by this node (see jimp.js)
+          "background" : {"name" : "background","fn" : "background", "description" : "set the background colour. Used for the new pixels created by contain and rotate, and when the image is output in a format without transparency (e.g. JPEG)","parameters" : [
+          {"name" : "hex", "type" : "num", "required" : true, "hint" : "hexadecimal rgba value (must be entered as a decimal e.g. 0xFFFFFFFF = 4294967295)", "defaultValue" : "4294967295" }] },
 
           "threshold" : {"name" : "threshold","fn" : "threshold", "description" : "apply one or more functions","parameters" : [
           {"name" : "max", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "max value of byte 0 ~ 255" },

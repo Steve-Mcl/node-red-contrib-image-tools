@@ -164,6 +164,25 @@ module.exports = function (RED) {
             return mime
         }
 
+        // jimp 1.x has no background() method but it does have the image.background property, which rotate and contain use for the
+        // pixels they create (as in 0.x). What 1.x does not do is use it when encoding to a format without an alpha channel, 0.x did.
+        const hasNoAlpha = (mime) => mime === JimpMime.jpeg || mime === JimpMime.bmp
+        function setBackground (img, hex) {
+            if (typeof hex !== "number" || !Number.isFinite(hex)) {
+                throw new Error("hex must be a hexadecimal rgba value")
+            }
+            img.background = hex >>> 0
+        }
+        /** Image to encode: formats without alpha are encoded over the background colour (if one is set) */
+        function imageForEncoding (img, mime) {
+            if (!img.background || !hasNoAlpha(mime)) {
+                return img
+            }
+            const flat = new Jimp({ width: img.width, height: img.height, color: img.background })
+            flat.composite(img, 0, 0)
+            return flat
+        }
+
         const minusOneCompatibility = {
             "resize.h": undefined,
             "resize.w": undefined,
@@ -519,6 +538,11 @@ module.exports = function (RED) {
                             returnValue.success = true;
 
                             returnValue.image = img;
+                        } else if (job.name === "background") {
+                            setBackground(img, job.parameters[0])
+                            theResult = img
+                            returnValue.success = true
+                            returnValue.image = img
                         } else if (job.name === "brightnessLegacy") {
                             legacyBrightness(img, job.parameters[0])
                             theResult = img
@@ -623,8 +647,11 @@ module.exports = function (RED) {
                                 jobPerformance.start(perfMeasureName);
 
                                 if (job.name == "quality") {
-                                    const buf = await img.getBuffer(img.mime || JimpMime.jpeg, { quality: job.parameters[0] })
+                                    const mime = img.mime || JimpMime.jpeg
+                                    const buf = await imageForEncoding(img, mime).getBuffer(mime, { quality: job.parameters[0] })
+                                    const background = img.background
                                     img = await Jimp.read(buf)
+                                    img.background = background
                                 } else if (job.name == "print") {
                                     const printOptions = job.parameters[0]
                                     //this is a print request where the text is an object with alignment
@@ -696,7 +723,8 @@ module.exports = function (RED) {
                             case "buf":
                                 performance.start("jimp_to_buffer");
                                 try {
-                                    const buffer = await img.getBuffer(img.mime || JimpMime.jpeg)
+                                    const mime = img.mime || JimpMime.jpeg
+                                    const buffer = await imageForEncoding(img, mime).getBuffer(mime)
                                     performance.end("jimp_to_buffer");
                                     performance.end("total");
                                     setObjectProperty(msg, node.sendProperty, buffer);
@@ -714,7 +742,8 @@ module.exports = function (RED) {
                             case "b64":
                                 performance.start("jimp_to_base64");
                                 try {
-                                    const b64 = await img.getBase64(img.mime || JimpMime.jpeg);
+                                    const mime = img.mime || JimpMime.jpeg
+                                    const b64 = await imageForEncoding(img, mime).getBase64(mime);
                                     performance.end("jimp_to_base64");
                                     performance.end("total");
                                     // msg.payload = b64;
