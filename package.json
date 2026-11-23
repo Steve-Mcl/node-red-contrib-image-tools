@@ -40,6 +40,9 @@
     "directories": {
         "example": "examples"
     },
+    "scripts": {
+        "test": "node --test \"test/*.test.js\""
+    },
     "dependencies": {
         "@jimp/custom": "^0.22.12",
         "@jimp/plugin-blur": "^0.22.12",
@@ -57,6 +60,10 @@
         }
     },
     "engines": {
-        "node" : ">=14.0.0"
+        "node": ">=14.0.0"
+    },
+    "devDependencies": {
+        "node-red": "^5.0.10",
+        "node-red-node-test-helper": "^0.3.6"
     }
 }
