@@ -60,10 +60,6 @@
         }
     },
     "engines": {
-        "node": ">=14.0.0"
-    },
-    "devDependencies": {
-        "node-red": "^5.0.10",
-        "node-red-node-test-helper": "^0.3.6"
+        "node" : ">=14.0.0"
     }
 }

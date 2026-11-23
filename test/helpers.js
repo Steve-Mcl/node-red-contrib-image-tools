@@ -11,13 +11,13 @@ const fs = require('fs')
 const path = require('path')
 const vm = require('vm')
 const zlib = require('zlib')
-const helper = require('node-red-node-test-helper')
+// a minimal fake of the Node-RED runtime (see fake-runtime.js) - avoids needing node-red as a dev dependency
+const helper = require('./fake-runtime')
 
 const ROOT = path.join(__dirname, '..')
 const jimpModule = require('jimp')
 const Jimp = jimpModule.Jimp || jimpModule
 
-helper.init(require.resolve('node-red'))
 
 /* ------------------------------ PNG encoder ------------------------------ */
 const CRC_TABLE = (() => {
