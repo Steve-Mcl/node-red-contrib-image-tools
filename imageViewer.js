@@ -78,6 +78,12 @@ module.exports = function (RED) {
                         payload = value;
                     }
                 });
+                if (payload === undefined || payload === null || payload === '' || (Buffer.isBuffer(payload) && payload.length === 0)) {
+                    // an undefined, null or empty payload resets the viewer (the editor removes the image when it gets no data)
+                    RED.comms.publish("image-tools-image-viewer", { id: this.id })
+                    node.send(msg)
+                    return null;
+                }
                 if (!payload) {
                     nodeStatusError("payload is empty (Image parameter)", msg, "Error. Image is null");
                     return null;
