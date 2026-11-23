@@ -28,7 +28,7 @@
         "url": "https://github.com/Steve-Mcl/node-red-contrib-image-tools.git"
     },
     "node-red": {
-        "version": ">=1.0.0",
+        "version": ">=3.0.0",
         "nodes": {
             "jimp": "jimp.js",
             "xzingDecode": "xzingDecode.js",
@@ -44,21 +44,15 @@
         "test": "node --test \"test/*.test.js\""
     },
     "dependencies": {
-        "@jimp/custom": "^0.22.12",
-        "@jimp/plugin-blur": "^1.6.0",
-        "@jimp/plugin-color": "^1.6.0",
-        "@jimp/plugin-resize": "^1.6.0",
-        "@jimp/plugin-threshold": "^1.6.0",
-        "@jimp/wasm-webp": "^1.6.0",
         "@zxing/library": "^0.21.3",
-        "bwip-js": "^4.7.0",
+        "bwip-js": "^4.11.4",
         "is-base64": "^1.1.0",
-        "jimp": "^1.6.0"
+        "jimp": "^1.7.0"
     },
     "overrides": {
         "simple-xml-to-json": "1.2.2"
     },
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=18.0.0"
     }
 }
