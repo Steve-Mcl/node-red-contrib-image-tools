@@ -81,6 +81,39 @@ describe('jimp-image: filters', () => {
         })
     })
 
+    it('brightness: values outside -1..+1 are rejected', async () => {
+        const r = await h.runJimp(jimpConfig('brightness', [2]), { payload: h.testPng() })
+        assert.equal(r.msg, undefined)
+        assert.equal(r.errors.length, 1)
+    })
+
+    it('brightness: a batch job named brightness uses the same scale as the dropdown function', async () => {
+        const { img } = await runJimpImage(batchConfig([{ name: 'brightness', parameters: [1] }]))
+        assert.deepEqual(px(img, 10, 10), [255, 255, 255, 255])
+    })
+
+    // New in v3 (jimp 1.x multiplier). Not available when running against jimp 0.x
+    describe('brightness multiplier (jimp 1.x scale: 0 black, 1 unchanged)', { skip: !h.fnDefs().brightnessMultiply && 'jimp 0.x has no multiplier brightness' }, () => {
+        it('1 leaves the image unchanged', async () => {
+            const { img } = await runJimpImage(jimpConfig('brightnessMultiply', [1]))
+            assert.deepEqual(px(img, 10, 10), RED)
+            assert.deepEqual(px(img, 30, 10), BLUE)
+        })
+        it('0 gives a fully black image', async () => {
+            const { img } = await runJimpImage(jimpConfig('brightnessMultiply', [0]))
+            assert.deepEqual(px(img, 30, 10), [0, 0, 0, 255])
+        })
+        it('0.5 halves each channel', async () => {
+            const { img } = await runJimpImage(jimpConfig('brightnessMultiply', [0.5]))
+            const p = px(img, 30, 10)
+            assert.ok(p[0] === 0 && p[1] === 0 && near(p[2], 128, 2), String(p))
+        })
+        it('in a batch', async () => {
+            const { img } = await runJimpImage(batchConfig([{ name: 'brightnessMultiply', parameters: [0.5] }]))
+            assert.ok(near(px(img, 30, 10)[2], 128, 2))
+        })
+    })
+
     it('contrast: runs and preserves size', async () => {
         const { img, errors } = await runJimpImage(jimpConfig('contrast', [0.5]))
         assert.equal(errors.length, 0)
@@ -116,13 +149,26 @@ describe('jimp-image: filters', () => {
         assert.equal(countPixels(img, p => !isGrey(p)), 0)
     })
 
-    for (const fn of ['normalize', 'dither565']) {
-        it(`${fn}: runs and preserves size`, async () => {
-            const { img, errors } = await runJimpImage(jimpConfig(fn))
+    it('normalize: runs and preserves size', async () => {
+        const { img, errors } = await runJimpImage(jimpConfig('normalize'))
+        assert.equal(errors.length, 0)
+        assert.deepEqual(dims(img), [40, 20])
+    })
+
+    describe('dither565 (renamed to dither in jimp 1.x, flows saved with the old name must keep working)', () => {
+        // the config as an older version of the editor would have saved it
+        const savedWithOldName = () => Object.assign(jimpConfig('none'), { jimpFunction: 'dither565', selectedJimpFunction: { name: 'dither565', fn: 'dither565', parameters: [] } })
+        it('saved flow using dither565 still runs', async () => {
+            const { img, errors } = await runJimpImage(savedWithOldName())
             assert.equal(errors.length, 0)
             assert.deepEqual(dims(img), [40, 20])
         })
-    }
+        it('dither565 in a batch still runs', async () => {
+            const { img, errors } = await runJimpImage(batchConfig([{ name: 'dither565' }]))
+            assert.equal(errors.length, 0)
+            assert.deepEqual(dims(img), [40, 20])
+        })
+    })
 
     describe('convolute', () => {
         it('custom kernel (identity) leaves the image unchanged', async () => {

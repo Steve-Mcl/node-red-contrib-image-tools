@@ -170,6 +170,12 @@ describe('jimp-image: input / output', () => {
             assert.equal(r.msg, undefined)
             assert.ok(r.errors.length >= 1)
         })
+        it('a function that does not exist (e.g. saved by another version) is reported, not silently skipped', async () => {
+            const cfg = Object.assign(jimpConfig('none'), { jimpFunction: 'doesNotExist', selectedJimpFunction: { name: 'doesNotExist', fn: 'doesNotExist', parameters: [] } })
+            const r = await runJimp(cfg, { payload: testPng() })
+            assert.equal(r.msg, undefined)
+            assert.equal(r.errors.length, 1)
+        })
         it('parameter that cannot be evaluated', async () => {
             const r = await runJimp(jimpConfig('resize', [['(((', 'jsonata'], 10]), { payload: testPng() })
             assert.equal(r.msg, undefined)

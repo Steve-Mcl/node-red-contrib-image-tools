@@ -121,6 +121,11 @@ describe('jimp-image: transforms', () => {
             assert.deepEqual(dims(img), [10, 10])
             assert.deepEqual(px(img, 5, 5), RED)
         })
+        it('autocrop: tolerance and cropOnlyFrames as separate parameters', async () => {
+            const png = makePng(30, 30, (x, y) => (x >= 10 && x < 20 && y >= 12 && y < 22) ? RED : [255, 255, 255, 255])
+            const { img } = await runJimpImage(jimpConfig('autocrop1', [[0.0002, 'num'], [false, 'bool']]), png)
+            assert.deepEqual(dims(img), [10, 10])
+        })
         it('autocrop: options json', async () => {
             const png = makePng(30, 30, (x, y) => (x >= 10 && x < 20 && y >= 12 && y < 22) ? RED : [255, 255, 255, 255])
             const { img } = await runJimpImage(jimpConfig('autocrop2', [{ tolerance: 0.0002, cropOnlyFrames: false }]), png)
