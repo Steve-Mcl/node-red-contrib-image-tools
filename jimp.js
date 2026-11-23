@@ -135,6 +135,16 @@ module.exports = function (RED) {
             }
         }
 
+        const FORMAT_ALIASES = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", bmp: "image/bmp", tif: "image/tiff", tiff: "image/tiff" }
+        /** Convert "png", "image/jpeg", "jpg" etc to a mime type that jimp can write */
+        function formatToMime (format) {
+            const mime = FORMAT_ALIASES[String(format || "").toLowerCase().replace(/^image\//, "")]
+            if (!mime) {
+                throw new Error(`Unsupported image format '${format}'`)
+            }
+            return mime
+        }
+
         const minusOneCompatibility = {
             "resize.h": undefined,
             "resize.w": undefined,
@@ -758,6 +768,9 @@ module.exports = function (RED) {
                                 img = await Jimp.read(data);
                             } else {
                                 img = new Jimp(options)
+                                // a new image is a PNG unless told otherwise (as in jimp 0.x). Without a mime it would be output as a JPEG, losing transparency
+                                const format = isObject(data) ? (data.mime ?? data.format) : undefined
+                                img.mime = format ? formatToMime(format) : JimpMime.png
                             }
                             performance.end(perfName);
                             await imageProcessor(Jimp, img, jobs, node, msg, performance);

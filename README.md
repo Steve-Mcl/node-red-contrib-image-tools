@@ -36,7 +36,7 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
   * Over 40 image function built in with many more possible by using [convolution kernels](https://en.wikipedia.org/wiki/Kernel_(image_processing))
   * Perform 1 or multiple (batch) images processes in each node
     * TIP: you can convert a function to batch JSON by clicking the button adjacent to the function dropdown field. Then simply edit the batch JSON into an array `[{...},{...},{...}]` to perform as many operations as needed in one go.
-  * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`
+  * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`. The image is a PNG, add `"format":"jpeg"` (or `png`, `bmp`, `tiff`, or a mime type like `image/jpeg`) to output a different format
   * All function parameters can be either fixed or passed in by msg/flow/global
   * Can output image data as a Jimp image, a buffer or base64 string.
   * All functions and parameters are self documenting - a tip under each item in the node editor helps the user
