@@ -163,6 +163,24 @@ describe('jimp-image: filters', () => {
             assert.equal(errors.length, 0)
             assert.deepEqual(dims(img), [40, 20])
         })
+        // the jimp 1.x name (jimp 0.x has no dither)
+        const hasNewName = !!h.fnDefs().dither
+        it('dither from the dropdown', { skip: !hasNewName && 'jimp 0.x has no dither' }, async () => {
+            const { img, errors } = await runJimpImage(jimpConfig('dither'))
+            assert.equal(errors.length, 0)
+            assert.deepEqual(dims(img), [40, 20])
+        })
+        it('dither in a batch', { skip: !hasNewName && 'jimp 0.x has no dither' }, async () => {
+            const { img, errors } = await runJimpImage(batchConfig([{ name: 'dither' }]))
+            assert.equal(errors.length, 0)
+            assert.deepEqual(dims(img), [40, 20])
+        })
+        it('dither and dither565 give the same result', { skip: !hasNewName && 'jimp 0.x has no dither' }, async () => {
+            const a = await runJimpImage(batchConfig([{ name: 'dither' }]))
+            await h.helper.unload()
+            const b = await runJimpImage(batchConfig([{ name: 'dither565' }]))
+            assert.deepEqual(a.img.bitmap.data, b.img.bitmap.data)
+        })
         it('dither565 in a batch still runs', async () => {
             const { img, errors } = await runJimpImage(batchConfig([{ name: 'dither565' }]))
             assert.equal(errors.length, 0)

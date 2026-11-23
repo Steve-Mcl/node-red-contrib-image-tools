@@ -402,7 +402,7 @@
           "fisheye" : {"name" : "fisheye","fn" : "fisheye", "description" : "apply a fisheye effect to the image","parameters" : [
           {"name" : "radius", "group" : "options", "type" : "num", "defaultType": "num", "required" : false, "hint" : "the pixel radius of the effect" }] },
 
-          "dither" : {"name" : "dither565","fn" : "dither", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
+          "dither" : {"name" : "dither (RGB565)","fn" : "dither", "description" : "ordered dithering of the image and reduce color space to 16-bits (RGB565)","parameters" : [] },
 
 
           "greyscale" : {"name" : "greyscale","fn" : "greyscale", "description" : "remove colour from the image","parameters" : [] },
