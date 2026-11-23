@@ -40,6 +40,13 @@
     "directories": {
         "example": "examples"
     },
+    "files": [
+        "*.js",
+        "*.html",
+        "examples/",
+        "icons/",
+        "static/"
+    ],
     "scripts": {
         "test": "node --test \"test/*.test.js\""
     },
