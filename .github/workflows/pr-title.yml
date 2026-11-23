@@ -1,0 +1,19 @@
+name: PR title
+
+# The changelog is built from the titles of merged PRs, so each title must be a conventional commit,
+# e.g. "feat: add webp support" or "fix: resize modes". See RELEASING.md
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
