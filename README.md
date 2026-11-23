@@ -36,7 +36,7 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
   * Over 40 image function built in with many more possible by using [convolution kernels](https://en.wikipedia.org/wiki/Kernel_(image_processing))
   * Perform 1 or multiple (batch) images processes in each node
     * TIP: you can convert a function to batch JSON by clicking the button adjacent to the function dropdown field. Then simply edit the batch JSON into an array `[{...},{...},{...}]` to perform as many operations as needed in one go.
-  * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`
+  * Create blank image by setting Image field to an object `{"w":100,"h":100,"background":0}`. The image is a PNG, add `"format":"jpeg"` (or `png`, `bmp`, `tiff`, or a mime type like `image/jpeg`) to output a different format
   * All function parameters can be either fixed or passed in by msg/flow/global
   * Can output image data as a Jimp image, a buffer or base64 string.
   * All functions and parameters are self documenting - a tip under each item in the node editor helps the user
@@ -46,6 +46,7 @@ A <a href="http://nodered.org" target="_new">Node-RED</a> node to perform functi
   * View images in the node-red editor (for preview / debug purposes)
   * **Full credit** to [rikukissa](https://github.com/rikukissa) and [dceejay](https://github.com/dceejay) for the excellent [node-red-contrib-image-output](https://github.com/rikukissa/node-red-contrib-image-output) on which the "image viewer node" is heavily based. (Copy of MIT license included in src files as requested)
   * Features include ability to display a jimp image, buffer, file name, base64 string, Data URL, Image URL.
+  * Removes the image when the payload is undefined, null or empty, or when `msg.reset` is `true`
   * Works in Internet Explorer (IE11 tested)
 
 * Barcode Decode node
@@ -179,6 +180,15 @@ Alternatively, you can avoid this issue by performing the following steps...
 1. Search / replace all instances of `"type":"2D Barcode Decoder"` with `"type":"Barcode Decoder"`
 1. Save and close your flow file
 1. Start node-red
+
+## Tips for large images
+
+Images are decoded into memory as raw pixels (width x height x 4 bytes), so a 4K image (3840 x 2160) is about 33 MB while it is being processed, regardless of its file size.
+
+* **Keep the flow in a single line and avoid branching.** When a node output is wired to more than one node, Node-RED copies the whole message, image included, for each extra wire. Do `crop → view → write`, not a crop node with separate wires to a viewer and a write node. The image viewer passes the message on, so it can sit in the middle of a line.
+* **Pass a jimp image between nodes** (set the image node output to a jimp object) rather than a buffer or base64 string. The image is not converted and decoded again for every node. Only output a buffer or base64 string in the last node.
+* **Use batch mode** to apply several functions in one node. The image is loaded once.
+* If you do need to branch, resize the image first so each copy is smaller.
 
 ## Pre-requisites
 

@@ -54,6 +54,36 @@ describe('jimp-image: input / output', () => {
             const p = px(img, 5, 5) // jimp 1.x can be off by one on the red channel
             assert.ok(h.near(p[0], 255, 2) && p[1] === 0 && p[2] === 0 && p[3] === 255, String(p))
         })
+        it('a blank image is output as a PNG (so it keeps its transparency)', async () => {
+            const r = await runJimp(jimpConfig('none'), { payload: { w: 30, h: 10, width: 30, height: 10, background: 0x00000000, color: 0x00000000 } })
+            assert.ok(r.msg, 'no output: ' + (r.errors[0] && r.errors[0].message))
+            assert.equal(r.msg.imageInfo.MIME, 'image/png')
+            assert.equal(r.msg.payload.subarray(1, 4).toString(), 'PNG')
+            assert.equal(px(await decode(r.msg.payload), 5, 5)[3], 0, 'transparent')
+        })
+        describe('blank image format', { skip: !h.Jimp.fromBuffer && 'the format option is not available with jimp 0.x' }, () => {
+            const blank = (extra) => ({ w: 30, h: 10, width: 30, height: 10, background: 0xff0000ff, color: 0xff0000ff, ...extra })
+            it('format: jpeg', async () => {
+                const r = await runJimp(jimpConfig('none'), { payload: blank({ format: 'jpeg' }) })
+                assert.ok(r.msg, 'no output: ' + (r.errors[0] && r.errors[0].message))
+                assert.equal(r.msg.imageInfo.MIME, 'image/jpeg')
+                assert.deepEqual([r.msg.payload[0], r.msg.payload[1]], [0xff, 0xd8])
+            })
+            it('mime: image/bmp', async () => {
+                const r = await runJimp(jimpConfig('none'), { payload: blank({ mime: 'image/bmp' }) })
+                assert.equal(r.msg.imageInfo.MIME, 'image/bmp')
+                assert.equal(r.msg.payload.subarray(0, 2).toString(), 'BM')
+            })
+            it('format is not case sensitive and accepts jpg', async () => {
+                const r = await runJimp(jimpConfig('none'), { payload: blank({ format: 'JPG' }) })
+                assert.equal(r.msg.imageInfo.MIME, 'image/jpeg')
+            })
+            it('an unsupported format is an error', async () => {
+                const r = await runJimp(jimpConfig('none'), { payload: blank({ format: 'heic' }) })
+                assert.equal(r.msg, undefined)
+                assert.equal(r.errors.length, 1)
+            })
+        })
         it('reads the image from a different msg property', async () => {
             const r = await runJimp(jimpConfig('none', [], { data: 'picture' }), { picture: testPng() })
             assert.deepEqual(dims(await decode(r.msg.payload)), [40, 20])
@@ -93,7 +123,7 @@ describe('jimp-image: input / output', () => {
         })
         it('img: Jimp image', async () => {
             const r = await runJimp(jimpConfig('none', [], { ret: 'img' }), { payload: testPng() })
-            assert.ok(r.msg.payload instanceof Jimp)
+            assert.ok(r.msg.payload.bitmap && typeof r.msg.payload.getBuffer === 'function', 'a jimp image')
             assert.deepEqual(dims(r.msg.payload), [40, 20])
         })
         it('jpeg in, jpeg out', async () => {
@@ -169,6 +199,12 @@ describe('jimp-image: input / output', () => {
             const r = await runJimp(jimpConfig('none', [], { data: path.join(os.tmpdir(), 'does-not-exist-1234.png'), dataType: 'str' }), { payload: null })
             assert.equal(r.msg, undefined)
             assert.ok(r.errors.length >= 1)
+        })
+        it('a function that does not exist (e.g. saved by another version) is reported, not silently skipped', async () => {
+            const cfg = Object.assign(jimpConfig('none'), { jimpFunction: 'doesNotExist', selectedJimpFunction: { name: 'doesNotExist', fn: 'doesNotExist', parameters: [] } })
+            const r = await runJimp(cfg, { payload: testPng() })
+            assert.equal(r.msg, undefined)
+            assert.equal(r.errors.length, 1)
         })
         it('parameter that cannot be evaluated', async () => {
             const r = await runJimp(jimpConfig('resize', [['(((', 'jsonata'], 10]), { payload: testPng() })

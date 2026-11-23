@@ -232,3 +232,23 @@ SOFTWARE.
 		<input type="number" id="node-input-width">
 	</div>
 </script>
+
+<script type="text/html" data-help-name="image viewer">
+<p>Shows an image in the editor, next to the node. Useful for previewing and debugging.</p>
+<h3>Inputs</h3>
+<dl class="message-properties">
+    <dt>image <span class="property-type">jimp | buffer | string</span></dt>
+    <dd>the image to show. The property can be changed in the node (it is <code>msg.payload</code> by default). A string can be a file name, a URL, a base64 string or a data URL. If the image is undefined, null or empty (an empty string or buffer), the image is removed from the viewer.</dd>
+    <dt class="optional">reset <span class="property-type">boolean</span></dt>
+    <dd>set <code>msg.reset</code> to <code>true</code> to remove the image from the viewer, whatever the image property contains. Any other value is ignored.</dd>
+</dl>
+<h3>Outputs</h3>
+<dl class="message-properties">
+    <dt>msg <span class="property-type">object</span></dt>
+    <dd>the incoming message is passed on unchanged, so the viewer can sit in the middle of a flow, e.g. <code>crop &#8594; view &#8594; write</code>.</dd>
+</dl>
+<h3>Details</h3>
+<p>Click the button on the node to switch the viewer on and off. When it is off, messages are just passed on (and nothing is shown or removed).</p>
+<p>The <b>Width</b> sets the width of the picture shown in the editor. It does not change the image. Only the latest image is kept and it is only sent to the editor while the viewer is on.</p>
+<p>For large images, avoid wiring the output of a node to the viewer and to other nodes at the same time. Each extra wire makes a copy of the whole image. Put the viewer in the line instead.</p>
+</script>

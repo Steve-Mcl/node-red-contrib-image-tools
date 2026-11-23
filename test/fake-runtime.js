@@ -90,9 +90,12 @@ function createRuntime () {
             createNode (node, config) {
                 const emitter = new EventEmitter()
                 // copy the EventEmitter API onto the node (as the real runtime does)
-                for (const m of ['on', 'once', 'off', 'emit', 'removeListener', 'removeAllListeners', 'listeners']) {
+                for (const m of ['off', 'emit', 'removeListener', 'removeAllListeners', 'listeners']) {
                     node[m] = emitter[m].bind(emitter)
                 }
+                // handlers are called with `this` set to the node, as the real runtime does (nodes use this.active, this.id etc)
+                node.on = (event, fn) => { emitter.on(event, fn.bind(node)); return node }
+                node.once = (event, fn) => { emitter.once(event, fn.bind(node)); return node }
                 node.id = config.id
                 node.type = config.type
                 node.name = config.name
