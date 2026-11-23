@@ -303,14 +303,14 @@
           "contain" : {"name" : "contain","fn" : "contain", "description" : "scale the image to the given width and height, some parts of the image may be letter boxed","parameters" : [
           {"name" : "w", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the width to resize the image to" },
           {"name" : "h", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the height to resize the image to" },
-          {"name" : "alignBits", "group" : "options", "type" : "alignMode", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;" },
+          {"name" : "align", "group" : "options", "type" : "alignMode", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;" },
           {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "A scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
 
 
           "cover" : {"name" : "cover","fn" : "cover", "description" : "scale the image to the given width and height, some parts of the image may be clipped","parameters" : [
           {"name" : "w", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the width to resize the image to" },
           {"name" : "h", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the height to resize the image to" },
-          {"name" : "alignBits", "group" : "options", "type" : "alignMode|str", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;" },
+          {"name" : "align", "group" : "options", "type" : "alignMode|str", "required" : false, "hint" : "A bitmask for horizontal and vertical alignment. Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.HORIZONTAL_ALIGN_RIGHT | Jimp.VERTICAL_ALIGN_TOP | Jimp.VERTICAL_ALIGN_MIDDLE | Jimp.VERTICAL_ALIGN_BOTTOM;" },
           {"name" : "mode", "group" : "options", "type" : "resizeMode", "required" : false, "hint" : "a scaling method (e.g. Jimp.RESIZE_BEZIER)" }] },
 
 
@@ -332,7 +332,8 @@
 
 
           "autocrop1" : {"name" : "autocrop","fn" : "autocrop", "description" : "automatically crop same-color borders from image (if any), frames must be a Boolean","parameters" : [
-          {"name" : "tolerance", "type" : "num", "defaultType": "num", "required" : false, "hint" : "a percent value of tolerance for pixels color difference (default: 0.0002%)" }] },
+          {"name" : "tolerance", "group" : "options", "type" : "num", "defaultType": "num", "required" : false, "hint" : "a percent value of tolerance for pixels color difference (default: 0.0002%)" },
+          {"name" : "cropOnlyFrames", "group" : "options", "type" : "bool", "required" : false, "hint" : "crop only frames (borders of a single colour). Default true" }] },
 
 
           "autocrop2" : {"name" : "autocrop","fn" : "autocrop", "description" : "automatically crop same-color borders from image (if any), options may contain tolerance, cropOnlyFrames, cropSymmetric, leaveBorder","parameters" : [
@@ -388,8 +389,11 @@
           {"name" : "deg", "group" : "options", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the number of degrees to rotate the image by" },
           {"name" : "mode", "group" : "options", "type" : "resizeMode|bool", "required" : false, "hint" : "resize mode or a boolean, if false then the width and height of the image will not be changed" }] },
 
-          "brightness" : {"name" : "brightness","fn" : "brightness", "description" : "adjust the brightness", "parameters" : [
-          {"name" : "val", "type" : "num", "defaultType": "num", "required" : true, "hint" : "adjust the brightness by a value 0 (fully dark), 0.5 (50%), 1 (100%), 1.5 (150%), etc" }] },
+          "brightness" : {"name" : "brightness (legacy)","fn" : "brightnessLegacy", "description" : "adjust the brightness using the pre v3 (Jimp 0.x) scale. Flows saved before v3 use this function. For new flows, consider the (non legacy) brightness function.", "parameters" : [
+          {"name" : "val", "type" : "num", "defaultType": "num", "required" : true, "hint" : "adjust the brightness by a value from -1 (fully dark) through 0 (no change) to 1 (fully light)" }] },
+
+          "brightnessMultiply" : {"name" : "brightness","fn" : "brightness", "description" : "adjust the brightness by multiplying each colour channel by a factor (Jimp 1.x behaviour)", "parameters" : [
+          {"name" : "val", "type" : "num", "defaultType": "num", "required" : true, "hint" : "the factor to multiply by: 0 (fully dark), 0.5 (50%), 1 (no change), 1.5 (150%), etc" }] },
 
 
           "contrast" : {"name" : "contrast","fn" : "contrast", "description" : "adjust the contrast", "parameters" : [

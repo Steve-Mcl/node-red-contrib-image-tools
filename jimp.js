@@ -28,6 +28,10 @@ module.exports = function (RED) {
     JIMP_KNOWN_FONTS.forEach(font => {
         _image_tools_fonts.setFont(font, null, null)
     })
+    // Functions that were renamed in jimp v1. Flows saved with the old name keep working.
+    const LEGACY_FUNCTION_ALIASES = {
+        dither565: "dither"
+    }
     const JIMP_BLEND_MODES = image_tools.JIMP_BLEND_MODES
     const JIMP_BLEND_MODES_V1 = image_tools.JIMP_BLEND_MODES_V1
     // const JIMP_ALIGN_MODES = image_tools.JIMP_ALIGN_MODES
@@ -86,6 +90,51 @@ module.exports = function (RED) {
         node.fn = config.fn || "";
         node.sendProperty = config.sendProperty || "payload";
 
+        /**
+         * Map a pre v1 resize constant name (e.g. "RESIZE_BILINEAR") to the jimp v1 ResizeStrategy value
+         * @param {string} name
+         * @returns {string|undefined} the strategy value or undefined if the name is not known
+         */
+        function legacyResizeStrategy (name) {
+            return JIMP.ResizeStrategy[name.replace(/^RESIZE_/, "")]
+        }
+
+        /**
+         * jimp v1 requires both sizes for scaleToFit. Where one is automatic, use the aspect ratio of the image
+         * to work out the other (i.e. fit to the given width/height only)
+         */
+        function resolveScaleToFitSize (img, options) {
+            const o = { ...options }
+            const hasW = typeof o.w === "number"
+            const hasH = typeof o.h === "number"
+            if (hasW && !hasH) {
+                o.h = Math.max(1, Math.round(img.height * o.w / img.width))
+            } else if (hasH && !hasW) {
+                o.w = Math.max(1, Math.round(img.width * o.h / img.height))
+            }
+            return o
+        }
+
+        /**
+         * The pre v3 (jimp 0.x) brightness. Values are -1 (fully dark) to +1 (fully light), 0 is no change.
+         * Negative values darken by multiplying, positive values blend towards white. jimp 1.x only multiplies.
+         */
+        function legacyBrightness (img, val) {
+            if (typeof val !== "number") {
+                throw new Error("val must be numbers")
+            }
+            if (val < -1 || val > 1) {
+                throw new Error("val must be a number between -1 and +1")
+            }
+            const data = img.bitmap.data
+            for (let idx = 0; idx < data.length; idx += 4) {
+                for (let c = 0; c < 3; c++) {
+                    const v = data[idx + c]
+                    data[idx + c] = val < 0 ? v * (1 + val) : v + (255 - v) * val
+                }
+            }
+        }
+
         const minusOneCompatibility = {
             "resize.h": undefined,
             "resize.w": undefined,
@@ -134,6 +183,13 @@ module.exports = function (RED) {
                             // pre V1 Jimp, "Jimp.AUTO" meant -1. This is no longer supported. Instead, just return undefined (handled later on a case by case basis)
                             return undefined
                         }
+                        if (jp.startsWith("RESIZE_")) {
+                            // Saved flows hold resize modes as "Jimp.RESIZE_BILINEAR" etc (the pre v1 constants)
+                            const strategy = legacyResizeStrategy(jp)
+                            if (strategy) {
+                                return strategy
+                            }
+                        }
                         if (JIMP[jp] != null) {
                             return JIMP[jp];
                         } else if (Jimp[jp] != null) {
@@ -158,20 +214,7 @@ module.exports = function (RED) {
                             return JIMP.BlendMode[JIMP_BLEND_MODES_V1[jp]]
                         }
                     } else if (p.startsWith("RESIZE_")) {
-                        switch (p) {
-                            case "RESIZE_NEAREST_NEIGHBOR":
-                                return 'nearestNeighbor';
-                            case "RESIZE_BILINEAR":
-                                return 'bilinearInterpolation';
-                            case "RESIZE_BICUBIC":
-                                return 'bicubicInterpolation';
-                            case "RESIZE_HERMITE":
-                                return 'hermiteInterpolation';
-                            case "RESIZE_BEZIER":
-                                return 'bezierInterpolation';
-                            default:
-                                return 'nearestNeighbor';
-                        }
+                        return legacyResizeStrategy(p) || 'nearestNeighbor';
                     } else {
                         const [err, o] = tryParseJSON(p)
                         if (!err) {
@@ -251,7 +294,13 @@ module.exports = function (RED) {
                 }
 
                 let inputParameters = []
-                const fn = functions[node.jimpFunction || ''] // get definition from functions object;
+                const fn = functions[LEGACY_FUNCTION_ALIASES[node.jimpFunction] || node.jimpFunction || ''] // get definition from functions object;
+                if (!fn && typeof node.jimpFunction === "string" && node.jimpFunction) {
+                    // e.g. a flow saved with a function that no longer exists in this version (like dither565)
+                    nodeStatusError(new Error(`Function '${node.jimpFunction}' is not supported`), msg, "Function not supported");
+                    return;
+                }
+                let parameterError = false
                 try {
 
                     /* ****************  Get Image Process Parameters **************** */
@@ -269,8 +318,9 @@ module.exports = function (RED) {
                             } else {
                                 RED.util.evaluateNodeProperty(nodeParam, nodeParamType, node, msg, (err, value) => {
                                     if (err) {
+                                        parameterError = true
                                         nodeStatusParameterError(err, msg, fn.parameters[paramIndex].name);
-                                        return;//halt flow!
+                                        return;
                                     } else {
                                         let p = {};
                                         inputParameters[paramIndex] = value;
@@ -286,6 +336,9 @@ module.exports = function (RED) {
                                 });
                             }
                         }
+                    }
+                    if (parameterError) {
+                        return;//halt flow! (error and status have already been reported)
                     }
 
 
@@ -315,10 +368,13 @@ module.exports = function (RED) {
                                     if (job.name == "grayscale") {
                                         job.name = "greyscale"; // Flow Compatibility
                                     }
+                                    job.name = LEGACY_FUNCTION_ALIASES[job.name] || job.name
                                     const batchFn = functions[job.name]
                                     if (!batchFn) {
                                         throw new Error(`Function '${job.name}' is not supported`)
                                     }
+                                    // functions are keyed by their dropdown id, which is not always the jimp function (e.g. print2 -> print, brightness -> brightnessLegacy)
+                                    job.name = batchFn.fn || job.name
                                     job.parameters = job.parameters || []
                                     if (batchFn && Array.isArray(batchFn.parameters) && batchFn.parameters.length) {
                                         job.parameters = normaliseJimpFunctionParameters(batchFn, job.parameters)
@@ -429,7 +485,19 @@ module.exports = function (RED) {
                             returnValue.success = true;
 
                             returnValue.image = img;
+                        } else if (job.name === "brightnessLegacy") {
+                            legacyBrightness(img, job.parameters[0])
+                            theResult = img
+                            returnValue.success = true
+                            returnValue.image = img
+                        } else if (job.name === "distance" || job.name === "diff") {
+                            // in jimp v1 these are standalone functions (they were static methods of Jimp in v0.x)
+                            theResult = JIMP[job.name](img, ...job.parameters);
+                            returnValue.takeImage = true;
                         } else if (img[job.name]) {
+                            if (job.name === "scaleToFit") {
+                                job.parameters[0] = resolveScaleToFitSize(img, job.parameters[0])
+                            }
                             theResult = img[job.name](...job.parameters); //call the image lib function
                             returnValue.result = theResult;
                             if (theResult instanceof Error) {
